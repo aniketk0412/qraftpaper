@@ -1,0 +1,102 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight, Building2, Lock, Mail, User } from "lucide-react";
+import { AuthField } from "@/components/auth/auth-field";
+import { GlowButton } from "@/components/ui/glow-button";
+import { signupAction } from "../actions";
+
+export const metadata: Metadata = {
+  title: "Request access — QraftPaper",
+};
+
+export const runtime = "nodejs";
+
+const errorMessages: Record<string, string> = {
+  "email-exists": "That work email already has access. Sign in instead.",
+  "invalid-fields": "Enter all details and use a password with at least 8 characters.",
+};
+
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string | string[] }>;
+}) {
+  const { error } = await searchParams;
+  const errorKey = Array.isArray(error) ? error[0] : error;
+  const errorMessage = errorKey ? errorMessages[errorKey] : undefined;
+
+  return (
+    <div>
+      <h1 className="text-2xl font-semibold tracking-tight text-gradient">
+        Request access
+      </h1>
+      <p className="mt-1.5 text-sm text-fg-muted">
+        QraftPaper is a paid platform for institutions. Tell us about you and
+        our team will set up your workspace.
+      </p>
+
+      <form action={signupAction} className="mt-7 flex flex-col gap-4">
+        <AuthField
+          id="name"
+          name="name"
+          label="Full name"
+          icon={User}
+          placeholder="Dr. Anita Rao"
+          autoComplete="name"
+        />
+        <AuthField
+          id="email"
+          name="email"
+          label="Work email"
+          type="email"
+          icon={Mail}
+          placeholder="you@institution.edu"
+          autoComplete="email"
+        />
+        <AuthField
+          id="institution"
+          name="institution"
+          label="Institution"
+          icon={Building2}
+          placeholder="Meridian University"
+        />
+        <AuthField
+          id="password"
+          name="password"
+          label="Create password"
+          type="password"
+          icon={Lock}
+          placeholder="••••••••••"
+          autoComplete="new-password"
+        />
+
+        {errorMessage && (
+          <p className="rounded-xl border border-line bg-white/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
+            {errorMessage}
+          </p>
+        )}
+
+        <GlowButton type="submit" size="lg" className="mt-1 w-full">
+          Request access
+          <ArrowRight className="h-4 w-4" />
+        </GlowButton>
+      </form>
+
+      <p className="mt-4 rounded-xl border border-line bg-white/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
+        <span className="font-medium text-fg">No free tier.</span> Our team
+        configures your workspace and billing before activation — every plan
+        includes unlimited generation.
+      </p>
+
+      <p className="mt-7 text-center text-[0.82rem] text-fg-muted">
+        Already have access?{" "}
+        <Link
+          href="/login"
+          className="font-medium text-violet-bright transition-colors hover:text-violet"
+        >
+          Sign in
+        </Link>
+      </p>
+    </div>
+  );
+}
