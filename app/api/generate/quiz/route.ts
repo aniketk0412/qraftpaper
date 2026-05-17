@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateQuizQuestions, type QuizGenerationConfig } from "@/lib/ai/generate";
 import { getDb } from "@/lib/db";
-import { quizzes, subjects } from "@/lib/db/schema";
+import { generationJobs, quizzes, subjects } from "@/lib/db/schema";
 import {
   assertCanGenerate,
   incrementGenerationUsage,
@@ -64,12 +64,46 @@ export async function POST(request: Request) {
     throw error;
   }
 
-  const questions = await generateQuizQuestions({
-    subjectName: subject.name,
-    subjectCode: subject.code,
-    profile: subject.profile,
-    config,
-  });
+  const [job] = await getDb()
+    .insert(generationJobs)
+    .values({
+      userId: session.user.id,
+      subjectId,
+      type: "quiz",
+      status: "running",
+      startedAt: new Date(),
+      input: config,
+    })
+    .returning();
+
+  let questions;
+
+  try {
+    questions = await generateQuizQuestions({
+      subjectName: subject.name,
+      subjectCode: subject.code,
+      profile: subject.profile,
+      config,
+    });
+  } catch (error) {
+    if (job) {
+      await getDb()
+        .update(generationJobs)
+        .set({
+          status: "failed",
+          error: error instanceof Error ? error.message : "Quiz generation failed",
+          finishedAt: new Date(),
+        })
+        .where(eq(generationJobs.id, job.id));
+    }
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Quiz generation failed",
+      },
+      { status: 502 },
+    );
+  }
 
   const quizId = randomUUID();
   const title = `${subject.name} Practice Quiz`;
@@ -94,6 +128,17 @@ export async function POST(request: Request) {
     .returning();
 
   await incrementGenerationUsage(session.user.id);
+
+  if (job && created) {
+    await getDb()
+      .update(generationJobs)
+      .set({
+        status: "succeeded",
+        quizId: created.id,
+        finishedAt: new Date(),
+      })
+      .where(eq(generationJobs.id, job.id));
+  }
 
   return NextResponse.json({ quiz, record: created }, { status: 201 });
 }

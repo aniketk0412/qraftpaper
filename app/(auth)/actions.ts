@@ -7,7 +7,12 @@ import { redirect } from "next/navigation";
 
 import { signIn } from "@/auth";
 import { getDb } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import {
+  auditLogs,
+  organizationMembers,
+  organizations,
+  users,
+} from "@/lib/db/schema";
 
 function getRequiredString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -60,12 +65,42 @@ export async function signupAction(formData: FormData) {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
-  await db.insert(users).values({
-    name,
-    email,
-    institution,
-    passwordHash,
-  });
+  const [user] = await db
+    .insert(users)
+    .values({
+      name,
+      email,
+      institution,
+      passwordHash,
+      role: "owner",
+      status: "active",
+    })
+    .returning();
+
+  if (user) {
+    const [organization] = await db
+      .insert(organizations)
+      .values({
+        name: institution,
+        plan: user.plan,
+      })
+      .returning();
+
+    if (organization) {
+      await db.insert(organizationMembers).values({
+        organizationId: organization.id,
+        userId: user.id,
+        role: "owner",
+      });
+      await db.insert(auditLogs).values({
+        userId: user.id,
+        organizationId: organization.id,
+        action: "signup_created_workspace",
+        entityType: "organization",
+        entityId: organization.id,
+      });
+    }
+  }
 
   await signIn("credentials", {
     email,

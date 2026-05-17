@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
-import { papers, subjects } from "@/lib/db/schema";
+import { generationJobs, papers, subjects } from "@/lib/db/schema";
 import { generatePaperSections, type PaperGenerationConfig } from "@/lib/ai/generate";
 import {
   assertCanGenerate,
@@ -64,12 +64,46 @@ export async function POST(request: Request) {
     throw error;
   }
 
-  const sections = await generatePaperSections({
-    subjectName: subject.name,
-    subjectCode: subject.code,
-    profile: subject.profile,
-    config,
-  });
+  const [job] = await getDb()
+    .insert(generationJobs)
+    .values({
+      userId: session.user.id,
+      subjectId,
+      type: "paper",
+      status: "running",
+      startedAt: new Date(),
+      input: config,
+    })
+    .returning();
+
+  let sections;
+
+  try {
+    sections = await generatePaperSections({
+      subjectName: subject.name,
+      subjectCode: subject.code,
+      profile: subject.profile,
+      config,
+    });
+  } catch (error) {
+    if (job) {
+      await getDb()
+        .update(generationJobs)
+        .set({
+          status: "failed",
+          error: error instanceof Error ? error.message : "Paper generation failed",
+          finishedAt: new Date(),
+        })
+        .where(eq(generationJobs.id, job.id));
+    }
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Paper generation failed",
+      },
+      { status: 502 },
+    );
+  }
 
   const paperId = randomUUID();
   const title = config.examTitle ?? `${subject.name} Question Paper`;
@@ -97,6 +131,17 @@ export async function POST(request: Request) {
     .returning();
 
   await incrementGenerationUsage(session.user.id);
+
+  if (job && created) {
+    await getDb()
+      .update(generationJobs)
+      .set({
+        status: "succeeded",
+        paperId: created.id,
+        finishedAt: new Date(),
+      })
+      .where(eq(generationJobs.id, job.id));
+  }
 
   return NextResponse.json({ paper, record: created }, { status: 201 });
 }

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
-import { papers } from "@/lib/db/schema";
+import { paperVersions, papers } from "@/lib/db/schema";
 import type { QuestionPaper } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -28,6 +28,23 @@ export async function PATCH(
     );
   }
 
+  const [existing] = await getDb()
+    .select()
+    .from(papers)
+    .where(and(eq(papers.id, id), eq(papers.userId, session.user.id)))
+    .limit(1);
+
+  if (!existing?.content) {
+    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
+  }
+
+  await getDb().insert(paperVersions).values({
+    paperId: existing.id,
+    userId: session.user.id,
+    content: existing.content,
+    reason: "manual_save",
+  });
+
   const [updated] = await getDb()
     .update(papers)
     .set({
@@ -37,10 +54,6 @@ export async function PATCH(
     })
     .where(and(eq(papers.id, id), eq(papers.userId, session.user.id)))
     .returning();
-
-  if (!updated) {
-    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
-  }
 
   return NextResponse.json({ paper: updated.content, record: updated });
 }

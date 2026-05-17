@@ -3,7 +3,12 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
-import { documents, subjects } from "@/lib/db/schema";
+import {
+  documents,
+  generationJobs,
+  subjectProfileVersions,
+  subjects,
+} from "@/lib/db/schema";
 import { buildSubjectProfile, extractPdfText } from "@/lib/ai/extract";
 
 export const runtime = "nodejs";
@@ -79,6 +84,24 @@ export async function POST(request: Request) {
     }
   }
 
+  const [job] = await getDb()
+    .insert(generationJobs)
+    .values({
+      userId: session.user.id,
+      subjectId,
+      type: "profile",
+      status: "running",
+      startedAt: new Date(),
+      input: {
+        documents: storedDocuments.map((document) => ({
+          type: document.type,
+          fileName: document.fileName,
+          extractedTextLength: document.extractedText.length,
+        })),
+      },
+    })
+    .returning();
+
   let profile;
 
   try {
@@ -88,6 +111,20 @@ export async function POST(request: Request) {
       documents: storedDocuments,
     });
   } catch (error) {
+    if (job) {
+      await getDb()
+        .update(generationJobs)
+        .set({
+          status: "failed",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unable to build subject profile",
+          finishedAt: new Date(),
+        })
+        .where(eq(generationJobs.id, job.id));
+    }
+
     return NextResponse.json(
       {
         error:
@@ -112,6 +149,27 @@ export async function POST(request: Request) {
     })
     .where(and(eq(subjects.id, subjectId), eq(subjects.userId, session.user.id)))
     .returning();
+
+  await getDb().insert(subjectProfileVersions).values({
+    subjectId,
+    profile,
+    sourceHash: String(
+      storedDocuments.reduce(
+        (sum, document) => sum + document.extractedText.length,
+        0,
+      ),
+    ),
+  });
+
+  if (job) {
+    await getDb()
+      .update(generationJobs)
+      .set({
+        status: "succeeded",
+        finishedAt: new Date(),
+      })
+      .where(eq(generationJobs.id, job.id));
+  }
 
   return NextResponse.json({
     subject: updatedSubject,
