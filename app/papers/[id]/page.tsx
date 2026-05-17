@@ -1,15 +1,44 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { ArrowLeft, Download, FileText, Save } from "lucide-react";
+import { and, eq } from "drizzle-orm";
+import { auth } from "@/auth";
 import { PaperEditor } from "@/components/paper-editor";
 import { GlowButton } from "@/components/ui/glow-button";
-import { examplePaper } from "@/lib/demo-data";
+import { getDb } from "@/lib/db";
+import { papers } from "@/lib/db/schema";
 
 export const metadata: Metadata = {
   title: "Paper editor — QraftPaper",
 };
 
-export default function PaperEditorPage() {
+export const runtime = "nodejs";
+
+export default async function PaperEditorPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const session = await auth();
+  const { id } = await params;
+
+  if (!session?.user?.id) {
+    notFound();
+  }
+
+  const [paperRecord] = await getDb()
+    .select()
+    .from(papers)
+    .where(and(eq(papers.id, id), eq(papers.userId, session.user.id)))
+    .limit(1);
+
+  if (!paperRecord?.content) {
+    notFound();
+  }
+
+  const paper = paperRecord.content;
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-line bg-canvas/70 backdrop-blur-xl">
@@ -24,19 +53,27 @@ export default function PaperEditorPage() {
             </Link>
             <span className="h-8 w-px bg-line" />
             <div className="leading-tight">
-              <p className="text-sm font-medium">{examplePaper.subject}</p>
+              <p className="text-sm font-medium">{paper.subject}</p>
               <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
-                {examplePaper.subjectCode} · Draft · Autosaved
+                {paper.subjectCode} · Draft · Saved
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <GlowButton href="#" variant="secondary" size="sm">
+            <GlowButton
+              href={`/api/export/paper/${paper.id}/docx`}
+              variant="secondary"
+              size="sm"
+            >
               <FileText className="h-3.5 w-3.5" />
               Export Word
             </GlowButton>
-            <GlowButton href="#" variant="secondary" size="sm">
+            <GlowButton
+              href={`/api/export/paper/${paper.id}/pdf`}
+              variant="secondary"
+              size="sm"
+            >
               <Download className="h-3.5 w-3.5" />
               Export PDF
             </GlowButton>
@@ -49,7 +86,7 @@ export default function PaperEditorPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        <PaperEditor paper={examplePaper} />
+        <PaperEditor paper={paper} paperId={paper.id} />
       </main>
     </div>
   );

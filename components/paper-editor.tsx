@@ -21,12 +21,20 @@ import {
   exampleWeightage,
   maxUnitWeight,
 } from "@/lib/demo-data";
+import type { PaperQuestion } from "@/lib/types";
 
-export function PaperEditor({ paper: initial }: { paper: QuestionPaper }) {
+export function PaperEditor({
+  paper: initial,
+  paperId,
+}: {
+  paper: QuestionPaper;
+  paperId: string;
+}) {
   const [paper, setPaper] = useState<QuestionPaper>(initial);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [regenId, setRegenId] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
   const allQuestions = useMemo(
     () => paper.sections.flatMap((s) => s.questions),
@@ -62,9 +70,42 @@ export function PaperEditor({ paper: initial }: { paper: QuestionPaper }) {
     }));
   }
 
-  function regenerate(id: string) {
+  async function savePaper() {
+    setStatus("Saving...");
+    const response = await fetch(`/api/papers/${paperId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: paper }),
+    });
+
+    if (!response.ok) {
+      setStatus("Save failed");
+      return;
+    }
+
+    setStatus("Saved");
+  }
+
+  async function regenerate(id: string) {
     setRegenId(id);
-    setTimeout(() => setRegenId((cur) => (cur === id ? null : cur)), 1500);
+    setStatus("Regenerating...");
+
+    const response = await fetch("/api/generate/question", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paperId, questionId: id }),
+    });
+
+    if (!response.ok) {
+      setRegenId(null);
+      setStatus("Regeneration failed");
+      return;
+    }
+
+    const body = (await response.json()) as { question: PaperQuestion };
+    setPaper((current) => replaceQuestion(current, body.question));
+    setRegenId(null);
+    setStatus("Regenerated");
   }
 
   return (
@@ -284,6 +325,13 @@ export function PaperEditor({ paper: initial }: { paper: QuestionPaper }) {
           </GlassCard>
 
           <div className="flex flex-col gap-2">
+            <button
+              onClick={savePaper}
+              className="flex items-center gap-2.5 rounded-xl glass px-4 py-3 text-[0.82rem] text-fg-muted transition-colors hover:text-fg"
+            >
+              <Check className="h-4 w-4 text-violet-bright" />
+              Save paper
+            </button>
             <button className="flex items-center gap-2.5 rounded-xl glass px-4 py-3 text-[0.82rem] text-fg-muted transition-colors hover:text-fg">
               <Sparkles className="h-4 w-4 text-violet-bright" />
               Balance difficulty with AI
@@ -292,11 +340,26 @@ export function PaperEditor({ paper: initial }: { paper: QuestionPaper }) {
               <ShieldCheck className="h-4 w-4 text-fg-muted" />
               Run originality check
             </button>
+            {status && (
+              <p className="px-1 text-[0.74rem] text-fg-subtle">{status}</p>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function replaceQuestion(paper: QuestionPaper, nextQuestion: PaperQuestion) {
+  return {
+    ...paper,
+    sections: paper.sections.map((section) => ({
+      ...section,
+      questions: section.questions.map((question) =>
+        question.id === nextQuestion.id ? nextQuestion : question,
+      ),
+    })),
+  };
 }
 
 function IconBtn({
