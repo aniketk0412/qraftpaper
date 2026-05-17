@@ -8,6 +8,7 @@ import {
   Ruler,
   Sparkles,
 } from "lucide-react";
+import { auth } from "@/auth";
 import { PaperSheet } from "@/components/paper-sheet";
 import { SubjectsSection } from "@/components/dashboard/subjects-section";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -15,13 +16,12 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
 import { examplePaper } from "@/lib/demo-data";
+import { getDb } from "@/lib/db";
+import { papers } from "@/lib/db/schema";
+import { listUserSubjects } from "@/lib/subjects";
+import { and, eq, gte, sql } from "drizzle-orm";
 
-const stats = [
-  { icon: BookOpen, label: "Active subjects", value: "4", note: "across 3 departments" },
-  { icon: FileText, label: "Papers generated", value: "33", note: "+6 this month" },
-  { icon: Clock, label: "Faculty hours saved", value: "118", note: "this semester" },
-  { icon: Ruler, label: "Saved blueprints", value: "9", note: "reusable templates" },
-];
+export const runtime = "nodejs";
 
 const activity = [
   { paper: "Data Structures — End-Sem", time: "2 hours ago", marks: 70 },
@@ -30,7 +30,50 @@ const activity = [
   { paper: "Thermodynamics — End-Sem", time: "Last week", marks: 70 },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const session = await auth();
+  const userId = session?.user?.id;
+  const subjects = userId ? await listUserSubjects(userId) : [];
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const [paperStats] = userId
+    ? await getDb()
+        .select({
+          count: sql<number>`count(${papers.id})::int`,
+        })
+        .from(papers)
+        .where(and(eq(papers.userId, userId), gte(papers.createdAt, monthStart)))
+    : [{ count: 0 }];
+
+  const stats = [
+    {
+      icon: BookOpen,
+      label: "Active subjects",
+      value: String(subjects.length),
+      note: "owned by your account",
+    },
+    {
+      icon: FileText,
+      label: "Papers generated",
+      value: String(paperStats?.count ?? 0),
+      note: "this month",
+    },
+    {
+      icon: Clock,
+      label: "Profiles ready",
+      value: String(subjects.filter((subject) => subject.hasProfile).length),
+      note: "ready for generation",
+    },
+    {
+      icon: Ruler,
+      label: "Saved blueprints",
+      value: "0",
+      note: "coming in generation",
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-6xl">
       <Reveal>
@@ -46,9 +89,9 @@ export default function DashboardPage() {
               {"Here's what's moving in your examination workspace today."}
             </p>
           </div>
-          <GlowButton href="/papers/demo" size="md">
+          <GlowButton href="/dashboard/subjects/new" size="md">
             <Sparkles className="h-4 w-4" />
-            Generate a paper
+            New subject
           </GlowButton>
         </div>
       </Reveal>
@@ -70,7 +113,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <SubjectsSection />
+      <SubjectsSection subjects={subjects} />
 
       <div className="mt-10 grid gap-3 lg:grid-cols-[1.5fr_1fr]">
         <Reveal>

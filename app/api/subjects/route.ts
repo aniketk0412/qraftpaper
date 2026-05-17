@@ -1,0 +1,64 @@
+import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
+
+import { auth } from "@/auth";
+import { getDb } from "@/lib/db";
+import { subjects } from "@/lib/db/schema";
+import { listUserSubjects } from "@/lib/subjects";
+
+export const runtime = "nodejs";
+
+export async function GET() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return NextResponse.json({
+    subjects: await listUserSubjects(session.user.id),
+  });
+}
+
+export async function POST(request: Request) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = (await request.json()) as { name?: string; code?: string };
+  const name = body.name?.trim();
+  const code = body.code?.trim();
+
+  if (!name || !code) {
+    return NextResponse.json(
+      { error: "Subject name and code are required" },
+      { status: 400 },
+    );
+  }
+
+  const [subject] = await getDb()
+    .insert(subjects)
+    .values({
+      name,
+      code,
+      userId: session.user.id,
+    })
+    .returning();
+
+  if (!subject) {
+    return NextResponse.json(
+      { error: "Unable to create subject" },
+      { status: 500 },
+    );
+  }
+
+  const [ownedSubject] = await getDb()
+    .select()
+    .from(subjects)
+    .where(eq(subjects.id, subject.id))
+    .limit(1);
+
+  return NextResponse.json({ subject: ownedSubject }, { status: 201 });
+}

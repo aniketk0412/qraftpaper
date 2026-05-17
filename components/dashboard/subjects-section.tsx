@@ -7,7 +7,7 @@ import { useMemo, useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { IconTile } from "@/components/ui/icon-tile";
 import { easeOut } from "@/lib/motion";
-import { demoSubjects } from "@/lib/demo-data";
+import type { DashboardSubject } from "@/lib/subjects";
 import { cn } from "@/lib/utils";
 
 type Sort = "recent" | "papers" | "name";
@@ -18,15 +18,19 @@ const sorts: { key: Sort; label: string }[] = [
   { key: "name", label: "A–Z" },
 ];
 
-export function SubjectsSection() {
+export function SubjectsSection({
+  subjects: initialSubjects,
+}: {
+  subjects: DashboardSubject[];
+}) {
   const [sort, setSort] = useState<Sort>("recent");
 
   const subjects = useMemo(() => {
-    const list = [...demoSubjects];
+    const list = [...initialSubjects];
     if (sort === "papers") list.sort((a, b) => b.papers - a.papers);
     if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [sort]);
+  }, [initialSubjects, sort]);
 
   return (
     <div className="mt-10">
@@ -52,6 +56,27 @@ export function SubjectsSection() {
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {subjects.length === 0 && (
+          <GlassCard className="p-5 sm:col-span-2 lg:col-span-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-[0.95rem] font-medium tracking-tight">
+                  No subjects yet
+                </h3>
+                <p className="mt-1 text-sm text-fg-muted">
+                  Create a subject and upload the syllabus, sample paper and PYQs
+                  to build its profile.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/subjects/new"
+                className="text-[0.84rem] font-medium text-violet-bright transition-colors hover:text-violet"
+              >
+                New subject
+              </Link>
+            </div>
+          </GlassCard>
+        )}
         {subjects.map((subject) => (
           <motion.div
             key={subject.id}
@@ -60,7 +85,7 @@ export function SubjectsSection() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.35, ease: easeOut }}
           >
-            <Link href="/papers/demo" className="block h-full">
+            <Link href="/dashboard" className="block h-full">
               <GlassCard hover className="h-full p-5">
                 <div className="flex items-start justify-between">
                   <IconTile icon={BookOpen} tone={subject.accent} />

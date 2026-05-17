@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { easeOut } from "@/lib/motion";
-import { demoSubjects } from "@/lib/demo-data";
+import type { DashboardSubject } from "@/lib/subjects";
 import { cn } from "@/lib/utils";
 
 interface CommandItem {
@@ -28,6 +28,14 @@ interface CommandItem {
 }
 
 const actionItems: CommandItem[] = [
+  {
+    id: "act-subject",
+    label: "Create a subject",
+    sub: "Upload source PDFs",
+    icon: BookOpen,
+    href: "/dashboard/subjects/new",
+    group: "Actions",
+  },
   {
     id: "act-paper",
     label: "Generate a question paper",
@@ -62,23 +70,29 @@ const actionItems: CommandItem[] = [
   },
 ];
 
-const subjectItems: CommandItem[] = demoSubjects.map((s) => ({
-  id: `sub-${s.id}`,
-  label: s.name,
-  sub: `${s.code} · ${s.papers} papers`,
-  icon: BookOpen,
-  href: "/papers/demo",
-  group: "Subjects",
-}));
-
-const allItems: CommandItem[] = [...subjectItems, ...actionItems];
-
-export function CommandPalette() {
+export function CommandPalette({
+  subjects,
+}: {
+  subjects: DashboardSubject[];
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const allItems = useMemo<CommandItem[]>(() => {
+    const subjectItems = subjects.map((s) => ({
+      id: `sub-${s.id}`,
+      label: s.name,
+      sub: `${s.code} · ${s.papers} papers`,
+      icon: BookOpen,
+      href: "/dashboard",
+      group: "Subjects",
+    }));
+
+    return [...subjectItems, ...actionItems];
+  }, [subjects]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -89,7 +103,7 @@ export function CommandPalette() {
         item.sub.toLowerCase().includes(q) ||
         item.group.toLowerCase().includes(q),
     );
-  }, [query]);
+  }, [allItems, query]);
 
   const close = useCallback(() => {
     setOpen(false);

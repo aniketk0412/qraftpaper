@@ -4,8 +4,9 @@ import { CommandPalette } from "@/components/dashboard/command-palette";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { Notifications } from "@/components/dashboard/notifications";
 import { UserMenu } from "@/components/dashboard/user-menu";
+import type { DashboardSubject } from "@/lib/subjects";
 
-export function Topbar() {
+export function Topbar({ subjects }: { subjects: DashboardSubject[] }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-canvas/70 px-5 backdrop-blur-xl sm:px-8">
       <div className="flex items-center gap-3">
@@ -18,15 +19,15 @@ export function Topbar() {
       </div>
 
       <div className="flex items-center gap-2.5">
-        <CommandPalette />
+        <CommandPalette subjects={subjects} />
         <Notifications />
         <GlowButton
-          href="/papers/demo"
+          href="/dashboard/subjects/new"
           size="md"
           className="hidden sm:inline-flex"
         >
           <Plus className="h-4 w-4" />
-          New paper
+          New subject
         </GlowButton>
         <UserMenu />
       </div>
