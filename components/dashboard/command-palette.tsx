@@ -39,9 +39,9 @@ const actionItems: CommandItem[] = [
   {
     id: "act-paper",
     label: "Generate a question paper",
-    sub: "Open the paper editor",
+    sub: "Open the paper workspace",
     icon: FilePlus2,
-    href: "/papers/demo",
+    href: "/dashboard/papers",
     group: "Actions",
   },
   {
@@ -65,7 +65,7 @@ const actionItems: CommandItem[] = [
     label: "Browse blueprints",
     sub: "Reusable exam templates",
     icon: Ruler,
-    href: "#",
+    href: "/dashboard/blueprints",
     group: "Actions",
   },
 ];
@@ -87,7 +87,7 @@ export function CommandPalette({
       label: s.name,
       sub: `${s.code} · ${s.papers} papers`,
       icon: BookOpen,
-      href: "/dashboard",
+      href: "/dashboard/subjects",
       group: "Subjects",
     }));
 

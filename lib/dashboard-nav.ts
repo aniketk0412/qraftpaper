@@ -17,15 +17,15 @@ export interface NavItem {
 
 export const workspaceNav: NavItem[] = [
   { label: "Overview", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Subjects", icon: BookOpen, href: "#" },
-  { label: "Question Papers", icon: FileText, href: "/papers/demo" },
-  { label: "Blueprints", icon: Ruler, href: "#" },
+  { label: "Subjects", icon: BookOpen, href: "/dashboard/subjects" },
+  { label: "Question Papers", icon: FileText, href: "/dashboard/papers" },
+  { label: "Blueprints", icon: Ruler, href: "/dashboard/blueprints" },
 ];
 
 export const accountNav: NavItem[] = [
-  { label: "Team", icon: Users, href: "#" },
+  { label: "Team", icon: Users, href: "/dashboard/team" },
   { label: "Billing", icon: CreditCard, href: "/billing" },
-  { label: "Settings", icon: Settings, href: "#" },
+  { label: "Settings", icon: Settings, href: "/dashboard/settings" },
 ];
 
 export const allNav: NavItem[] = [...workspaceNav, ...accountNav];

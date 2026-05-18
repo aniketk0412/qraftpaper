@@ -18,7 +18,7 @@ import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
 import { examplePaper } from "@/lib/demo-data";
 import { getDb } from "@/lib/db";
-import { papers, quizzes } from "@/lib/db/schema";
+import { papers, quizzes, users } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 
@@ -40,6 +40,13 @@ export default async function DashboardPage() {
         .from(papers)
         .where(and(eq(papers.userId, userId), gte(papers.createdAt, monthStart)))
     : [{ count: 0 }];
+  const [profile] = userId
+    ? await getDb()
+        .select({ name: users.name })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1)
+    : [];
 
   const recentPapers = userId
     ? await getDb()
@@ -121,7 +128,7 @@ export default async function DashboardPage() {
               Workspace
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gradient">
-              Welcome back{session?.user?.name ? `, ${session.user.name}` : ""}
+              Welcome back{profile?.name ? `, ${profile.name}` : ""}
             </h1>
             <p className="mt-1.5 text-sm text-fg-muted">
               {"Here's what's moving in your examination workspace today."}
@@ -184,7 +191,7 @@ export default async function DashboardPage() {
                   This is an example paper. Subscribe to generate papers from
                   your own syllabus, PYQs and weightages.
                 </p>
-                <GlowButton href="/signup" size="md">
+                <GlowButton href="/billing" size="md">
                   Subscribe to unlock generation
                   <ArrowRight className="h-4 w-4" />
                 </GlowButton>

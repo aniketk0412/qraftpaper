@@ -85,7 +85,7 @@ export function SubjectsSection({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.35, ease: easeOut }}
           >
-            <Link href="/dashboard" className="block h-full">
+            <Link href="/dashboard/subjects" className="block h-full">
               <GlassCard hover className="h-full p-5">
                 <div className="flex items-start justify-between">
                   <IconTile icon={BookOpen} tone={subject.accent} />

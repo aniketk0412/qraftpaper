@@ -2,7 +2,10 @@ import type { ReactNode } from "react";
 import { auth } from "@/auth";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
+import { getDb } from "@/lib/db";
+import { users } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
+import { eq } from "drizzle-orm";
 
 export const runtime = "nodejs";
 
@@ -22,12 +25,26 @@ export default async function DashboardLayout({
   const subjects = session?.user?.id
     ? await listUserSubjects(session.user.id)
     : [];
+  const [profile] = session?.user?.id
+    ? await getDb()
+        .select({
+          name: users.name,
+          email: users.email,
+          institution: users.institution,
+        })
+        .from(users)
+        .where(eq(users.id, session.user.id))
+        .limit(1)
+    : [];
 
   const user = {
-    name: session?.user?.name ?? null,
-    email: session?.user?.email ?? "",
-    institution: session?.user?.institution ?? null,
-    initials: deriveInitials(session?.user?.name, session?.user?.email),
+    name: profile?.name ?? session?.user?.name ?? null,
+    email: profile?.email ?? session?.user?.email ?? "",
+    institution: profile?.institution ?? session?.user?.institution ?? null,
+    initials: deriveInitials(
+      profile?.name ?? session?.user?.name,
+      profile?.email ?? session?.user?.email,
+    ),
   };
 
   return (
