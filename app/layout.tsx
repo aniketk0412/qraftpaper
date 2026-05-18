@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import "./globals.css";
@@ -20,6 +20,17 @@ export const metadata: Metadata = {
   title: "QraftPaper — AI Question Paper Generation, Engineered",
   description:
     "QraftPaper turns your syllabus, past papers and weightages into exam-ready question papers. Enterprise-grade AI for institutions and educators.",
+  applicationName: "QraftPaper",
+  appleWebApp: {
+    capable: true,
+    title: "QraftPaper",
+    statusBarStyle: "black",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#080808",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
