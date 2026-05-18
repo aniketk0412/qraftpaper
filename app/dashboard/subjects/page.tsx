@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
+import { BackLink } from "@/components/dashboard/back-link";
 import { getDb } from "@/lib/db";
 import { documents, subjects } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
@@ -33,6 +34,7 @@ export default async function SubjectsPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
+      <BackLink />
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

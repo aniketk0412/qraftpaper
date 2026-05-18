@@ -6,6 +6,7 @@ import { AuthField } from "@/components/auth/auth-field";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { Reveal } from "@/components/ui/reveal";
+import { BackLink } from "@/components/dashboard/back-link";
 import { getDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { updateProfileAction } from "./actions";
@@ -37,6 +38,7 @@ export default async function SettingsPage({
 
   return (
     <div className="mx-auto max-w-3xl">
+      <BackLink />
       <Reveal>
         <div>
           <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-violet-bright">

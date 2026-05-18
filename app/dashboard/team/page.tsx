@@ -4,6 +4,7 @@ import { Crown, Mail, UserPlus } from "lucide-react";
 import { auth } from "@/auth";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Reveal } from "@/components/ui/reveal";
+import { BackLink } from "@/components/dashboard/back-link";
 import { getDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 
@@ -36,6 +37,7 @@ export default async function TeamPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
+      <BackLink />
       <Reveal>
         <div>
           <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-violet-bright">

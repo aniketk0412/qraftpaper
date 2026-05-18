@@ -3,6 +3,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
+import { BackLink } from "@/components/dashboard/back-link";
 
 interface Blueprint {
   name: string;
@@ -43,6 +44,7 @@ const starterBlueprints: Blueprint[] = [
 export default function BlueprintsPage() {
   return (
     <div className="mx-auto max-w-6xl">
+      <BackLink />
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

@@ -5,6 +5,7 @@ import { NewSubjectForm } from "@/components/dashboard/new-subject-form";
 import { GlassCard } from "@/components/ui/glass-card";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
+import { BackLink } from "@/components/dashboard/back-link";
 
 export const metadata: Metadata = {
   title: "New subject — QraftPaper",
@@ -15,6 +16,7 @@ export const runtime = "nodejs";
 export default function NewSubjectPage() {
   return (
     <div className="mx-auto max-w-3xl">
+      <BackLink href="/dashboard/subjects" label="Back to subjects" />
       <Reveal>
         <GlassCard className="p-6 sm:p-7">
           <div className="flex items-start gap-4">

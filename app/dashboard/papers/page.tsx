@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
+import { BackLink } from "@/components/dashboard/back-link";
 import { getDb } from "@/lib/db";
 import { papers } from "@/lib/db/schema";
 
@@ -30,6 +31,7 @@ export default async function PapersPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
+      <BackLink />
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
