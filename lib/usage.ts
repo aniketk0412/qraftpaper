@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { usage } from "@/lib/db/schema";
 
 const PLAN_CAPS: Record<string, number | null> = {
+  unpaid: 0,
   educator: 40,
   department: 400,
   institution: null,
@@ -35,6 +36,12 @@ export async function assertCanGenerate(userId: string, plan: string) {
     .limit(1);
 
   if ((row?.generations ?? 0) >= cap) {
+    if (cap === 0) {
+      throw new UsageLimitError(
+        "Subscribe to a paid plan before generating papers or quizzes.",
+      );
+    }
+
     throw new UsageLimitError(
       `Monthly generation limit reached for the ${plan} plan (${cap}/month).`,
     );

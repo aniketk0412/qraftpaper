@@ -31,7 +31,7 @@ export function Sidebar() {
           <p className="relative mt-1 text-[0.78rem] leading-snug text-fg-muted">
             {"You're viewing a sample workspace — subscribe to generate your own papers."}
           </p>
-          <GlowButton href="/signup" size="sm" className="relative mt-3 w-full">
+          <GlowButton href="/billing" size="sm" className="relative mt-3 w-full">
             Subscribe
           </GlowButton>
         </div>

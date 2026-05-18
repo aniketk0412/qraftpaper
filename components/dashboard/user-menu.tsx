@@ -18,11 +18,18 @@ import { cn } from "@/lib/utils";
 const menu: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: UserRound, label: "Profile", href: "#" },
   { icon: Settings, label: "Workspace settings", href: "#" },
-  { icon: CreditCard, label: "Billing & plan", href: "/signup" },
+  { icon: CreditCard, label: "Billing & plan", href: "/billing" },
   { icon: LifeBuoy, label: "Help & support", href: "#" },
 ];
 
-export function UserMenu() {
+export interface DashboardUser {
+  name: string | null;
+  email: string;
+  institution: string | null;
+  initials: string;
+}
+
+export function UserMenu({ user }: { user: DashboardUser }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -36,7 +43,7 @@ export function UserMenu() {
         )}
         aria-label="Account menu"
       >
-        AR
+        {user.initials}
       </button>
 
       {open && (
@@ -54,12 +61,14 @@ export function UserMenu() {
           >
             <div className="flex items-center gap-3 border-b border-line px-4 py-3.5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card-hi font-mono text-xs font-medium text-fg ring-1 ring-line">
-                AR
+                {user.initials}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">Dr. Anita Rao</p>
+                <p className="truncate text-sm font-medium">
+                  {user.name ?? "Your account"}
+                </p>
                 <p className="truncate text-[0.74rem] text-fg-subtle">
-                  a.rao@meridian.edu
+                  {user.email}
                 </p>
               </div>
             </div>

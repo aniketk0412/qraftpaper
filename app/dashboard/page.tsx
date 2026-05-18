@@ -121,7 +121,7 @@ export default async function DashboardPage() {
               Workspace
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gradient">
-              Welcome back, Dr. Rao
+              Welcome back{session?.user?.name ? `, ${session.user.name}` : ""}
             </h1>
             <p className="mt-1.5 text-sm text-fg-muted">
               {"Here's what's moving in your examination workspace today."}
@@ -223,10 +223,10 @@ export default async function DashboardPage() {
               )}
             </div>
             <Link
-              href="/papers/demo"
+              href="/dashboard/subjects/new"
               className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-line py-2.5 text-[0.8rem] text-fg-muted transition-colors hover:border-line-strong hover:text-fg"
             >
-              Open paper editor <ArrowRight className="h-3.5 w-3.5" />
+              Create a subject <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </GlassCard>
         </Reveal>

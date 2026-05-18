@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  CreditCard,
   FileText,
   LayoutDashboard,
   Ruler,
@@ -23,6 +24,7 @@ export const workspaceNav: NavItem[] = [
 
 export const accountNav: NavItem[] = [
   { label: "Team", icon: Users, href: "#" },
+  { label: "Billing", icon: CreditCard, href: "/billing" },
   { label: "Settings", icon: Settings, href: "#" },
 ];
 

@@ -72,6 +72,7 @@ export async function signupAction(formData: FormData) {
       email,
       institution,
       passwordHash,
+      plan: "unpaid",
       role: "owner",
       status: "active",
     })

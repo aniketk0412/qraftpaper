@@ -274,3 +274,41 @@ export const auditLogs = pgTable(
     index("audit_logs_entity_idx").on(table.entityType, table.entityId),
   ],
 );
+
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    lemonSubscriptionId: text("lemon_subscription_id").notNull(),
+    lemonCustomerId: text("lemon_customer_id"),
+    lemonVariantId: text("lemon_variant_id"),
+    plan: text("plan").notNull().default("educator"),
+    status: text("status").notNull().default("active"),
+    renewsAt: timestamp("renews_at", { withTimezone: true }),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("subscriptions_lemon_subscription_id_idx").on(
+      table.lemonSubscriptionId,
+    ),
+    index("subscriptions_user_id_idx").on(table.userId),
+  ],
+);
+
+export const billingEvents = pgTable(
+  "billing_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    eventName: text("event_name").notNull(),
+    dedupeKey: text("dedupe_key").notNull(),
+    payload: jsonb("payload"),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [uniqueIndex("billing_events_dedupe_key_idx").on(table.dedupeKey)],
+);

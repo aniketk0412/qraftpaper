@@ -15,6 +15,13 @@
       "when": 1779035700410,
       "tag": "0001_even_sinister_six",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779097953267,
+      "tag": "0002_nosy_lilandra",
+      "breakpoints": true
     }
   ]
 }

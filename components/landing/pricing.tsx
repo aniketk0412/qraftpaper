@@ -124,7 +124,7 @@ export function Pricing() {
 
                 <div className="relative mt-6">
                   <GlowButton
-                    href="/signup"
+                    href="/billing"
                     variant={tier.featured ? "primary" : "secondary"}
                     size="md"
                     className="w-full"
