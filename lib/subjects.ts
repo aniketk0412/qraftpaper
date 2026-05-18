@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { desc, eq, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
@@ -13,7 +14,9 @@ export interface DashboardSubject {
   hasProfile: boolean;
 }
 
-export async function listUserSubjects(userId: string) {
+// cache() dedupes the call within a request — the dashboard layout and the
+// dashboard page both ask for the same subjects on one render.
+export const listUserSubjects = cache(async (userId: string) => {
   const rows = await getDb()
     .select({
       id: subjects.id,
@@ -48,7 +51,7 @@ export async function listUserSubjects(userId: string) {
       hasProfile: Boolean(row.profileGeneratedAt),
     };
   });
-}
+});
 
 function formatRelativeDate(date: Date) {
   const diffMs = Date.now() - date.getTime();
