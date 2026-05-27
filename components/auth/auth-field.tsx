@@ -27,7 +27,7 @@ export function AuthField({
         <input
           id={id}
           className={cn(
-            "h-11 w-full rounded-xl border border-line bg-white/[0.03] px-3.5 text-sm text-fg placeholder:text-fg-subtle transition-all duration-200 focus:border-violet/50 focus:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-violet/20",
+            "h-11 w-full rounded-xl border border-line bg-tint/[0.03] px-3.5 text-sm text-fg placeholder:text-fg-subtle transition-all duration-200 focus:border-violet/50 focus:bg-tint/[0.05] focus:outline-none focus:ring-2 focus:ring-violet/20",
             Icon && "pl-10",
             className,
           )}

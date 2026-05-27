@@ -1,9 +1,18 @@
 import OpenAI from "openai";
 
+// Models are env-overridable so you can swap to a cheaper tool-capable model
+// (e.g. Gemini Flash / GPT-4o-mini class) without a code change. Any model on
+// OpenRouter that supports function/tool calling works as a drop-in here.
 export const OPENROUTER_MODELS = {
-  generation: "anthropic/claude-sonnet-4.6",
-  extraction: "anthropic/claude-haiku-4.5",
-} as const;
+  // Default to Haiku — much cheaper than Sonnet and reliable at the tool-calling
+  // used here; the paper structure is enforced server-side regardless of model.
+  // Override with a different tool-capable model (e.g. google/gemini-2.5-flash)
+  // via env if you want different quality/cost.
+  generation:
+    process.env.OPENROUTER_GENERATION_MODEL ?? "anthropic/claude-haiku-4.5",
+  extraction:
+    process.env.OPENROUTER_EXTRACTION_MODEL ?? "anthropic/claude-haiku-4.5",
+};
 
 let client: OpenAI | undefined;
 

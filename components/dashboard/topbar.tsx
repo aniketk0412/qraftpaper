@@ -4,6 +4,7 @@ import { CommandPalette } from "@/components/dashboard/command-palette";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { Notifications } from "@/components/dashboard/notifications";
 import { UserMenu, type DashboardUser } from "@/components/dashboard/user-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { DashboardSubject } from "@/lib/subjects";
 
 export function Topbar({
@@ -26,6 +27,7 @@ export function Topbar({
 
       <div className="flex items-center gap-2.5">
         <CommandPalette subjects={subjects} />
+        <ThemeToggle />
         <Notifications />
         <GlowButton
           href="/dashboard/subjects/new"

@@ -55,7 +55,7 @@ export default async function TeamPage() {
       <Reveal>
         <GlassCard className="mt-8 p-6 sm:p-7">
           <h2 className="text-lg font-semibold tracking-tight">Members</h2>
-          <div className="mt-4 flex items-center gap-3 rounded-xl border border-line bg-white/[0.02] p-3.5">
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-line bg-tint/[0.02] p-3.5">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card-hi font-mono text-xs font-medium text-fg ring-1 ring-line">
               {initials}
             </span>
@@ -76,7 +76,7 @@ export default async function TeamPage() {
       <Reveal>
         <GlassCard className="mt-3 p-6 sm:p-7">
           <div className="flex items-start gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-fg-muted ring-1 ring-line">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-tint/[0.04] text-fg-muted ring-1 ring-line">
               <UserPlus className="h-[18px] w-[18px]" />
             </span>
             <div>
@@ -96,10 +96,10 @@ export default async function TeamPage() {
                 type="email"
                 disabled
                 placeholder="colleague@institution.edu"
-                className="h-11 w-full rounded-xl border border-line bg-white/[0.02] pl-10 pr-3.5 text-sm text-fg-muted placeholder:text-fg-subtle"
+                className="h-11 w-full rounded-xl border border-line bg-tint/[0.02] pl-10 pr-3.5 text-sm text-fg-muted placeholder:text-fg-subtle"
               />
             </div>
-            <span className="grid h-11 place-items-center rounded-xl border border-line bg-white/[0.03] px-4 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-subtle">
+            <span className="grid h-11 place-items-center rounded-xl border border-line bg-tint/[0.03] px-4 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-subtle">
               Coming soon
             </span>
           </div>
@@ -114,7 +114,7 @@ export default async function TeamPage() {
           <h2 className="text-lg font-semibold tracking-tight">
             Pending invitations
           </h2>
-          <p className="mt-3 rounded-xl border border-line bg-white/[0.02] px-4 py-6 text-center text-sm text-fg-subtle">
+          <p className="mt-3 rounded-xl border border-line bg-tint/[0.02] px-4 py-6 text-center text-sm text-fg-subtle">
             No pending invitations.
           </p>
         </GlassCard>

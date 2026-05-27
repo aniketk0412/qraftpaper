@@ -1,32 +1,39 @@
 @import "tailwindcss";
 
+/* Drive the `dark:` variant from our manual data-theme switch (not OS pref) */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
-  /* Surfaces — true-black monochrome */
-  --color-ink: #000000;
-  --color-canvas: #080808;
-  --color-panel: #0e0e0e;
-  --color-card: #151515;
-  --color-card-hi: #1e1e1e;
+  /* Surfaces — Ocean Depths: calm maritime light theme */
+  --color-ink: #14202e;
+  --color-canvas: #e8ecf0;
+  --color-panel: #ffffff;
+  --color-card: #ffffff;
+  --color-card-hi: #ffffff;
 
-  /* Lines */
-  --color-line: rgba(255, 255, 255, 0.08);
-  --color-line-strong: rgba(255, 255, 255, 0.14);
+  /* Lines — deep navy at low opacity */
+  --color-line: rgba(26, 35, 50, 0.12);
+  --color-line-strong: rgba(26, 35, 50, 0.22);
 
-  /* Text */
-  --color-fg: #f4f4f5;
-  --color-fg-muted: #a1a1a3;
-  --color-fg-subtle: #6c6c6e;
+  /* Text — deep navy ink on cream */
+  --color-fg: #1a2332;
+  --color-fg-muted: #4a5f6f;
+  --color-fg-subtle: #566779;
 
-  /* Neutral accents — intentionally monochrome (white / grey); names kept stable */
-  --color-violet: #ededee;
-  --color-violet-bright: #ffffff;
-  --color-violet-deep: #565658;
-  --color-gold: #ededee;
-  --color-gold-deep: #565658;
+  /* Highlight family (token names kept stable) — teal shades.
+     -bright is the text-grade teal (WCAG AA ~4.9:1 on white). */
+  --color-violet: #36a0a0;
+  --color-violet-bright: #1f7d7d;
+  --color-violet-deep: #1f6b6b;
+  --color-gold: #1f7d7d;
+  --color-gold-deep: #1f6b6b;
 
-  /* Signature accent — azure, used sparingly to highlight key words */
-  --color-accent: #4d93ff;
-  --color-accent-soft: #8fbaff;
+  /* Signature accent — teal, deepened to meet WCAG AA on white/cards */
+  --color-accent: #1f7d7d;
+  --color-accent-soft: #5fb3b3;
+
+  /* Tint — deep navy, used for subtle overlays/highlights on light surfaces */
+  --color-tint: #1a2332;
 
   /* Fonts */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -65,7 +72,61 @@
 }
 
 :root {
+  color-scheme: light;
+  /* Surface treatments that can't live in @theme (gradients, shadows) */
+  --glass-a: rgba(255, 255, 255, 0.92);
+  --glass-b: rgba(255, 255, 255, 0.7);
+  --glass-strong-a: rgba(255, 255, 255, 0.98);
+  --glass-strong-b: rgba(255, 255, 255, 0.86);
+  --glass-shadow: 0 1px 2px rgba(20, 32, 46, 0.04),
+    0 10px 30px -22px rgba(20, 32, 46, 0.4);
+  --glass-shadow-strong: 0 2px 6px rgba(20, 32, 46, 0.06),
+    0 18px 44px -26px rgba(20, 32, 46, 0.5);
+  --heading-grad: linear-gradient(115deg, #1a2332 0%, #1f7d7d 58%, #1f6b6b 100%);
+  --violet-grad: linear-gradient(100deg, #1f7d7d 0%, #1a2332 60%, #1a2332 110%);
+  --sb-track: #dbe0e6;
+  --sb-thumb: #bcc7d2;
+  --sb-thumb-hover: #1f7d7d;
+  --sel-bg: rgba(31, 125, 125, 0.26);
+  --sel-fg: #14202e;
+}
+
+html[data-theme="dark"] {
   color-scheme: dark;
+  /* Deep-ocean dark variant of Ocean Depths */
+  --color-ink: #04080b;
+  --color-canvas: #0e1620;
+  --color-panel: #131f2b;
+  --color-card: #131f2b;
+  --color-card-hi: #1b2a39;
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.18);
+  --color-fg: #eef3f5;
+  --color-fg-muted: #9db0bb;
+  --color-fg-subtle: #6e8390;
+  --color-violet: #46b3b3;
+  --color-violet-bright: #5fc4c4;
+  --color-violet-deep: #2d8b8b;
+  --color-gold: #5fc4c4;
+  --color-gold-deep: #2d8b8b;
+  --color-accent: #46b3b3;
+  --color-accent-soft: #8ad8d8;
+  --color-tint: #ffffff;
+  --glass-a: rgba(255, 255, 255, 0.06);
+  --glass-b: rgba(255, 255, 255, 0.02);
+  --glass-strong-a: rgba(255, 255, 255, 0.09);
+  --glass-strong-b: rgba(255, 255, 255, 0.03);
+  --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.3),
+    0 12px 30px -20px rgba(0, 0, 0, 0.6);
+  --glass-shadow-strong: 0 2px 8px rgba(0, 0, 0, 0.4),
+    0 20px 50px -24px rgba(0, 0, 0, 0.7);
+  --heading-grad: linear-gradient(115deg, #ffffff 0%, #bfe6e6 60%, #5fc4c4 100%);
+  --violet-grad: linear-gradient(100deg, #ffffff 0%, #cfeaea 70%, #5fc4c4 110%);
+  --sb-track: #0b1219;
+  --sb-thumb: #2a3a47;
+  --sb-thumb-hover: #46b3b3;
+  --sel-bg: rgba(70, 179, 179, 0.32);
+  --sel-fg: #eef3f5;
 }
 
 * {
@@ -83,11 +144,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 ::selection {
-  background: rgba(255, 255, 255, 0.85);
-  color: #000;
+  background: var(--sel-bg);
+  color: var(--sel-fg);
 }
 
 /* Scrollbar */
@@ -96,58 +158,46 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-ink);
+  background: var(--sb-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
+  background: var(--sb-thumb);
   border-radius: 999px;
-  border: 2px solid var(--color-ink);
+  border: 2px solid var(--sb-track);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a3a;
+  background: var(--sb-thumb-hover);
 }
 
 /* ---- Reusable surface treatments ---- */
 
 @utility glass {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.045),
-    rgba(255, 255, 255, 0.012)
-  );
+  background: linear-gradient(180deg, var(--glass-a), var(--glass-b));
   backdrop-filter: blur(14px);
   border: 1px solid var(--color-line);
+  box-shadow: var(--glass-shadow);
 }
 
 @utility glass-strong {
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.07),
-    rgba(255, 255, 255, 0.02)
+    var(--glass-strong-a),
+    var(--glass-strong-b)
   );
   backdrop-filter: blur(20px);
   border: 1px solid var(--color-line-strong);
+  box-shadow: var(--glass-shadow-strong);
 }
 
 @utility text-gradient {
-  background: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #d8d8da 55%,
-    #9c9c9e 100%
-  );
+  background: var(--heading-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 @utility text-violet-gradient {
-  background: linear-gradient(
-    100deg,
-    #ffffff 0%,
-    #ffffff 52%,
-    #c6c6c8 110%
-  );
+  background: var(--violet-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

@@ -15,11 +15,11 @@ export function GlassCard({
       className={cn(
         "glass relative overflow-hidden rounded-2xl",
         hover &&
-          "transition-all duration-300 hover:-translate-y-1 hover:border-line-strong hover:bg-white/[0.055]",
+          "transition-all duration-300 hover:-translate-y-1 hover:border-line-strong hover:bg-tint/[0.055]",
         className,
       )}
     >
-      <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+      <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-tint/25 to-transparent" />
       {children}
     </div>
   );

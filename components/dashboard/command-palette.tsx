@@ -11,6 +11,7 @@ import {
   ListChecks,
   Ruler,
   Search,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -166,7 +167,7 @@ export function CommandPalette({
       >
         <Search className="h-3.5 w-3.5" />
         <span className="w-44 text-left text-sm">Search subjects, papers…</span>
-        <kbd className="rounded border border-line bg-white/[0.04] px-1.5 py-0.5 font-mono text-[0.6rem]">
+        <kbd className="rounded border border-line bg-tint/[0.04] px-1.5 py-0.5 font-mono text-[0.6rem]">
           ⌘K
         </kbd>
       </button>
@@ -189,6 +190,7 @@ export function CommandPalette({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.18 }}
+                data-lenis-prevent
                 className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-[14vh]"
               >
                 <div
@@ -201,7 +203,7 @@ export function CommandPalette({
                   exit={{ opacity: 0, y: 10, scale: 0.98 }}
                   transition={{ duration: 0.22, ease: easeOut }}
                   onKeyDown={onListKey}
-                  className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-line-strong bg-card-hi shadow-2xl"
+                  className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-line-strong bg-card-hi/85 shadow-2xl backdrop-blur-2xl"
                 >
                   <div className="flex items-center gap-3 border-b border-line px-4">
                     <Search className="h-4 w-4 shrink-0 text-fg-subtle" />
@@ -215,12 +217,23 @@ export function CommandPalette({
                       placeholder="Search subjects, papers and actions…"
                       className="w-full bg-transparent py-4 text-sm text-fg placeholder:text-fg-subtle focus:outline-none"
                     />
-                    <kbd className="rounded border border-line bg-white/[0.04] px-1.5 py-0.5 font-mono text-[0.6rem] text-fg-subtle">
+                    <kbd className="hidden rounded border border-line bg-tint/[0.04] px-1.5 py-0.5 font-mono text-[0.6rem] text-fg-subtle sm:inline">
                       ESC
                     </kbd>
+                    <button
+                      type="button"
+                      onClick={close}
+                      aria-label="Close search"
+                      className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-line bg-tint/[0.04] text-fg-subtle transition-colors hover:bg-tint/[0.08] hover:text-fg"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </div>
 
-                  <div className="max-h-[19rem] overflow-y-auto p-2">
+                  <div
+                    data-lenis-prevent
+                    className="max-h-[19rem] overflow-y-auto overscroll-contain p-2"
+                  >
                     {results.length === 0 && (
                       <p className="px-3 py-8 text-center text-sm text-fg-subtle">
                         No matches for “{query}”.
@@ -246,7 +259,7 @@ export function CommandPalette({
                                 onMouseMove={() => setActiveIndex(idx)}
                                 className={cn(
                                   "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-                                  active && "bg-white/[0.06]",
+                                  active && "bg-tint/[0.06]",
                                 )}
                               >
                                 <span
@@ -254,7 +267,7 @@ export function CommandPalette({
                                     "grid h-8 w-8 shrink-0 place-items-center rounded-lg ring-1 transition-colors",
                                     active
                                       ? "bg-accent/15 text-accent ring-accent/30"
-                                      : "bg-white/[0.04] text-fg-muted ring-line",
+                                      : "bg-tint/[0.04] text-fg-muted ring-line",
                                   )}
                                 >
                                   <item.icon className="h-4 w-4" />

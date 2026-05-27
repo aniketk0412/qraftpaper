@@ -9,6 +9,7 @@ declare module "next-auth" {
       role: string;
       status: string;
     } & DefaultSession["user"];
+    expiresAt?: number;
   }
 
   interface User {
@@ -16,6 +17,7 @@ declare module "next-auth" {
     institution: string | null;
     role: string;
     status: string;
+    remember?: boolean;
   }
 }
 
@@ -26,6 +28,7 @@ declare module "next-auth/jwt" {
     institution: string | null;
     role: string;
     status: string;
+    expiresAt?: number;
   }
 }
 
@@ -36,5 +39,6 @@ declare module "@auth/core/jwt" {
     institution: string | null;
     role: string;
     status: string;
+    expiresAt?: number;
   }
 }

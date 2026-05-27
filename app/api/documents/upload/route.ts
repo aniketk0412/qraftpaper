@@ -10,10 +10,19 @@ import {
   subjects,
 } from "@/lib/db/schema";
 import { buildSubjectProfile, extractPdfText } from "@/lib/ai/extract";
+import {
+  assertWithinRateLimit,
+  RateLimitError,
+  UsageLimitError,
+} from "@/lib/usage";
 
 export const runtime = "nodejs";
 
 const allowedDocumentTypes = new Set(["syllabus", "sample", "pyq"]);
+
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB per file
+const MIN_EXTRACTED_CHARS = 200; // below this it isn't real study material
+const MAX_EXTRACTED_CHARS = 60_000; // cap tokens sent to the profile builder
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -42,6 +51,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Subject not found" }, { status: 404 });
   }
 
+  try {
+    await assertWithinRateLimit(session.user.id);
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
+    if (error instanceof UsageLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 402 });
+    }
+    throw error;
+  }
+
   const storedDocuments = [];
 
   for (const type of allowedDocumentTypes) {
@@ -61,8 +82,41 @@ export async function POST(request: Request) {
       );
     }
 
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return NextResponse.json(
+        { error: `${file.name} is too large — upload a PDF under 10 MB.` },
+        { status: 400 },
+      );
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
-    const extractedText = await extractPdfText(buffer);
+
+    let extractedText: string;
+    try {
+      extractedText = await extractPdfText(buffer);
+    } catch {
+      return NextResponse.json(
+        {
+          error: `${file.name} isn't a readable PDF. Upload a text-based PDF, not an image or scan.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    // Photos, scans and image-only PDFs yield little or no extractable text —
+    // reject them here, before spending anything on the AI profile build.
+    if (extractedText.trim().length < MIN_EXTRACTED_CHARS) {
+      return NextResponse.json(
+        {
+          error: `We couldn't read enough text from ${file.name}. It looks like a scan, photo or image-only PDF — please upload a text-based PDF of your study material.`,
+        },
+        { status: 422 },
+      );
+    }
+
+    if (extractedText.length > MAX_EXTRACTED_CHARS) {
+      extractedText = extractedText.slice(0, MAX_EXTRACTED_CHARS);
+    }
 
     const [document] = await getDb()
       .insert(documents)
@@ -125,17 +179,11 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
+    console.error("[documents:upload] profile build failed", error);
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Unable to build subject profile",
-        documents: storedDocuments.map((document) => ({
-          type: document.type,
-          fileName: document.fileName,
-          extractedTextLength: document.extractedText.length,
-        })),
+          "We couldn't build a profile from these documents. Please try again or upload different source material.",
       },
       { status: 502 },
     );

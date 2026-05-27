@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "motion/react";
 import { Sparkles } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
+import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { accountNav, type NavItem, workspaceNav } from "@/lib/dashboard-nav";
 
@@ -13,7 +15,12 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-line bg-panel/70 backdrop-blur-xl lg:flex">
+    <motion.aside
+      initial={{ x: -280, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.42, ease: easeOut }}
+      className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-line bg-panel/70 backdrop-blur-xl lg:flex"
+    >
       <div className="flex h-16 items-center border-b border-line px-6">
         <Logo />
       </div>
@@ -36,7 +43,7 @@ export function Sidebar() {
           </GlowButton>
         </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 }
 
@@ -64,7 +71,7 @@ function NavGroup({
               "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
               active
                 ? "bg-accent/15 text-fg ring-1 ring-accent/30"
-                : "text-fg-muted hover:bg-white/[0.04] hover:text-fg",
+                : "text-fg-muted hover:bg-tint/[0.04] hover:text-fg",
             )}
           >
             <item.icon

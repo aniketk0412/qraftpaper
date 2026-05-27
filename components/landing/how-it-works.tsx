@@ -66,8 +66,8 @@ export function HowItWorks() {
               <Reveal key={step.title} delay={i * 0.06}>
                 <div className="relative flex flex-col gap-5 sm:flex-row sm:gap-7">
                   <div className="relative z-10 shrink-0">
-                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white shadow-[0_8px_26px_-10px_rgba(255,255,255,0.45)]">
-                      <step.icon className="h-5 w-5 text-ink" />
+                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent shadow-[0_8px_26px_-10px_rgba(45,139,139,0.45)]">
+                      <step.icon className="h-5 w-5 text-white" />
                     </div>
                   </div>
                   <GlassCard hover className="flex-1 p-6 sm:p-7">
@@ -84,7 +84,7 @@ export function HowItWorks() {
                       {step.chips.map((c) => (
                         <span
                           key={c}
-                          className="rounded-lg border border-line bg-white/[0.03] px-2.5 py-1 font-mono text-[0.66rem] text-fg-muted"
+                          className="rounded-lg border border-line bg-tint/[0.03] px-2.5 py-1 font-mono text-[0.66rem] text-fg-muted"
                         >
                           {c}
                         </span>

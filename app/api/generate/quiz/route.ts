@@ -6,10 +6,13 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateQuizQuestions, type QuizGenerationConfig } from "@/lib/ai/generate";
 import { getDb } from "@/lib/db";
-import { generationJobs, quizzes, subjects } from "@/lib/db/schema";
+import { generationJobs, quizzes, subjects, users } from "@/lib/db/schema";
 import {
   assertCanGenerate,
+  assertSubjectQuizLimit,
+  assertWithinRateLimit,
   incrementGenerationUsage,
+  RateLimitError,
   UsageLimitError,
 } from "@/lib/usage";
 import type { Difficulty, Quiz } from "@/lib/types";
@@ -54,9 +57,23 @@ export async function POST(request: Request) {
     );
   }
 
+  // Read the live plan from the DB — the session JWT can be stale after a
+  // downgrade/cancellation, so we never trust it for entitlement checks.
+  const [account] = await getDb()
+    .select({ plan: users.plan })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+  const plan = account?.plan ?? "unpaid";
+
   try {
-    await assertCanGenerate(session.user.id, session.user.plan);
+    await assertWithinRateLimit(session.user.id);
+    await assertCanGenerate(session.user.id, plan);
+    await assertSubjectQuizLimit(session.user.id, subjectId, plan);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
     if (error instanceof UsageLimitError) {
       return NextResponse.json({ error: error.message }, { status: 402 });
     }
@@ -97,10 +114,9 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
+    console.error("[generate:quiz] failed", error);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Quiz generation failed",
-      },
+      { error: "Quiz generation failed. Please try again." },
       { status: 502 },
     );
   }
@@ -161,8 +177,9 @@ function normalizeQuizConfig(
   }
 
   return {
-    questionCount,
-    durationMins,
+    // Clamp so a crafted request can't ask the model for a huge quiz.
+    questionCount: Math.min(Math.round(questionCount), 30),
+    durationMins: Math.min(Math.round(durationMins), 300),
     difficultyMix: normalizeDifficultyMix(config.difficultyMix),
   };
 }

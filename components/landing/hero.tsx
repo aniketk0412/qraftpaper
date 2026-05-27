@@ -82,7 +82,7 @@ export function Hero() {
               className="mt-9 flex flex-wrap items-center gap-3"
             >
               <GlowButton href="/signup" size="lg">
-                Request access
+                Sign up
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
               </GlowButton>
               <GlowButton href="#showcase" variant="secondary" size="lg">

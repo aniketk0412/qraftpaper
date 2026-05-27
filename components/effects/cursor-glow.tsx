@@ -33,7 +33,7 @@ export function CursorGlow() {
         width: SIZE,
         height: SIZE,
         background:
-          "radial-gradient(circle, rgba(255,255,255,0.05), transparent 66%)",
+          "radial-gradient(circle, rgba(20,32,46,0.05), transparent 66%)",
       }}
       className="pointer-events-none fixed left-0 top-0 z-[5] hidden rounded-full will-change-transform md:block"
     />

@@ -18,6 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        remember: { label: "Remember", type: "text" },
       },
       async authorize(credentials, request) {
         const email =
@@ -26,6 +27,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             : "";
         const password =
           typeof credentials.password === "string" ? credentials.password : "";
+        const remember = credentials.remember === "true";
 
         if (!email || !password) {
           return null;
@@ -114,6 +116,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           plan: user.plan,
           role: user.role,
           status: user.status,
+          remember,
         };
       },
     }),
@@ -127,6 +130,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.institution = user.institution;
         token.role = user.role;
         token.status = user.status;
+        const days = user.remember ? 30 : 1;
+        token.expiresAt = Date.now() + days * 24 * 60 * 60 * 1000;
       }
 
       return token;
@@ -138,6 +143,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.institution = token.institution;
         session.user.role = token.role;
         session.user.status = token.status;
+      }
+      if (typeof token.expiresAt === "number") {
+        session.expiresAt = token.expiresAt;
       }
 
       return session;

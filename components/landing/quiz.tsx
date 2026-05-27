@@ -76,7 +76,7 @@ export function Quiz() {
               {points.map((p, i) => (
                 <Reveal key={p.title} delay={0.16 + i * 0.07}>
                   <div className="flex items-start gap-3.5">
-                    <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-violet-bright ring-1 ring-line">
+                    <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-tint/[0.04] text-violet-bright ring-1 ring-line">
                       <p.icon className="h-[18px] w-[18px]" />
                     </span>
                     <div>
@@ -131,8 +131,8 @@ function QuizPreviewCard() {
       <div className="overflow-hidden rounded-2xl glass-strong shadow-2xl">
         <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
           <div className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-white">
-              <Sparkles className="h-4 w-4 text-ink" />
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent">
+              <Sparkles className="h-4 w-4 text-white" />
             </span>
             <div className="leading-tight">
               <p className="text-[0.82rem] font-medium">AI Quiz</p>
@@ -183,11 +183,11 @@ function QuizPreviewCard() {
                       className={cn(
                         "group flex items-center gap-3 rounded-lg border p-2.5 text-left transition-all duration-200",
                         state === "idle" &&
-                          "border-line bg-white/[0.02] hover:border-line-strong hover:bg-white/[0.05]",
+                          "border-line bg-tint/[0.02] hover:border-line-strong hover:bg-tint/[0.05]",
                         state === "correct" &&
-                          "border-white/45 bg-white/[0.12]",
+                          "border-accent/45 bg-accent/[0.12]",
                         state === "wrong" &&
-                          "border-white/20 bg-white/[0.045]",
+                          "border-tint/20 bg-tint/[0.045]",
                         state === "dim" && "border-line opacity-45",
                       )}
                     >
@@ -195,10 +195,10 @@ function QuizPreviewCard() {
                         className={cn(
                           "grid h-6 w-6 shrink-0 place-items-center rounded font-mono text-[0.66rem] font-medium",
                           state === "idle" &&
-                            "bg-white/[0.05] text-fg-muted group-hover:bg-white/15 group-hover:text-fg",
-                          state === "correct" && "bg-white text-ink",
-                          state === "wrong" && "bg-white/12 text-fg",
-                          state === "dim" && "bg-white/[0.04] text-fg-subtle",
+                            "bg-tint/[0.05] text-fg-muted group-hover:bg-tint/15 group-hover:text-fg",
+                          state === "correct" && "bg-accent text-white",
+                          state === "wrong" && "bg-tint/12 text-fg",
+                          state === "dim" && "bg-tint/[0.04] text-fg-subtle",
                         )}
                       >
                         {state === "correct" ? (
@@ -223,7 +223,7 @@ function QuizPreviewCard() {
                     transition={{ duration: 0.28, ease: easeOut }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3 rounded-lg border border-line bg-white/[0.02] p-3">
+                    <div className="mt-3 rounded-lg border border-line bg-tint/[0.02] p-3">
                       <p className="text-[0.78rem] leading-relaxed text-fg-muted">
                         {question.explanation}
                       </p>

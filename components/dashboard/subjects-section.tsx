@@ -45,7 +45,7 @@ export function SubjectsSection({
               className={cn(
                 "rounded-full px-3 py-1.5 text-[0.76rem] transition-colors",
                 sort === s.key
-                  ? "bg-white/[0.08] text-fg"
+                  ? "bg-tint/[0.08] text-fg"
                   : "text-fg-muted hover:text-fg",
               )}
             >

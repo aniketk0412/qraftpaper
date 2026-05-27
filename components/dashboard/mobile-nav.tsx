@@ -81,7 +81,7 @@ export function MobileNav() {
                             "flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-colors",
                             active
                               ? "bg-accent/15 text-fg ring-1 ring-accent/30"
-                              : "text-fg-muted hover:bg-white/[0.04] hover:text-fg",
+                              : "text-fg-muted hover:bg-tint/[0.04] hover:text-fg",
                           )}
                         >
                           <item.icon

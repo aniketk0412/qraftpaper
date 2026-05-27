@@ -58,12 +58,14 @@ export default async function LoginPage({
           <label className="flex cursor-pointer items-center gap-2 text-[0.78rem] text-fg-muted">
             <input
               type="checkbox"
-              className="h-3.5 w-3.5 rounded border-line bg-white/[0.03] accent-violet"
+              name="remember"
+              defaultChecked
+              className="h-3.5 w-3.5 rounded border-line bg-tint/[0.03] accent-violet"
             />
             Keep me signed in
           </label>
           <Link
-            href="#"
+            href="mailto:support@qraftpaper.app?subject=Password%20reset"
             className="text-[0.78rem] text-violet-bright transition-colors hover:text-violet"
           >
             Forgot password?
@@ -71,7 +73,7 @@ export default async function LoginPage({
         </div>
 
         {errorMessage && (
-          <p className="rounded-xl border border-line bg-white/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
+          <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
             {errorMessage}
           </p>
         )}
@@ -107,7 +109,7 @@ export default async function LoginPage({
           href="/signup"
           className="font-medium text-violet-bright transition-colors hover:text-violet"
         >
-          Request access
+          Sign up
         </Link>
       </p>
     </div>

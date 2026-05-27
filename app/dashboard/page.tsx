@@ -11,6 +11,7 @@ import {
 import { auth } from "@/auth";
 import { PaperSheet } from "@/components/paper-sheet";
 import { GenerationPanel } from "@/components/dashboard/generation-panel";
+import { QuizLaunch } from "@/components/dashboard/quiz-launch";
 import { SubjectsSection } from "@/components/dashboard/subjects-section";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -20,6 +21,7 @@ import { examplePaper } from "@/lib/demo-data";
 import { getDb } from "@/lib/db";
 import { papers, quizzes, users } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
+import { STARTER_BLUEPRINTS } from "@/lib/blueprints";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 
 export const runtime = "nodejs";
@@ -113,9 +115,9 @@ export default async function DashboardPage() {
     },
     {
       icon: Ruler,
-      label: "Saved blueprints",
-      value: "0",
-      note: "coming in generation",
+      label: "Blueprints",
+      value: String(STARTER_BLUEPRINTS.length),
+      note: "starter formats + your own",
     },
   ];
 
@@ -161,6 +163,10 @@ export default async function DashboardPage() {
       <SubjectsSection subjects={subjects} />
 
       <GenerationPanel subjects={subjects} />
+
+      <Reveal>
+        <QuizLaunch subjects={subjects} />
+      </Reveal>
 
       <div className="mt-10 grid gap-3 lg:grid-cols-[1.5fr_1fr]">
         <Reveal>
@@ -210,7 +216,7 @@ export default async function DashboardPage() {
                 <Link
                   key={a.id}
                   href={a.href}
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-white/[0.03]"
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-tint/[0.03]"
                 >
                   <IconTile icon={FileText} tone="neutral" size="sm" />
                   <div className="min-w-0 flex-1">

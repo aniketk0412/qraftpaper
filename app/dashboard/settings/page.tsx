@@ -61,13 +61,13 @@ export default async function SettingsPage({
           </p>
 
           {saved === "profile" && (
-            <p className="mt-4 flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-[0.82rem] text-fg">
+            <p className="mt-4 flex items-center gap-2 rounded-xl border border-tint/15 bg-tint/[0.04] px-4 py-3 text-[0.82rem] text-fg">
               <CheckCircle2 className="h-4 w-4 shrink-0" />
               Profile updated.
             </p>
           )}
           {error === "missing-fields" && (
-            <p className="mt-4 rounded-xl border border-line bg-white/[0.02] px-4 py-3 text-[0.82rem] text-fg-muted">
+            <p className="mt-4 rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.82rem] text-fg-muted">
               Name and institution are both required.
             </p>
           )}

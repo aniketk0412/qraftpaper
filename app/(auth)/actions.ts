@@ -1,8 +1,9 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { AuthError } from "next-auth";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { signIn } from "@/auth";
@@ -19,9 +20,36 @@ function getRequiredString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+async function verifyTurnstile(
+  secret: string,
+  token: string,
+  ip: string | null,
+) {
+  if (!token) return false;
+  try {
+    const response = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          secret,
+          response: token,
+          ...(ip ? { remoteip: ip } : {}),
+        }),
+      },
+    );
+    const data = (await response.json()) as { success?: boolean };
+    return data.success === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function loginAction(formData: FormData) {
   const email = getRequiredString(formData, "email").toLowerCase();
   const password = getRequiredString(formData, "password");
+  const remember = formData.get("remember") != null;
 
   if (!email || !password) {
     redirect("/login?error=missing-fields");
@@ -31,6 +59,7 @@ export async function loginAction(formData: FormData) {
     await signIn("credentials", {
       email,
       password,
+      remember: String(remember),
       redirectTo: "/dashboard",
     });
   } catch (error) {
@@ -53,6 +82,42 @@ export async function signupAction(formData: FormData) {
   }
 
   const db = getDb();
+
+  // Lightweight per-IP throttle to slow scripted mass sign-ups. (A captcha or
+  // email verification is the real fix — this is a first-layer speed bump.)
+  const headerList = await headers();
+  const ip =
+    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    headerList.get("x-real-ip") ??
+    null;
+
+  if (ip) {
+    const since = new Date(Date.now() - 60 * 60 * 1000);
+    const [recent] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(auditLogs)
+      .where(
+        and(
+          eq(auditLogs.action, "signup_created_workspace"),
+          eq(auditLogs.ipAddress, ip),
+          gte(auditLogs.createdAt, since),
+        ),
+      );
+
+    if ((recent?.n ?? 0) >= 10) {
+      redirect("/signup?error=too-many");
+    }
+  }
+
+  // Bot check — only enforced when Turnstile is configured.
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+  if (turnstileSecret) {
+    const token = getRequiredString(formData, "cf-turnstile-response");
+    if (!(await verifyTurnstile(turnstileSecret, token, ip))) {
+      redirect("/signup?error=captcha");
+    }
+  }
+
   const [existingUser] = await db
     .select({ id: users.id })
     .from(users)
@@ -99,6 +164,7 @@ export async function signupAction(formData: FormData) {
         action: "signup_created_workspace",
         entityType: "organization",
         entityId: organization.id,
+        ipAddress: ip,
       });
     }
   }
@@ -106,6 +172,7 @@ export async function signupAction(formData: FormData) {
   await signIn("credentials", {
     email,
     password,
+    remember: "true",
     redirectTo: "/dashboard",
   });
 }

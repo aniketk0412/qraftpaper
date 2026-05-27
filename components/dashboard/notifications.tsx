@@ -10,7 +10,7 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -56,11 +56,30 @@ const seed: Note[] = [
 export function Notifications() {
   const [open, setOpen] = useState(false);
   const [read, setRead] = useState<Record<string, boolean>>({});
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const unread = seed.filter((n) => !read[n.id]).length;
 
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={rootRef}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -78,9 +97,6 @@ export function Notifications() {
         )}
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-      )}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -89,7 +105,7 @@ export function Notifications() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.2, ease: easeOut }}
-            className="absolute right-0 top-full z-50 mt-2 w-[21rem] overflow-hidden rounded-2xl border border-line-strong bg-card-hi shadow-2xl"
+            className="absolute right-0 top-full z-50 mt-2 w-[21rem] overflow-hidden rounded-2xl border border-line-strong bg-card-hi/80 shadow-2xl backdrop-blur-2xl"
           >
             <div className="flex items-center justify-between border-b border-line px-4 py-3">
               <p className="text-sm font-medium">Notifications</p>
@@ -104,20 +120,23 @@ export function Notifications() {
               )}
             </div>
 
-            <div className="max-h-[20rem] overflow-y-auto p-1.5">
+            <div
+              data-lenis-prevent
+              className="max-h-[20rem] overflow-y-auto overscroll-contain p-1.5"
+            >
               {seed.map((n) => {
                 const isRead = read[n.id];
                 return (
                   <button
                     key={n.id}
                     onClick={() => setRead((r) => ({ ...r, [n.id]: true }))}
-                    className="flex w-full items-start gap-3 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-white/[0.04]"
+                    className="flex w-full items-start gap-3 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-tint/[0.04]"
                   >
                     <span
                       className={cn(
                         "mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg ring-1",
                         isRead
-                          ? "bg-white/[0.03] text-fg-subtle ring-line"
+                          ? "bg-tint/[0.03] text-fg-subtle ring-line"
                           : "bg-accent/15 text-accent ring-accent/30",
                       )}
                     >

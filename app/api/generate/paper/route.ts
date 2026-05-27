@@ -5,11 +5,14 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
-import { generationJobs, papers, subjects } from "@/lib/db/schema";
+import { generationJobs, papers, subjects, users } from "@/lib/db/schema";
 import { generatePaperSections, type PaperGenerationConfig } from "@/lib/ai/generate";
 import {
   assertCanGenerate,
+  assertSubjectPaperLimit,
+  assertWithinRateLimit,
   incrementGenerationUsage,
+  RateLimitError,
   UsageLimitError,
 } from "@/lib/usage";
 import type { Difficulty, QuestionPaper } from "@/lib/types";
@@ -54,9 +57,23 @@ export async function POST(request: Request) {
     );
   }
 
+  // Read the live plan from the DB — the session JWT can be stale after a
+  // downgrade/cancellation, so we never trust it for entitlement checks.
+  const [account] = await getDb()
+    .select({ plan: users.plan })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+  const plan = account?.plan ?? "unpaid";
+
   try {
-    await assertCanGenerate(session.user.id, session.user.plan);
+    await assertWithinRateLimit(session.user.id);
+    await assertCanGenerate(session.user.id, plan);
+    await assertSubjectPaperLimit(session.user.id, subjectId, plan);
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
     if (error instanceof UsageLimitError) {
       return NextResponse.json({ error: error.message }, { status: 402 });
     }
@@ -97,10 +114,9 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
+    console.error("[generate:paper] failed", error);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Paper generation failed",
-      },
+      { error: "Paper generation failed. Please try again." },
       { status: 502 },
     );
   }
@@ -158,28 +174,40 @@ function normalizePaperConfig(
     return null;
   }
 
-  const sections = Array.isArray(config.sections)
-    ? config.sections
-        .map((section) => ({
-          title: String(section.title ?? "").trim(),
-          instruction: String(section.instruction ?? "").trim(),
-          marksPerQuestion: numberOrNull(section.marksPerQuestion) ?? 0,
-          count: numberOrNull(section.count) ?? 0,
-        }))
-        .filter(
-          (section) =>
-            section.title &&
-            section.instruction &&
-            section.marksPerQuestion > 0 &&
-            section.count > 0,
-        )
-    : [];
+  // Clamp so a crafted request can't ask the model for an enormous paper.
+  const MAX_SECTIONS = 8;
+  const MAX_QUESTIONS_PER_SECTION = 25;
+
+  const sections = (
+    Array.isArray(config.sections)
+      ? config.sections
+          .map((section) => ({
+            title: String(section.title ?? "").trim().slice(0, 200),
+            instruction: String(section.instruction ?? "").trim().slice(0, 400),
+            marksPerQuestion: Math.min(
+              numberOrNull(section.marksPerQuestion) ?? 0,
+              100,
+            ),
+            count: Math.min(
+              numberOrNull(section.count) ?? 0,
+              MAX_QUESTIONS_PER_SECTION,
+            ),
+          }))
+          .filter(
+            (section) =>
+              section.title &&
+              section.instruction &&
+              section.marksPerQuestion > 0 &&
+              section.count > 0,
+          )
+      : []
+  ).slice(0, MAX_SECTIONS);
 
   if (sections.length === 0) return null;
 
   return {
-    totalMarks,
-    durationMins,
+    totalMarks: Math.min(totalMarks, 1000),
+    durationMins: Math.min(durationMins, 600),
     course: config.course?.trim(),
     examTitle: config.examTitle?.trim(),
     units: Array.isArray(config.units)

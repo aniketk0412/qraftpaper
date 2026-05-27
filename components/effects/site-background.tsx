@@ -8,7 +8,7 @@ export function SiteBackground() {
         className="absolute inset-0 opacity-[0.5]"
         style={{
           backgroundImage:
-            "linear-gradient(to right, rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.018) 1px, transparent 1px)",
+            "linear-gradient(to right, rgba(20,32,46,0.018) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,32,46,0.018) 1px, transparent 1px)",
           backgroundSize: "72px 72px",
           maskImage:
             "radial-gradient(ellipse 75% 55% at 50% 0%, #000 30%, transparent 100%)",
@@ -19,7 +19,7 @@ export function SiteBackground() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 95% 75% at 50% 35%, transparent 50%, rgba(0,0,0,0.7) 100%)",
+            "radial-gradient(ellipse 95% 75% at 50% 35%, transparent 55%, rgba(20,32,46,0.06) 100%)",
         }}
       />
     </div>

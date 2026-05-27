@@ -64,7 +64,7 @@ export default async function SubjectsPage() {
               <GlassCard hover className="flex h-full flex-col p-5">
                 <div className="flex items-start justify-between gap-3">
                   <IconTile icon={BookOpen} tone={subject.accent} />
-                  <span className="rounded-full border border-line bg-white/[0.03] px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-fg-muted">
+                  <span className="rounded-full border border-line bg-tint/[0.03] px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-fg-muted">
                     {subject.hasProfile ? "Ready" : "Needs docs"}
                   </span>
                 </div>
@@ -130,7 +130,7 @@ export default async function SubjectsPage() {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-line bg-white/[0.02] px-2 py-2">
+    <div className="rounded-xl border border-line bg-tint/[0.02] px-2 py-2">
       <p className="text-sm font-semibold text-fg">{value}</p>
       <p className="mt-0.5 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-fg-subtle">
         {label}

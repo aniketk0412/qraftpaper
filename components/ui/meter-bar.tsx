@@ -30,7 +30,7 @@ export function MeterBar({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-full bg-white/5",
+        "overflow-hidden rounded-full bg-tint/5",
         height,
         className,
       )}

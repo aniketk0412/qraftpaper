@@ -4,60 +4,8 @@ import { ArrowRight, Check } from "lucide-react";
 import { GlowButton } from "@/components/ui/glow-button";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { PRICING_TIERS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
-
-const tiers = [
-  {
-    name: "Educator",
-    price: "$39",
-    period: "/ month",
-    tagline: "For individual faculty setting their own papers.",
-    cta: "Request access",
-    featured: false,
-    features: [
-      "Up to 5 subjects",
-      "Unlimited paper generation",
-      "PYQ pattern learning",
-      "PDF & Word export",
-      "Inline editing & regeneration",
-      "Email support",
-    ],
-  },
-  {
-    name: "Department",
-    price: "$249",
-    period: "/ month",
-    tagline: "For a department standardising across faculty.",
-    cta: "Request access",
-    featured: false,
-    badge: "Most adopted",
-    features: [
-      "Up to 25 faculty seats",
-      "Unlimited subjects",
-      "Shared blueprint library",
-      "Originality guard across papers",
-      "Difficulty & Bloom's balancing",
-      "Priority support",
-    ],
-  },
-  {
-    name: "Institution",
-    price: "Custom",
-    period: "",
-    tagline: "For universities running examinations at scale.",
-    cta: "Talk to sales",
-    featured: true,
-    badge: "Enterprise",
-    features: [
-      "Unlimited seats & departments",
-      "SSO / SAML & role controls",
-      "Full audit trail & compliance",
-      "Dedicated success manager",
-      "On-premise deployment option",
-      "Custom integrations & SLA",
-    ],
-  },
-];
 
 export function Pricing() {
   return (
@@ -72,11 +20,11 @@ export function Pricing() {
               <span className="text-accent">not trials</span>
             </>
           }
-          description="No free tier. Every plan includes unlimited generation — you pay for finished output, not for a sandbox."
+          description="No free tier. Each plan includes a monthly generation allowance — you pay for finished output, not a sandbox."
         />
 
         <div className="mt-14 grid items-stretch gap-3 lg:grid-cols-3">
-          {tiers.map((tier, i) => (
+          {PRICING_TIERS.map((tier, i) => (
             <Reveal key={tier.name} delay={i * 0.09}>
               <div
                 className={cn(
@@ -89,7 +37,7 @@ export function Pricing() {
                 {tier.featured && (
                   <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-violet/16 blur-[80px]" />
                 )}
-                <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-tint/25 to-transparent" />
 
                 <div className="relative flex items-center justify-between">
                   <h3 className="text-lg font-semibold tracking-tight">
@@ -101,7 +49,7 @@ export function Pricing() {
                         "rounded-full border px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-[0.16em]",
                         tier.featured
                           ? "border-violet/40 bg-violet/15 text-violet-bright"
-                          : "border-line-strong bg-white/[0.04] text-fg-muted",
+                          : "border-line-strong bg-tint/[0.04] text-fg-muted",
                       )}
                     >
                       {tier.badge}
@@ -142,7 +90,7 @@ export function Pricing() {
                           "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full",
                           tier.featured
                             ? "bg-violet/20 text-violet-bright"
-                            : "bg-white/[0.06] text-fg-muted",
+                            : "bg-tint/[0.06] text-fg-muted",
                         )}
                       >
                         <Check className="h-3 w-3" strokeWidth={3} />
@@ -158,7 +106,7 @@ export function Pricing() {
 
         <Reveal delay={0.1}>
           <p className="mt-8 text-center font-mono text-[0.7rem] uppercase tracking-[0.16em] text-fg-subtle">
-            All plans billed annually · 14-day onboarding · Cancel anytime
+            Billed monthly · Cancel anytime · All purchases final
           </p>
         </Reveal>
       </div>

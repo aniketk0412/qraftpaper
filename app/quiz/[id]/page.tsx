@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, eq } from "drizzle-orm";
-import { ArrowLeft, Download, FileText, ListChecks, Sparkles, UserPlus } from "lucide-react";
+import { ArrowLeft, Download, FileText, ListChecks, UserPlus } from "lucide-react";
 import { auth } from "@/auth";
 import { QuizRunner } from "@/components/quiz-runner";
+import { RegenerateQuizButton } from "@/components/quiz/regenerate-quiz-button";
+import { ShareQuizButton } from "@/components/quiz/share-quiz-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
@@ -69,6 +71,7 @@ export default async function QuizPage({
           </div>
 
           <div className="flex items-center gap-2">
+            <ShareQuizButton quizId={quiz.id} />
             <GlowButton
               href={`/api/export/quiz/${quiz.id}/docx`}
               variant="secondary"
@@ -85,7 +88,12 @@ export default async function QuizPage({
               <Download className="h-3.5 w-3.5" />
               Export PDF
             </GlowButton>
-            <GlowButton href="#" size="sm">
+            <GlowButton
+              type="button"
+              size="sm"
+              disabled
+              title="Quiz assignment is coming soon"
+            >
               <UserPlus className="h-3.5 w-3.5" />
               Assign quiz
             </GlowButton>
@@ -149,10 +157,11 @@ export default async function QuizPage({
             </p>
           </GlassCard>
 
-          <button className="flex items-center gap-2.5 rounded-xl glass px-4 py-3 text-[0.82rem] text-fg-muted transition-colors hover:text-fg">
-            <Sparkles className="h-4 w-4 text-violet-bright" />
-            Regenerate this quiz
-          </button>
+          <RegenerateQuizButton
+            subjectId={quizRecord.subjectId}
+            questionCount={total}
+            durationMins={quiz.durationMins}
+          />
         </div>
       </main>
     </div>

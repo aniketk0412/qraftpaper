@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FilePlus2, ListChecks } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -7,6 +8,7 @@ import { useMemo, useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
+import { SelectMenu } from "@/components/ui/select-menu";
 import type { DashboardSubject } from "@/lib/subjects";
 
 export function GenerationPanel({ subjects }: { subjects: DashboardSubject[] }) {
@@ -122,27 +124,31 @@ export function GenerationPanel({ subjects }: { subjects: DashboardSubject[] }) 
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex flex-col gap-1.5 sm:w-60">
             <span className="text-[0.72rem] font-medium text-fg-muted">
               Subject
             </span>
-            <select
+            <SelectMenu
+              ariaLabel="Subject"
               value={subjectId}
-              onChange={(event) => setSubjectId(event.target.value)}
-              disabled={readySubjects.length === 0}
-              className="h-11 rounded-xl border border-line bg-canvas px-3.5 text-sm text-fg transition-all duration-200 focus:border-violet/50 focus:outline-none focus:ring-2 focus:ring-violet/20"
-            >
-              {readySubjects.length === 0 && (
-                <option value="">No profiled subjects</option>
-              )}
-              {readySubjects.map((subject) => (
-                <option key={subject.id} value={subject.id}>
-                  {subject.code} — {subject.name}
-                </option>
-              ))}
-            </select>
-          </label>
+              onChange={setSubjectId}
+              placeholder="Choose a subject"
+              emptyLabel="No profiled subjects"
+              emptyHint={
+                <Link
+                  href="/dashboard/subjects/new"
+                  className="text-accent transition-colors hover:text-accent-soft"
+                >
+                  Create a subject to get started
+                </Link>
+              }
+              options={readySubjects.map((subject) => ({
+                value: subject.id,
+                label: `${subject.code} — ${subject.name}`,
+              }))}
+            />
+          </div>
 
           <div className="flex gap-2">
             <GlowButton

@@ -59,7 +59,7 @@ export function PaperShowcase() {
                 ))}
               </div>
 
-              <div className="mt-6 flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-3.5 py-3">
+              <div className="mt-6 flex items-center gap-2 rounded-xl border border-tint/15 bg-tint/[0.04] px-3.5 py-3">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-fg" />
                 <p className="text-[0.8rem] text-fg-muted">
                   <span className="font-medium text-fg">Blueprint match 100%</span>{" "}
@@ -73,9 +73,9 @@ export function PaperShowcase() {
             <div className="overflow-hidden rounded-2xl glass-strong shadow-2xl">
               <div className="flex items-center justify-between border-b border-line px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-tint/15" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-tint/15" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-tint/15" />
                 </div>
                 <div className="flex items-center gap-2 text-fg-muted">
                   <FileText className="h-3.5 w-3.5" />

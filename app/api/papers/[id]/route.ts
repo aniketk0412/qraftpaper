@@ -28,6 +28,13 @@ export async function PATCH(
     );
   }
 
+  if (JSON.stringify(body.content).length > 200_000) {
+    return NextResponse.json(
+      { error: "Paper content is too large to save." },
+      { status: 413 },
+    );
+  }
+
   const [existing] = await getDb()
     .select()
     .from(papers)

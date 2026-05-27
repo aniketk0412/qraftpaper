@@ -6,7 +6,7 @@ type Tone = "violet" | "gold" | "neutral" | "accent";
 const tones: Record<Tone, string> = {
   violet: "border-violet/30 bg-violet/10 text-violet-bright",
   gold: "border-gold/30 bg-gold/10 text-gold",
-  neutral: "border-line-strong bg-white/[0.04] text-fg-muted",
+  neutral: "border-line-strong bg-tint/[0.04] text-fg-muted",
   accent: "border-accent/40 bg-accent/15 text-accent-soft",
 };
 

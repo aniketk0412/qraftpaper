@@ -7,8 +7,8 @@ type Size = "sm" | "md" | "lg";
 const tones: Record<Tone, string> = {
   violet: "bg-violet/15 text-violet-bright ring-violet/25",
   gold: "bg-gold/15 text-gold ring-gold/25",
-  emerald: "bg-white/[0.06] text-fg ring-line",
-  neutral: "bg-white/[0.04] text-violet-bright ring-line",
+  emerald: "bg-tint/[0.06] text-fg ring-line",
+  neutral: "bg-tint/[0.04] text-violet-bright ring-line",
 };
 
 const sizes: Record<Size, { box: string; icon: string }> = {

@@ -77,7 +77,7 @@ export function HeroVisual() {
         className="absolute -right-3 top-10 z-20 hidden sm:block"
       >
         <div className="flex items-center gap-2 rounded-xl glass-strong px-3 py-2 shadow-xl">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-white/[0.06] text-fg ring-1 ring-line">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-tint/[0.06] text-fg ring-1 ring-line">
             <ShieldCheck className="h-4 w-4" />
           </span>
           <div className="leading-tight">
@@ -95,7 +95,7 @@ export function HeroVisual() {
         className="absolute -left-5 bottom-16 z-20 hidden sm:block"
       >
         <div className="flex items-center gap-2 rounded-xl glass-strong px-3 py-2 shadow-xl">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-white/[0.06] text-fg ring-1 ring-line">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-tint/[0.06] text-fg ring-1 ring-line">
             <Gauge className="h-4 w-4" />
           </span>
           <div className="leading-tight">
@@ -114,11 +114,11 @@ export function HeroVisual() {
           className="pointer-events-none absolute inset-x-0 z-10 h-24 bg-gradient-to-b from-transparent via-violet/12 to-transparent"
         />
 
-        <div className="rounded-[0.85rem] bg-ink/80 p-5">
+        <div className="rounded-[0.85rem] bg-canvas p-5">
           <div className="flex items-center justify-between border-b border-line pb-4">
             <div className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-lg bg-white">
-                <FileCheck2 className="h-[18px] w-[18px] text-ink" />
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent">
+                <FileCheck2 className="h-[18px] w-[18px] text-white" />
               </span>
               <div className="leading-tight">
                 <p className="text-sm font-medium">Data Structures & Algorithms</p>
@@ -144,13 +144,13 @@ export function HeroVisual() {
                     opacity: state === "pending" ? 0.32 : 1,
                   }}
                   transition={{ duration: 0.4 }}
-                  className="flex gap-3 rounded-xl border border-line bg-white/[0.015] p-3"
+                  className="flex gap-3 rounded-xl border border-line bg-tint/[0.015] p-3"
                 >
                   <span
                     className={`grid h-7 w-7 shrink-0 place-items-center rounded-md font-mono text-[0.62rem] ${
                       state === "done"
                         ? "bg-violet/20 text-violet-bright"
-                        : "bg-white/5 text-fg-subtle"
+                        : "bg-tint/5 text-fg-subtle"
                     }`}
                   >
                     {state === "done" ? (
@@ -170,7 +170,7 @@ export function HeroVisual() {
                           className={`h-2 rounded-full ${
                             state === "active"
                               ? "animate-shimmer bg-violet/40"
-                              : "bg-white/8"
+                              : "bg-tint/8"
                           }`}
                           style={{ width: "92%" }}
                         />
@@ -178,7 +178,7 @@ export function HeroVisual() {
                           className={`h-2 rounded-full ${
                             state === "active"
                               ? "animate-shimmer bg-violet/40"
-                              : "bg-white/8"
+                              : "bg-tint/8"
                           }`}
                           style={{ width: "64%" }}
                         />
@@ -186,7 +186,7 @@ export function HeroVisual() {
                     )}
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
-                    <span className="rounded-md bg-white/5 px-1.5 py-0.5 font-mono text-[0.58rem] text-fg-muted">
+                    <span className="rounded-md bg-tint/5 px-1.5 py-0.5 font-mono text-[0.58rem] text-fg-muted">
                       {row.marks} m
                     </span>
                     <span className="font-mono text-[0.55rem] uppercase tracking-wider text-fg-subtle">
@@ -205,7 +205,7 @@ export function HeroVisual() {
               </span>
               <span className="text-violet-bright">{pct}%</span>
             </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/5">
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-tint/5">
               <motion.div
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.8, ease: easeOut }}

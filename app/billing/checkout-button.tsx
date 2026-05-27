@@ -59,7 +59,7 @@ export function CheckoutButton({
         {!loading && <ArrowRight className="h-4 w-4" />}
       </GlowButton>
       {error && (
-        <p className="rounded-xl border border-line bg-white/[0.03] px-3 py-2 text-[0.76rem] leading-relaxed text-fg-muted">
+        <p className="rounded-xl border border-line bg-tint/[0.03] px-3 py-2 text-[0.76rem] leading-relaxed text-fg-muted">
           {error}
         </p>
       )}

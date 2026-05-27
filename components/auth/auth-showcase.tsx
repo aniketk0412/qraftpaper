@@ -20,7 +20,7 @@ export function AuthShowcase() {
           className="absolute inset-0 opacity-30"
           style={{
             backgroundImage:
-              "linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px)",
+              "linear-gradient(to right, rgba(20,32,46,0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,32,46,0.025) 1px, transparent 1px)",
             backgroundSize: "56px 56px",
           }}
         />

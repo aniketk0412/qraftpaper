@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { UploadCloud } from "lucide-react";
+import { Info, UploadCloud } from "lucide-react";
 import { useState } from "react";
 
 import { GlowButton } from "@/components/ui/glow-button";
@@ -93,7 +93,7 @@ export function NewSubjectForm() {
             name="name"
             required
             placeholder="Data Structures & Algorithms"
-            className="h-11 rounded-xl border border-line bg-white/[0.03] px-3.5 text-sm text-fg placeholder:text-fg-subtle transition-all duration-200 focus:border-violet/50 focus:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-violet/20"
+            className="h-11 rounded-xl border border-line bg-tint/[0.03] px-3.5 text-sm text-fg placeholder:text-fg-subtle transition-all duration-200 focus:border-violet/50 focus:bg-tint/[0.05] focus:outline-none focus:ring-2 focus:ring-violet/20"
           />
         </label>
         <label className="flex flex-col gap-1.5">
@@ -104,18 +104,41 @@ export function NewSubjectForm() {
             name="code"
             required
             placeholder="CS-204"
-            className="h-11 rounded-xl border border-line bg-white/[0.03] px-3.5 text-sm text-fg placeholder:text-fg-subtle transition-all duration-200 focus:border-violet/50 focus:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-violet/20"
+            className="h-11 rounded-xl border border-line bg-tint/[0.03] px-3.5 text-sm text-fg placeholder:text-fg-subtle transition-all duration-200 focus:border-violet/50 focus:bg-tint/[0.05] focus:outline-none focus:ring-2 focus:ring-violet/20"
           />
         </label>
+      </div>
+
+      <div className="rounded-2xl border border-accent/25 bg-accent/[0.06] p-4">
+        <div className="flex items-center gap-2">
+          <Info className="h-4 w-4 shrink-0 text-accent" />
+          <p className="text-[0.82rem] font-medium text-fg">
+            Before you upload
+          </p>
+        </div>
+        <ul className="mt-2 flex flex-col gap-1.5 text-[0.78rem] leading-relaxed text-fg-muted">
+          <li>
+            Bundle your material into one combined PDF where you can — fewer,
+            larger files keep extraction faster and cost you less.
+          </li>
+          <li>
+            Use text-based PDFs only. Image-only or scanned documents can&apos;t
+            be read as text, so they won&apos;t build a usable profile.
+          </li>
+          <li>
+            No image-heavy files — extracting hundreds of diagrams or photos
+            would need a vision model and isn&apos;t supported here.
+          </li>
+        </ul>
       </div>
 
       <div className="grid gap-3">
         {fileFields.map((field) => (
           <label
             key={field.name}
-            className="flex cursor-pointer items-center gap-3 rounded-2xl border border-line bg-white/[0.02] px-4 py-3.5 transition-colors hover:border-line-strong"
+            className="flex cursor-pointer items-center gap-3 rounded-2xl border border-line bg-tint/[0.02] px-4 py-3.5 transition-colors hover:border-line-strong"
           >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-violet-bright ring-1 ring-line">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-tint/[0.04] text-violet-bright ring-1 ring-line">
               <UploadCloud className="h-[18px] w-[18px]" />
             </span>
             <span className="min-w-0 flex-1">
@@ -131,14 +154,14 @@ export function NewSubjectForm() {
               type="file"
               accept="application/pdf"
               required
-              className="max-w-[11rem] text-[0.72rem] text-fg-muted file:mr-3 file:rounded-full file:border-0 file:bg-white file:px-3 file:py-1.5 file:text-[0.72rem] file:font-medium file:text-ink"
+              className="max-w-[11rem] text-[0.72rem] text-fg-muted file:mr-3 file:rounded-full file:border-0 file:bg-accent file:px-3 file:py-1.5 file:text-[0.72rem] file:font-medium file:text-white"
             />
           </label>
         ))}
       </div>
 
       {(status || error) && (
-        <p className="rounded-xl border border-line bg-white/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
+        <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
           {error ?? status}
         </p>
       )}

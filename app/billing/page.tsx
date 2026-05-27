@@ -99,7 +99,7 @@ export default async function BillingPage({
                   ? `Subscription status: ${subscription.status}.`
                   : "No paid subscription is connected to this workspace yet."}
               </p>
-              <div className="mt-5 rounded-xl border border-line bg-white/[0.03] p-4">
+              <div className="mt-5 rounded-xl border border-line bg-tint/[0.03] p-4">
                 <p className="text-sm font-medium">Usage is plan-gated</p>
                 <p className="mt-1 text-[0.82rem] leading-relaxed text-fg-muted">
                   Educator includes 40 generations/month. Department includes 400

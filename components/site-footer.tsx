@@ -6,37 +6,37 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Product",
     links: [
-      { label: "Features", href: "#features" },
-      { label: "How it works", href: "#how" },
-      { label: "Showcase", href: "#showcase" },
-      { label: "Pricing", href: "#pricing" },
+      { label: "Features", href: "/#features" },
+      { label: "How it works", href: "/#how" },
+      { label: "Showcase", href: "/#showcase" },
+      { label: "Pricing", href: "/#pricing" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About", href: "#" },
-      { label: "Customers", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Contact", href: "#" },
+      { label: "About", href: "/about" },
+      { label: "Customers", href: "/#showcase" },
+      { label: "Careers", href: "mailto:careers@qraftpaper.app" },
+      { label: "Contact", href: "mailto:support@qraftpaper.app" },
     ],
   },
   {
     title: "Resources",
     links: [
-      { label: "Documentation", href: "#" },
-      { label: "Security", href: "#" },
-      { label: "Changelog", href: "#" },
-      { label: "Status", href: "#" },
+      { label: "How it works", href: "/#how" },
+      { label: "Quiz demo", href: "/#quiz" },
+      { label: "Security", href: "/privacy#security" },
+      { label: "FAQ", href: "/#faq" },
     ],
   },
   {
     title: "Legal",
     links: [
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
-      { label: "Data Processing", href: "#" },
-      { label: "Compliance", href: "#" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+      { label: "Data Processing", href: "/privacy#data-processing" },
+      { label: "Compliance", href: "/privacy#security" },
     ],
   },
 ];
@@ -55,13 +55,21 @@ export function SiteFooter() {
             </p>
             <div className="flex gap-2">
               {[
-                { Icon: Globe, label: "Website" },
-                { Icon: Mail, label: "Email us" },
-                { Icon: MessageSquare, label: "Community" },
-              ].map(({ Icon, label }) => (
+                { Icon: Globe, label: "Website", href: "/" },
+                {
+                  Icon: Mail,
+                  label: "Email us",
+                  href: "mailto:support@qraftpaper.app",
+                },
+                {
+                  Icon: MessageSquare,
+                  label: "Community",
+                  href: "mailto:support@qraftpaper.app",
+                },
+              ].map(({ Icon, label, href }) => (
                 <a
                   key={label}
-                  href="#"
+                  href={href}
                   className="grid h-9 w-9 place-items-center rounded-full glass text-fg-muted transition-colors hover:text-fg"
                   aria-label={label}
                 >
@@ -94,7 +102,7 @@ export function SiteFooter() {
             © {new Date().getFullYear()} QraftPaper Labs. All rights reserved.
           </p>
           <p className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-fg-subtle">
-            <span className="h-1.5 w-1.5 rounded-full bg-fg shadow-[0_0_8px_2px_rgba(255,255,255,0.4)]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-fg shadow-[0_0_8px_2px_rgba(20,32,46,0.4)]" />
             All systems operational
           </p>
         </div>
@@ -103,7 +111,7 @@ export function SiteFooter() {
       {/* oversized watermark wordmark */}
       <div
         aria-hidden
-        className="pointer-events-none select-none text-center text-[18vw] font-semibold leading-[0.8] tracking-tighter text-white/[0.018]"
+        className="pointer-events-none select-none text-center text-[18vw] font-semibold leading-[0.8] tracking-tighter text-tint/[0.018]"
       >
         QraftPaper
       </div>

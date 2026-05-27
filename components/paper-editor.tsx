@@ -149,7 +149,7 @@ export function PaperEditor({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.96 }}
                         transition={{ duration: 0.25 }}
-                        className="group relative overflow-hidden rounded-xl border border-line bg-white/[0.018] p-4 transition-colors hover:border-line-strong hover:bg-white/[0.035]"
+                        className="group relative overflow-hidden rounded-xl border border-line bg-tint/[0.018] p-4 transition-colors hover:border-line-strong hover:bg-tint/[0.035]"
                       >
                         {isRegen && (
                           <span className="absolute inset-0 z-10 animate-shimmer bg-gradient-to-r from-transparent via-violet/10 to-transparent" />
@@ -172,7 +172,7 @@ export function PaperEditor({
                                 <div className="mt-2 flex gap-2">
                                   <button
                                     onClick={() => saveEdit(q.id)}
-                                    className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[0.74rem] font-medium text-ink transition-colors hover:bg-[#e7e7e8]"
+                                    className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[0.74rem] font-medium text-white transition-colors hover:bg-[#247373]"
                                   >
                                     <Check className="h-3.5 w-3.5" />
                                     Save
@@ -194,7 +194,7 @@ export function PaperEditor({
 
                             {!isEditing && (
                               <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                <span className="rounded border border-line bg-white/[0.03] px-1.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-wider text-fg-muted">
+                                <span className="rounded border border-line bg-tint/[0.03] px-1.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-wider text-fg-muted">
                                   {q.unit}
                                 </span>
                                 <span
@@ -205,7 +205,7 @@ export function PaperEditor({
                                 >
                                   {q.difficulty}
                                 </span>
-                                <span className="rounded border border-line bg-white/[0.03] px-1.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-wider text-fg-muted">
+                                <span className="rounded border border-line bg-tint/[0.03] px-1.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-wider text-fg-muted">
                                   {q.bloom}
                                 </span>
                               </div>
@@ -380,8 +380,8 @@ function IconBtn({
       aria-label={label}
       title={label}
       className={cn(
-        "grid h-7 w-7 place-items-center rounded-md border border-line bg-white/[0.03] text-fg-muted transition-colors hover:bg-white/[0.07]",
-        danger ? "hover:text-fg hover:bg-white/[0.1]" : "hover:text-fg",
+        "grid h-7 w-7 place-items-center rounded-md border border-line bg-tint/[0.03] text-fg-muted transition-colors hover:bg-tint/[0.07]",
+        danger ? "hover:text-fg hover:bg-tint/[0.1]" : "hover:text-fg",
       )}
     >
       {children}

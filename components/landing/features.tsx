@@ -44,15 +44,15 @@ export function Features() {
                 {["Section A", "Section B", "Section C"].map((s, i) => (
                   <div
                     key={s}
-                    className="flex-1 rounded-lg border border-line bg-white/[0.03] p-3"
+                    className="flex-1 rounded-lg border border-line bg-tint/[0.03] p-3"
                   >
                     <p className="font-mono text-[0.6rem] uppercase tracking-wider text-violet-bright">
                       {s}
                     </p>
                     <div className="mt-2 flex flex-col gap-1.5">
-                      <div className="h-1.5 rounded-full bg-white/10" />
+                      <div className="h-1.5 rounded-full bg-tint/10" />
                       <div
-                        className="h-1.5 rounded-full bg-white/10"
+                        className="h-1.5 rounded-full bg-tint/10"
                         style={{ width: `${70 - i * 12}%` }}
                       />
                     </div>
@@ -135,7 +135,7 @@ export function Features() {
                     (t) => (
                       <span
                         key={t}
-                        className="rounded-lg border border-line bg-white/[0.03] px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-wider text-fg-muted"
+                        className="rounded-lg border border-line bg-tint/[0.03] px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-wider text-fg-muted"
                       >
                         {t}
                       </span>

@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Building2, Lock, Mail, User } from "lucide-react";
 import { AuthField } from "@/components/auth/auth-field";
+import { Turnstile } from "@/components/auth/turnstile";
 import { GlowButton } from "@/components/ui/glow-button";
 import { signupAction } from "../actions";
 
 export const metadata: Metadata = {
-  title: "Request access — QraftPaper",
+  title: "Sign up — QraftPaper",
 };
 
 export const runtime = "nodejs";
@@ -14,6 +15,8 @@ export const runtime = "nodejs";
 const errorMessages: Record<string, string> = {
   "email-exists": "That work email already has access. Sign in instead.",
   "invalid-fields": "Enter all details and use a password with at least 8 characters.",
+  "too-many": "Too many sign-ups from your network recently. Please try again later.",
+  captcha: "Please complete the verification and try again.",
 };
 
 export default async function SignupPage({
@@ -28,7 +31,7 @@ export default async function SignupPage({
   return (
     <div>
       <h1 className="text-2xl font-semibold tracking-tight text-gradient">
-        Request access
+        Sign up
       </h1>
       <p className="mt-1.5 text-sm text-fg-muted">
         QraftPaper is a paid platform for institutions. Tell us about you and
@@ -71,21 +74,23 @@ export default async function SignupPage({
         />
 
         {errorMessage && (
-          <p className="rounded-xl border border-line bg-white/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
+          <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
             {errorMessage}
           </p>
         )}
 
+        <Turnstile />
+
         <GlowButton type="submit" size="lg" className="mt-1 w-full">
-          Request access
+          Sign up
           <ArrowRight className="h-4 w-4" />
         </GlowButton>
       </form>
 
-      <p className="mt-4 rounded-xl border border-line bg-white/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
+      <p className="mt-4 rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
         <span className="font-medium text-fg">No free tier.</span> Our team
         configures your workspace and billing before activation — every plan
-        includes unlimited generation.
+        includes a monthly generation allowance.
       </p>
 
       <p className="mt-7 text-center text-[0.82rem] text-fg-muted">

@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { GlowButton } from "@/components/ui/glow-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -140,7 +141,7 @@ export function SiteNav() {
                   href={item.href}
                   onClick={() => setActive(null)}
                   className={cn(
-                    "flex items-center gap-1 rounded-full px-3.5 py-2 text-sm transition-colors",
+                    "flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
                     active === item.key
                       ? "text-fg"
                       : "text-fg-muted hover:text-fg",
@@ -175,22 +176,26 @@ export function SiteNav() {
           </div>
 
           <div className="hidden items-center gap-2 lg:flex">
+            <ThemeToggle />
             <GlowButton href="/login" variant="ghost" size="md">
               Sign in
             </GlowButton>
             <GlowButton href="/signup" variant="primary" size="md">
-              Request access
+              Sign up
             </GlowButton>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            className="grid h-10 w-10 place-items-center rounded-full glass-strong lg:hidden"
-            aria-label="Toggle menu"
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="flex items-center gap-2 lg:hidden">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              className="grid h-10 w-10 place-items-center rounded-full glass-strong"
+              aria-label="Toggle menu"
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </nav>
       </div>
 
@@ -209,7 +214,7 @@ export function SiteNav() {
                   key={item.key}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="rounded-xl px-4 py-3 text-sm text-fg-muted transition-colors hover:bg-white/5 hover:text-fg"
+                  className="rounded-xl px-4 py-3 text-sm font-semibold text-fg-muted transition-colors hover:bg-tint/5 hover:text-fg"
                 >
                   {item.label}
                 </Link>
@@ -219,7 +224,7 @@ export function SiteNav() {
                   Sign in
                 </GlowButton>
                 <GlowButton href="/signup" variant="primary" size="md">
-                  Request access
+                  Sign up
                 </GlowButton>
               </div>
             </div>
@@ -248,7 +253,7 @@ function NavMenu({
             key={t.name}
             href="#pricing"
             onClick={onNavigate}
-            className="flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-white/[0.05]"
+            className="flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-tint/[0.05]"
           >
             <span className="text-sm font-medium">{t.name}</span>
             <span className="font-mono text-[0.72rem] text-fg-muted">
@@ -305,9 +310,9 @@ function NavMenu({
             key={row.title}
             href={row.href}
             onClick={onNavigate}
-            className="group/row flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-white/[0.05]"
+            className="group/row flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-tint/[0.05]"
           >
-            <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-violet-bright ring-1 ring-line transition-colors group-hover/row:bg-violet/15">
+            <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-tint/[0.04] text-violet-bright ring-1 ring-line transition-colors group-hover/row:bg-violet/15">
               <row.icon className="h-4 w-4" />
             </span>
             <span className="min-w-0">
@@ -340,7 +345,7 @@ function Panel({
         className,
       )}
     >
-      <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+      <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-tint/25 to-transparent" />
       {children}
     </div>
   );

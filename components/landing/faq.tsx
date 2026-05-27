@@ -6,34 +6,8 @@ import { useState } from "react";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { easeOut } from "@/lib/motion";
+import { faqs } from "@/lib/faqs";
 import { cn } from "@/lib/utils";
-
-const faqs = [
-  {
-    q: "Is there a free trial or a free tier?",
-    a: "No. QraftPaper is a paid platform built for institutions. Every plan includes unlimited paper generation from day one — you are paying for production-ready output, not a limited sandbox. You can explore a full example paper on the dashboard before you commit.",
-  },
-  {
-    q: "How does QraftPaper avoid repeating previous questions?",
-    a: "The originality guard cross-checks every generated question against the previous year papers you upload, and against the rest of the paper. Any overlap is flagged before the paper reaches review, so accidental repeats never slip through.",
-  },
-  {
-    q: "Can it read scanned or photographed question papers?",
-    a: "Yes. QraftPaper reads PDFs directly — both digital and scanned — so you can upload archive papers as they are, without retyping or reformatting anything.",
-  },
-  {
-    q: "How accurately does it follow our unit weightage?",
-    a: "The weightage engine distributes marks across units to your blueprint, accurate to the percentage point. Every generated paper ships with a blueprint-match report you can attach to your audit file.",
-  },
-  {
-    q: "Is our examination data secure?",
-    a: "All uploads are encrypted in transit and at rest. Institution plans add SSO, granular role controls and a full audit trail. Your papers and syllabi are never used to train any model.",
-  },
-  {
-    q: "Which subjects and streams are supported?",
-    a: "Any subject with a syllabus — engineering, sciences, commerce, humanities and professional courses. QraftPaper adapts to your format from the sample papers you provide.",
-  },
-];
 
 export function Faq() {
   const [open, setOpen] = useState(0);
@@ -56,8 +30,8 @@ export function Faq() {
                   className={cn(
                     "overflow-hidden rounded-xl border transition-colors duration-300",
                     isOpen
-                      ? "border-line-strong bg-white/[0.035]"
-                      : "border-line bg-white/[0.015]",
+                      ? "border-line-strong bg-tint/[0.035]"
+                      : "border-line bg-tint/[0.015]",
                   )}
                 >
                   <button

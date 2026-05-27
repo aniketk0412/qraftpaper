@@ -4,7 +4,7 @@ export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
 // Home-screen icon for installed PWAs (iOS / Android / desktop) — the
-// QraftPaper "Q" mark (white ring + azure tail) on the brand black.
+// QraftPaper "Q" mark (cream ring + teal tail) on deep navy.
 export default function AppleIcon() {
   return new ImageResponse(
     (
@@ -15,7 +15,7 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#080808",
+          background: "#1a2332",
         }}
       >
         <div
@@ -31,7 +31,7 @@ export default function AppleIcon() {
               width: "96px",
               height: "96px",
               borderRadius: "50%",
-              border: "13px solid #ffffff",
+              border: "13px solid #f1faee",
             }}
           />
           <div
@@ -42,7 +42,7 @@ export default function AppleIcon() {
               width: "48px",
               height: "14px",
               borderRadius: "7px",
-              background: "#4d93ff",
+              background: "#5fb3b3",
               transform: "rotate(45deg)",
             }}
           />
