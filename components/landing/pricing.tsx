@@ -7,7 +7,10 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { PRICING_TIERS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
-export function Pricing() {
+export function Pricing({ country }: { country?: string }) {
+  // Show INR for visitors from India. USD is still what LemonSqueezy charges;
+  // this is a perception fix so ₹579 reads cheaper than the abstract "$7".
+  const showInr = country === "IN";
   return (
     <section id="pricing" className="section-pad scroll-mt-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -61,12 +64,21 @@ export function Pricing() {
                   {tier.tagline}
                 </p>
 
-                <div className="relative mt-6 flex items-baseline gap-1.5">
-                  <span className="text-4xl font-semibold tracking-tight text-gradient">
-                    {tier.price}
-                  </span>
-                  {tier.period && (
-                    <span className="text-sm text-fg-subtle">{tier.period}</span>
+                <div className="relative mt-6">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-4xl font-semibold tracking-tight text-gradient">
+                      {showInr && tier.priceInr ? tier.priceInr : tier.price}
+                    </span>
+                    {tier.period && (
+                      <span className="text-sm text-fg-subtle">
+                        {tier.period}
+                      </span>
+                    )}
+                  </div>
+                  {showInr && tier.priceInr && (
+                    <p className="mt-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-subtle">
+                      Billed as {tier.price}{tier.period}
+                    </p>
                   )}
                 </div>
 

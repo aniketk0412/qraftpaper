@@ -22,6 +22,9 @@ export interface Plan extends PlanLimits {
   id: PlanId;
   name: string;
   price: string;
+  /** Display-only INR equivalent for Indian visitors. LemonSqueezy still
+   *  charges in USD; this is a perception fix, not a billing change. */
+  priceInr?: string;
   period: string;
   tagline: string;
   cta: string;
@@ -52,6 +55,7 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "educator",
     name: "Solo",
     price: "$7",
+    priceInr: "₹579",
     period: "/ month",
     tagline: "For one student grinding through their own syllabus.",
     cta: "Get started",
@@ -73,6 +77,7 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "department",
     name: "Crew",
     price: "$24",
+    priceInr: "₹1,999",
     period: "/ month",
     tagline: "For a study group splitting one workspace across friends.",
     cta: "Get started",

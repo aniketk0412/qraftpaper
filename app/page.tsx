@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { auth } from "@/auth";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
@@ -67,6 +68,10 @@ export const metadata: Metadata = {
 export default async function Home() {
   const session = await auth();
   const signedIn = Boolean(session?.user);
+  // Vercel injects the visitor's two-letter country code as a request header.
+  // Used only for display-side currency formatting in the Pricing card —
+  // billing itself stays in USD via LemonSqueezy.
+  const country = (await headers()).get("x-vercel-ip-country") ?? undefined;
   return (
     <>
       <script
@@ -80,7 +85,7 @@ export default async function Home() {
         <Features />
         <PaperShowcase />
         <Quiz />
-        <Pricing />
+        <Pricing country={country} />
         <Faq />
         <Cta />
       </main>
