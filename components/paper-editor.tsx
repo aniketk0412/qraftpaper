@@ -6,8 +6,6 @@ import {
   Check,
   Pencil,
   RefreshCw,
-  ShieldCheck,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
