@@ -37,12 +37,15 @@ export function Topbar({
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-canvas/85 px-5 backdrop-blur-md sm:px-8">
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <MobileNav plan={plan} />
-        <p className="text-sm font-medium">{title}</p>
+        <p className="shrink-0 text-sm font-medium">{title}</p>
         <span className="hidden h-4 w-px bg-line sm:block" />
-        <p className="hidden truncate font-mono text-[0.7rem] uppercase tracking-[0.16em] text-fg-subtle sm:block">
-          Workspace
+        {/* Show the user's institution if we have one, otherwise the generic
+            "Workspace" label — so a real subscriber sees "Overview · Parul
+            University" instead of "Overview · Workspace". */}
+        <p className="hidden min-w-0 truncate font-mono text-[0.7rem] uppercase tracking-[0.16em] text-fg-subtle sm:block">
+          {user.institution || "Workspace"}
         </p>
       </div>
 

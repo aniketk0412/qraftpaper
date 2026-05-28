@@ -120,12 +120,12 @@ export function NewSubjectForm() {
           />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-[0.78rem] font-medium text-fg-muted">
+          <span className="flex items-baseline gap-2 text-[0.78rem] font-medium text-fg-muted">
             Subject code
+            <span className="font-normal text-fg-subtle">(optional)</span>
           </span>
           <input
             name="code"
-            required
             placeholder="CS-204"
             className="h-11 rounded-xl border border-line bg-tint/[0.03] px-3.5 text-sm text-fg placeholder:text-fg-subtle transition-all duration-200 focus:border-violet/50 focus:bg-tint/[0.05] focus:outline-none focus:ring-2 focus:ring-violet/20"
           />

@@ -36,11 +36,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
   const name = body.name ? sanitizeInline(body.name, 120) : "";
-  const code = body.code ? sanitizeInline(body.code, 40) : "";
+  // Code is optional in the UI; auto-generate a short identifier when blank
+  // so the DB constraint (notNull + unique-per-user) can still be satisfied.
+  const code = body.code
+    ? sanitizeInline(body.code, 40)
+    : `SUBJ-${randomCode(5)}`;
 
-  if (!name || !code) {
+  if (!name) {
     return NextResponse.json(
-      { error: "Subject name and code are required" },
+      { error: "Subject name is required" },
       { status: 400 },
     );
   }
@@ -101,4 +105,15 @@ export async function POST(request: Request) {
     .limit(1);
 
   return NextResponse.json({ subject: ownedSubject }, { status: 201 });
+}
+
+// Short uppercase identifier without ambiguous I/O/0/1, suitable as a fallback
+// subject code when the user hasn't supplied one.
+function randomCode(length: number) {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  for (let i = 0; i < length; i += 1) {
+    out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return out;
 }
