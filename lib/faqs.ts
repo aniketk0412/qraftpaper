@@ -1,26 +1,26 @@
 export const faqs = [
   {
     q: "Is there a free trial or a free tier?",
-    a: "No. QraftPaper is a paid platform built for institutions. Every plan includes a monthly generation allowance from day one — you are paying for production-ready output, not a limited sandbox. You can explore a full example paper on the dashboard before you commit.",
+    a: "No. QraftPaper is a paid platform built for institutions. Every plan includes a monthly generation allowance from day one, so you are paying for production-ready output instead of a limited sandbox. You can explore a full example paper on the dashboard before you commit.",
   },
   {
     q: "How does QraftPaper avoid repeating previous questions?",
-    a: "The originality guard cross-checks every generated question against the previous year papers you upload, and against the rest of the paper. Any overlap is flagged before the paper reaches review, so accidental repeats never slip through.",
+    a: "QraftPaper uses the previous-year papers you upload as reference material and asks the model to avoid close repeats. Educators should still review the final paper before use.",
   },
   {
     q: "Can it read scanned or photographed question papers?",
-    a: "Yes. QraftPaper reads PDFs directly — both digital and scanned — so you can upload archive papers as they are, without retyping or reformatting anything.",
+    a: "No. QraftPaper currently needs text-based PDFs. Image-only scans and photo-heavy files are rejected before generation so you do not waste AI credits on unreadable material.",
   },
   {
     q: "How accurately does it follow our unit weightage?",
-    a: "The weightage engine distributes marks across units to your blueprint, accurate to the percentage point. Every generated paper ships with a blueprint-match report you can attach to your audit file.",
+    a: "QraftPaper compares the generated paper against your requested sections, marks and difficulty mix, then shows a blueprint-match report so you can review mismatches before exporting.",
   },
   {
     q: "Is our examination data secure?",
-    a: "All uploads are encrypted in transit and at rest. Passwords are stored hashed, with login-attempt throttling and account lockout against brute force. Your papers and syllabi are never used to train any AI model.",
+    a: "Uploads are protected in transit, passwords are stored hashed, and login attempts are throttled. Your papers and syllabi are not used to train any AI model by QraftPaper.",
   },
   {
     q: "Which subjects and streams are supported?",
-    a: "Any subject with a syllabus — engineering, sciences, commerce, humanities and professional courses. QraftPaper adapts to your format from the sample papers you provide.",
+    a: "Any subject with a text-based syllabus, including engineering, sciences, commerce, humanities and professional courses. QraftPaper adapts to the format from the sample material you provide.",
   },
 ];

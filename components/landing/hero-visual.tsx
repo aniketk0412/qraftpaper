@@ -101,7 +101,7 @@ export function HeroVisual() {
           <div className="leading-tight">
             <p className="text-[0.72rem] font-medium">Weightage matched</p>
             <p className="font-mono text-[0.6rem] uppercase tracking-wider text-fg-subtle">
-              100% to blueprint
+              Match report ready
             </p>
           </div>
         </div>

@@ -41,8 +41,8 @@ const points = [
   },
   {
     icon: Send,
-    title: "Export, print or assign",
-    desc: "Take it to a PDF, a printout, or assign it straight to a class.",
+    title: "Export, print or share",
+    desc: "Take it to a PDF, a printout, or a public practice link.",
   },
 ];
 

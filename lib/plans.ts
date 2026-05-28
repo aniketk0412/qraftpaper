@@ -104,8 +104,8 @@ export const PLANS: Record<PlanId, Plan> = {
     features: [
       "Custom monthly allowance",
       "Unlimited subjects & seats",
-      "SSO / SAML & role controls",
-      "Full audit trail & compliance",
+      "Workspace roles by agreement",
+      "Usage and billing review",
       "Dedicated success manager",
       "Custom integrations & SLA",
     ],

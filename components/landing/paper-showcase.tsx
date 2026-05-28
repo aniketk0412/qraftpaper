@@ -14,12 +14,12 @@ export function PaperShowcase() {
           eyebrow="Live output"
           title={
             <>
-              A real paper, generated to
+              A sample paper, generated to
               <br className="hidden sm:block" /> a{" "}
               <span className="text-accent">real blueprint</span>
             </>
           }
-          description="This is genuine QraftPaper output — every mark, unit and difficulty level placed exactly where the blueprint asked."
+          description="This is sample QraftPaper output with a reviewable blueprint report for marks, sections and difficulty."
         />
 
         <div className="mt-14 grid items-start gap-4 lg:grid-cols-[0.82fr_1.18fr]">
@@ -32,7 +32,7 @@ export function PaperShowcase() {
                 {examplePaper.subject}
               </h3>
               <p className="text-[0.8rem] text-fg-muted">
-                {examplePaper.subjectCode} · {examplePaper.totalMarks} marks ·{" "}
+                {examplePaper.subjectCode} - {examplePaper.totalMarks} marks -{" "}
                 {examplePaper.durationMins / 60} hours
               </p>
 
@@ -44,7 +44,7 @@ export function PaperShowcase() {
                         <span className="font-mono text-fg-subtle">
                           {u.unit}
                         </span>{" "}
-                        · {u.title}
+                        - {u.title}
                       </span>
                       <span className="font-mono text-fg">{u.weight}%</span>
                     </div>
@@ -62,8 +62,10 @@ export function PaperShowcase() {
               <div className="mt-6 flex items-center gap-2 rounded-xl border border-tint/15 bg-tint/[0.04] px-3.5 py-3">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-fg" />
                 <p className="text-[0.8rem] text-fg-muted">
-                  <span className="font-medium text-fg">Blueprint match 100%</span>{" "}
-                  — every unit weighted exactly to plan.
+                  <span className="font-medium text-fg">
+                    Blueprint match report
+                  </span>{" "}
+                  shows where the paper follows the requested structure.
                 </p>
               </div>
             </GlassCard>
@@ -85,7 +87,7 @@ export function PaperShowcase() {
                 </div>
                 <span className="flex items-center gap-1.5 rounded-full border border-violet/30 bg-violet/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-violet-bright">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-bright" />
-                  Live
+                  Sample
                 </span>
               </div>
               <div className="max-h-[34rem] overflow-y-auto">

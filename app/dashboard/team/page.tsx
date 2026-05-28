@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { Crown, Mail, UserPlus } from "lucide-react";
+import { Crown, UserRound } from "lucide-react";
 import { auth } from "@/auth";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Reveal } from "@/components/ui/reveal";
@@ -47,7 +47,7 @@ export default async function TeamPage() {
             {me?.institution ?? "Your workspace"}
           </h1>
           <p className="mt-1.5 text-sm text-fg-muted">
-            Members of your examination workspace and pending invitations.
+            Members currently connected to this workspace.
           </p>
         </div>
       </Reveal>
@@ -77,46 +77,18 @@ export default async function TeamPage() {
         <GlassCard className="mt-3 p-6 sm:p-7">
           <div className="flex items-start gap-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-tint/[0.04] text-fg-muted ring-1 ring-line">
-              <UserPlus className="h-[18px] w-[18px]" />
+              <UserRound className="h-[18px] w-[18px]" />
             </span>
             <div>
               <h2 className="text-lg font-semibold tracking-tight">
-                Invite a colleague
+                Workspace access
               </h2>
-              <p className="mt-1 text-[0.84rem] text-fg-muted">
-                Add faculty to share subjects, blueprints and generated papers.
+              <p className="mt-1 text-[0.84rem] leading-relaxed text-fg-muted">
+                Add faculty from account support after your billing plan is
+                active. This page only shows members that already have access.
               </p>
             </div>
           </div>
-
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            <div className="relative flex-1">
-              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-subtle" />
-              <input
-                type="email"
-                disabled
-                placeholder="colleague@institution.edu"
-                className="h-11 w-full rounded-xl border border-line bg-tint/[0.02] pl-10 pr-3.5 text-sm text-fg-muted placeholder:text-fg-subtle"
-              />
-            </div>
-            <span className="grid h-11 place-items-center rounded-xl border border-line bg-tint/[0.03] px-4 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-subtle">
-              Coming soon
-            </span>
-          </div>
-          <p className="mt-3 text-[0.78rem] text-fg-subtle">
-            Email invitations ship with the next workspace update.
-          </p>
-        </GlassCard>
-      </Reveal>
-
-      <Reveal>
-        <GlassCard className="mt-3 p-6 sm:p-7">
-          <h2 className="text-lg font-semibold tracking-tight">
-            Pending invitations
-          </h2>
-          <p className="mt-3 rounded-xl border border-line bg-tint/[0.02] px-4 py-6 text-center text-sm text-fg-subtle">
-            No pending invitations.
-          </p>
         </GlassCard>
       </Reveal>
     </div>

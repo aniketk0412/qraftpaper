@@ -12,19 +12,19 @@ const steps = [
   {
     icon: FileUp,
     title: "Upload your reference material",
-    body: "Drop in the syllabus, sample question papers and previous year papers. QraftPaper reads PDFs directly — scanned or digital — no manual transcription.",
+    body: "Drop in one combined text-based PDF, or separate syllabus, sample paper and PYQ files. QraftPaper extracts readable text once and rejects image-only scans before they cost you credits.",
     chips: ["Syllabus.pdf", "PYQ-2023.pdf", "Blueprint.pdf"],
   },
   {
     icon: Sliders,
     title: "Configure the exam blueprint",
     body: "Set unit weightages, section structure, question types, mark distribution and the difficulty mix. Save it once and reuse it every cycle.",
-    chips: ["Unit III · 26%", "Hard · 30%", "70 marks"],
+    chips: ["Unit III - 26%", "Hard - 30%", "70 marks"],
   },
   {
     icon: Wand2,
     title: "Generate, refine and export",
-    body: "AI drafts an original, balanced paper in under a minute. Edit inline, regenerate any single question, then export to PDF or Word.",
+    body: "AI drafts a balanced paper for review. Edit inline, regenerate any single question, then export to PDF or Word.",
     chips: ["Draft ready", "Regenerate Q5", "Export PDF"],
   },
 ];
@@ -54,7 +54,6 @@ export function HowItWorks() {
         />
 
         <div ref={ref} className="relative mx-auto mt-16 max-w-3xl">
-          {/* connecting line */}
           <div className="absolute bottom-10 left-6 top-10 hidden w-px bg-line sm:block" />
           <motion.div
             style={{ scaleY }}
