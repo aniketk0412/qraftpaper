@@ -187,16 +187,29 @@ export default async function DashboardPage() {
                 <div className="max-h-[26rem] overflow-hidden">
                   <PaperSheet paper={examplePaper} />
                 </div>
-                {/* gradient fade masks the cut-off sheet and houses the upgrade CTA */}
+                {/* gradient fade masks the cut-off sheet. We lead with the
+                    free demo quiz CTA (zero-friction, real product feel)
+                    and put Subscribe second instead of jumping straight to
+                    a paywall before the user has felt any value. */}
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-canvas via-canvas/95 to-transparent px-6 pb-6 pt-24 text-center">
                   <p className="max-w-sm text-sm text-fg-muted">
-                    This is an example paper. Subscribe and create a subject to
-                    generate papers from your own syllabus, PYQs and weightages.
+                    This is what we&apos;d generate from your syllabus. Take a
+                    sample MCQ quiz to feel it for yourself — it&apos;s free
+                    and uses no credits.
                   </p>
-                  <GlowButton href="/billing" size="md">
-                    Subscribe to unlock generation
-                    <ArrowRight className="h-4 w-4" />
-                  </GlowButton>
+                  <div className="flex flex-wrap items-center justify-center gap-2.5">
+                    <GlowButton href="/dashboard/demo-quiz" size="md">
+                      Try a sample quiz
+                      <ArrowRight className="h-4 w-4" />
+                    </GlowButton>
+                    <GlowButton
+                      href="/billing"
+                      variant="secondary"
+                      size="md"
+                    >
+                      Subscribe to generate
+                    </GlowButton>
+                  </div>
                 </div>
               </div>
             </div>
