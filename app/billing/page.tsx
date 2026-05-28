@@ -51,8 +51,8 @@ export default async function BillingPage({
 
   return (
     <div className="min-h-screen lg:pl-[260px]">
-      <Sidebar />
-      <Topbar subjects={subjects} user={user} />
+      <Sidebar plan={currentPlan} />
+      <Topbar subjects={subjects} user={user} plan={currentPlan} />
       <main className="px-5 py-8 sm:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

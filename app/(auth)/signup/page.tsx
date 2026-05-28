@@ -34,8 +34,8 @@ export default async function SignupPage({
         Sign up
       </h1>
       <p className="mt-1.5 text-sm text-fg-muted">
-        QraftPaper is a paid platform for institutions. Tell us about you and
-        our team will set up your workspace.
+        QraftPaper is a paid platform for institutions. Create your account
+        below — you can subscribe and start generating once you sign in.
       </p>
 
       <form action={signupAction} className="mt-7 flex flex-col gap-4">
@@ -88,12 +88,30 @@ export default async function SignupPage({
       </form>
 
       <p className="mt-4 rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
-        <span className="font-medium text-fg">No free tier.</span> Our team
-        configures your workspace and billing before activation — every plan
+        <span className="font-medium text-fg">No free tier.</span> Subscribe
+        from your dashboard once signed in to unlock generation — every plan
         includes a monthly generation allowance.
       </p>
 
-      <p className="mt-7 text-center text-[0.82rem] text-fg-muted">
+      <p className="mt-5 text-center text-[0.74rem] leading-relaxed text-fg-subtle">
+        By signing up you agree to our{" "}
+        <Link
+          href="/terms"
+          className="text-fg-muted underline-offset-2 transition-colors hover:text-fg hover:underline"
+        >
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link
+          href="/privacy"
+          className="text-fg-muted underline-offset-2 transition-colors hover:text-fg hover:underline"
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
+
+      <p className="mt-5 text-center text-[0.82rem] text-fg-muted">
         Already have access?{" "}
         <Link
           href="/login"

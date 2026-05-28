@@ -11,8 +11,11 @@ import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { accountNav, type NavItem, workspaceNav } from "@/lib/dashboard-nav";
 
-export function Sidebar() {
+export function Sidebar({ plan }: { plan: string }) {
   const pathname = usePathname();
+  // Only nudge users who haven't subscribed; paid Educator/Department users
+  // shouldn't see a "Trial access · Subscribe" card on every page.
+  const showUpgradeCard = plan === "unpaid";
 
   return (
     <motion.aside
@@ -30,19 +33,22 @@ export function Sidebar() {
         <NavGroup label="Account" items={accountNav} pathname={pathname} />
       </nav>
 
-      <div className="px-4 pb-6">
-        <div className="relative overflow-hidden rounded-2xl glass-strong p-4">
-          <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet/18 blur-2xl" />
-          <IconTile icon={Sparkles} size="sm" className="relative" />
-          <p className="relative mt-3 text-sm font-medium">Trial access</p>
-          <p className="relative mt-1 text-[0.78rem] leading-snug text-fg-muted">
-            {"You're viewing a sample workspace — subscribe to generate your own papers."}
-          </p>
-          <GlowButton href="/billing" size="sm" className="relative mt-3 w-full">
-            Subscribe
-          </GlowButton>
+      {showUpgradeCard && (
+        <div className="px-4 pb-6">
+          <div className="relative overflow-hidden rounded-2xl glass-strong p-4">
+            <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet/18 blur-2xl" />
+            <IconTile icon={Sparkles} size="sm" className="relative" />
+            <p className="relative mt-3 text-sm font-medium">Subscribe to generate</p>
+            <p className="relative mt-1 text-[0.78rem] leading-snug text-fg-muted">
+              Generation unlocks once you subscribe to a plan — every plan
+              includes a monthly allowance.
+            </p>
+            <GlowButton href="/billing" size="sm" className="relative mt-3 w-full">
+              Subscribe
+            </GlowButton>
+          </div>
         </div>
-      </div>
+      )}
     </motion.aside>
   );
 }

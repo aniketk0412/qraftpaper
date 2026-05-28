@@ -31,6 +31,7 @@ export default async function DashboardLayout({
           name: users.name,
           email: users.email,
           institution: users.institution,
+          plan: users.plan,
         })
         .from(users)
         .where(eq(users.id, session.user.id))
@@ -49,8 +50,12 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen lg:pl-[260px]">
-      <Sidebar />
-      <Topbar subjects={subjects} user={user} />
+      <Sidebar plan={profile?.plan ?? "unpaid"} />
+      <Topbar
+        subjects={subjects}
+        user={user}
+        plan={profile?.plan ?? "unpaid"}
+      />
       <main className="px-5 py-8 sm:px-8">{children}</main>
     </div>
   );

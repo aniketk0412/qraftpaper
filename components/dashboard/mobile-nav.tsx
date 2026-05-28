@@ -12,9 +12,10 @@ import { allNav } from "@/lib/dashboard-nav";
 import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-export function MobileNav() {
+export function MobileNav({ plan = "unpaid" }: { plan?: string }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const showUpgrade = plan === "unpaid";
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -96,11 +97,13 @@ export function MobileNav() {
                     })}
                   </nav>
 
-                  <div className="shrink-0 border-t border-line p-4">
-                    <GlowButton href="/signup" size="md" className="w-full">
-                      Subscribe
-                    </GlowButton>
-                  </div>
+                  {showUpgrade && (
+                    <div className="shrink-0 border-t border-line p-4">
+                      <GlowButton href="/billing" size="md" className="w-full">
+                        Subscribe
+                      </GlowButton>
+                    </div>
+                  )}
                 </motion.aside>
               </motion.div>
             )}
