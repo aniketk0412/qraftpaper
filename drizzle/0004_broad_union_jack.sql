@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "subjects_user_code_lower_idx" ON "subjects" USING btree ("user_id",lower("code"));

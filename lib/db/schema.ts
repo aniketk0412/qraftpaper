@@ -8,6 +8,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 import type { QuestionPaper, Quiz, SubjectProfile } from "@/lib/types";
 
@@ -110,7 +111,12 @@ export const subjects = pgTable("subjects", {
   profile: jsonb("profile").$type<SubjectProfile>(),
   profileGeneratedAt: timestamp("profile_generated_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
+}, (table) => [
+  uniqueIndex("subjects_user_code_lower_idx").on(
+    table.userId,
+    sql`lower(${table.code})`,
+  ),
+]);
 
 export const documents = pgTable("documents", {
   id: uuid("id").primaryKey().defaultRandom(),
