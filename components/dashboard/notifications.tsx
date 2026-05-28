@@ -74,8 +74,7 @@ export function Notifications() {
                 No notifications yet
               </p>
               <p className="max-w-[16rem] text-[0.74rem] leading-snug text-fg-subtle">
-                Paper, quiz and originality alerts will land here once you
-                generate your first paper.
+                Alerts will appear here after notification events are connected.
               </p>
             </div>
           </motion.div>

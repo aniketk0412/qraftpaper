@@ -38,11 +38,11 @@ interface MenuRow {
 }
 
 const featureRows: MenuRow[] = [
-  { icon: Layers3, title: "Format-faithful generation", desc: "Learns your exact paper structure", href: "#features" },
-  { icon: ScanSearch, title: "PYQ pattern intelligence", desc: "Mirrors past-paper style", href: "#features" },
-  { icon: Scale, title: "Weightage engine", desc: "Marks split to your blueprint", href: "#features" },
-  { icon: BookMarked, title: "Difficulty & Bloom's", desc: "Balanced cognitive spread", href: "#features" },
-  { icon: Fingerprint, title: "Originality guard", desc: "No repeats from past papers", href: "#features" },
+  { icon: Layers3, title: "Format-faithful generation", desc: "Follows your configured structure", href: "#features" },
+  { icon: ScanSearch, title: "PYQ pattern intelligence", desc: "Uses past papers as context", href: "#features" },
+  { icon: Scale, title: "Blueprint report", desc: "Compares marks and sections", href: "#features" },
+  { icon: BookMarked, title: "Difficulty & Bloom's", desc: "Shows the intended spread", href: "#features" },
+  { icon: Fingerprint, title: "Repeat reduction", desc: "Avoids obvious repeated wording", href: "#features" },
   { icon: FileOutput, title: "Export anywhere", desc: "PDF, Word and shareable links", href: "#features" },
 ];
 

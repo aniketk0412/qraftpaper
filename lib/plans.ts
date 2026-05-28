@@ -83,7 +83,7 @@ export const PLANS: Record<PlanId, Plan> = {
       "90 papers & quizzes / month",
       "Up to 25 subjects",
       "Shared blueprint library",
-      "Originality guard across papers",
+      "Repeat-reduction checks across papers",
       "Difficulty & Bloom's balancing",
       "Priority support",
     ],

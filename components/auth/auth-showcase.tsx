@@ -2,9 +2,9 @@ import { Check } from "lucide-react";
 import { Logo } from "@/components/logo";
 
 const points = [
-  "Generate exam-ready papers from your own material",
-  "Blueprint-accurate to every unit weightage",
-  "Originality guarded against previous year papers",
+  "Draft structured papers from your own material",
+  "Review blueprint, marks and difficulty before export",
+  "Use previous-year papers as context for better drafts",
 ];
 
 export function AuthShowcase() {
@@ -32,7 +32,7 @@ export function AuthShowcase() {
           The examination workspace
         </p>
         <h2 className="mt-4 max-w-md text-pretty text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-gradient">
-          Set papers your board trusts — in minutes, not weeks.
+          Draft papers faster, then keep final review in your hands.
         </h2>
         <ul className="mt-8 flex flex-col gap-3.5">
           {points.map((p) => (

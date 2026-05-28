@@ -384,14 +384,6 @@ export function PaperEditor({
               <Check className="h-4 w-4 text-violet-bright" />
               Save paper
             </button>
-            <button className="flex items-center gap-2.5 rounded-xl glass px-4 py-3 text-[0.82rem] text-fg-muted transition-colors hover:text-fg">
-              <Sparkles className="h-4 w-4 text-violet-bright" />
-              Balance difficulty with AI
-            </button>
-            <button className="flex items-center gap-2.5 rounded-xl glass px-4 py-3 text-[0.82rem] text-fg-muted transition-colors hover:text-fg">
-              <ShieldCheck className="h-4 w-4 text-fg-muted" />
-              Run originality check
-            </button>
             {status && (
               <p className="px-1 text-[0.74rem] text-fg-subtle">{status}</p>
             )}

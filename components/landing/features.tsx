@@ -19,12 +19,12 @@ export function Features() {
           eyebrow="The platform"
           title={
             <>
-              Engineered for assessment teams
+              Built for assessment teams
               <br className="hidden sm:block" /> that{" "}
-              <span className="text-accent">cannot get it wrong</span>
+              <span className="text-accent">need review control</span>
             </>
           }
-          description="Every paper QraftPaper produces is original, balanced to your blueprint and traceable — built to survive an examination audit."
+          description="QraftPaper drafts structured papers from your material, then gives educators the checks and editing flow needed before anything reaches students."
           className="max-w-2xl"
         />
 
@@ -36,9 +36,8 @@ export function Features() {
                 Format-faithful generation
               </h3>
               <p className="mt-2 text-[0.92rem] leading-relaxed text-fg-muted">
-                Upload a few sample papers and QraftPaper learns the exact
-                section structure, instruction language and mark scheme — then
-                writes to it, every time.
+                Upload text-based reference material, configure sections and
+                marks, and generate drafts that follow the structure you set.
               </p>
               <div className="mt-6 flex gap-2">
                 {["Section A", "Section B", "Section C"].map((s, i) => (
@@ -69,9 +68,8 @@ export function Features() {
                 PYQ pattern intelligence
               </h3>
               <p className="mt-2 text-[0.92rem] leading-relaxed text-fg-muted">
-                It studies years of previous papers to mirror question style,
-                phrasing and recurring themes — capturing the pattern without
-                ever repeating a question.
+                Previous papers help guide topic coverage and question style,
+                while the editor keeps every generated paper reviewable.
               </p>
               <div className="mt-6 flex items-end gap-1.5">
                 {[40, 62, 48, 78, 56, 88, 70, 94, 66].map((h, i) => (
@@ -88,18 +86,18 @@ export function Features() {
           {[
             {
               icon: Scale,
-              title: "Weightage engine",
-              body: "Marks distributed across units to your blueprint — accurate to the percentage point.",
+              title: "Blueprint report",
+              body: "Compare generated sections, question counts, marks and difficulty against the requested structure.",
             },
             {
               icon: BookMarked,
               title: "Difficulty & Bloom's balance",
-              body: "Every paper hits your target spread of Easy/Medium/Hard and cognitive levels.",
+              body: "Set the intended Easy/Normal/Hard mix and review where the draft needs adjustment.",
             },
             {
               icon: Fingerprint,
-              title: "Originality guard",
-              body: "Flags any overlap with past papers before a question ever reaches a student.",
+              title: "Repeat reduction",
+              body: "Uses past papers as context so drafts avoid obvious repeated wording where possible.",
             },
           ].map((f, i) => (
             <Reveal key={f.title} className="lg:col-span-2" delay={i * 0.07}>
@@ -125,8 +123,8 @@ export function Features() {
                       Export anywhere
                     </h3>
                     <p className="mt-1.5 max-w-xl text-[0.9rem] leading-relaxed text-fg-muted">
-                      Print-ready PDF and editable Word export of every paper
-                      and quiz — share with your board or upload to your LMS.
+                      PDF and editable Word export for papers, plus shareable
+                      practice quiz links for students.
                     </p>
                   </div>
                 </div>

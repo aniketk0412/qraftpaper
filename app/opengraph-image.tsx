@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "QraftPaper — AI Question Paper Generation";
+export const alt = "QraftPaper - AI Question Paper Generation";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -72,7 +72,7 @@ export default function OpengraphImage() {
               marginBottom: "20px",
             }}
           >
-            Enterprise AI for assessment design
+            AI workspace for assessment design
           </div>
           <div
             style={{
@@ -84,12 +84,12 @@ export default function OpengraphImage() {
               maxWidth: "920px",
             }}
           >
-            From syllabus to exam-ready papers in minutes.
+            From syllabus to review-ready papers.
           </div>
         </div>
 
         <div style={{ display: "flex", fontSize: "26px", color: "#9db0bb" }}>
-          Question papers & quizzes, blueprint-accurate — built for institutions.
+          Question papers and quizzes built for educator review.
         </div>
       </div>
     ),

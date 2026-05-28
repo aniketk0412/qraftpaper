@@ -10,7 +10,7 @@ const words = [
   { t: "From" },
   { t: "syllabus" },
   { t: "to" },
-  { t: "exam-ready", accent: true },
+  { t: "review-ready", accent: true },
   { t: "papers" },
   { t: "in" },
   { t: "minutes." },
@@ -29,7 +29,7 @@ export function Hero() {
             >
               <span className="inline-flex items-center gap-2 rounded-full glass-strong px-3.5 py-1.5 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-fg-muted">
                 <Sparkles className="h-3.5 w-3.5 text-violet-bright" />
-                Enterprise AI for assessment design
+                AI workspace for assessment design
               </span>
             </motion.div>
 
@@ -69,9 +69,9 @@ export function Hero() {
               transition={{ duration: 0.7, delay: 0.6, ease: easeOut }}
               className="mt-7 max-w-lg text-pretty text-[1.02rem] leading-relaxed text-fg-muted"
             >
-              QraftPaper learns from your syllabus, previous year papers and
-              unit weightages — then generates balanced, original question
-              papers your examination board can ship with confidence.
+              QraftPaper uses your syllabus, previous-year papers and unit
+              weightages to draft structured question papers educators can
+              review, edit and export.
             </motion.p>
 
             <motion.div
@@ -98,7 +98,7 @@ export function Hero() {
               className="mt-7 flex items-center gap-3 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-fg-subtle"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-              Built for universities & institutions · No free tier
+              Built for universities & institutions - No free tier
             </motion.div>
           </div>
 

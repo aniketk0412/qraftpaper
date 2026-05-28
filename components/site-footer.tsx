@@ -47,9 +47,9 @@ export function SiteFooter() {
           <div className="flex flex-col gap-5">
             <Logo />
             <p className="max-w-xs text-sm leading-relaxed text-fg-muted">
-              Enterprise-grade AI for assessment design. QraftPaper turns
-              syllabi, past papers and weightages into exam-ready question
-              papers.
+              AI-assisted assessment design for educators. QraftPaper turns
+              text-based syllabi, past papers and weightages into review-ready
+              question papers.
             </p>
             <div className="flex gap-2">
               {[
@@ -92,15 +92,12 @@ export function SiteFooter() {
 
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-line pt-8 sm:flex-row">
           <p className="text-xs text-fg-subtle">
-            © {new Date().getFullYear()} QraftPaper. All rights reserved.
+            &copy; {new Date().getFullYear()} QraftPaper. All rights reserved.
           </p>
-          <p className="text-xs text-fg-subtle">
-            Operated by Aniket Kumbhar
-          </p>
+          <p className="text-xs text-fg-subtle">Operated by Aniket Kumbhar</p>
         </div>
       </div>
 
-      {/* oversized watermark wordmark */}
       <div
         aria-hidden
         className="pointer-events-none select-none text-center text-[18vw] font-semibold leading-[0.8] tracking-tighter text-tint/[0.018]"

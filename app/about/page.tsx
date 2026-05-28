@@ -3,9 +3,9 @@ import { LegalPage, LegalSection } from "@/components/legal/legal-page";
 import { supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About — QraftPaper",
+  title: "About - QraftPaper",
   description:
-    "QraftPaper is enterprise-grade AI for assessment design — turning syllabi, past papers and weightages into exam-ready question papers.",
+    "QraftPaper helps educators turn text-based syllabi, past papers and weightages into review-ready question papers.",
 };
 
 export default function AboutPage() {
@@ -14,24 +14,24 @@ export default function AboutPage() {
       <LegalSection heading="What we do">
         <p>
           QraftPaper turns a syllabus, sample papers and previous-year papers
-          into exam-ready question papers and quizzes — blueprint-accurate to
-          your unit weightages, balanced for difficulty, and guarded against
-          repeats. What used to take weeks of paper-setting takes minutes.
+          into review-ready question papers and quizzes. Educators set the
+          structure, inspect the generated draft and keep final control before
+          anything reaches students.
         </p>
       </LegalSection>
 
       <LegalSection heading="Who it's for">
         <p>
           Built for universities, colleges and examination boards. Educators set
-          the blueprint; QraftPaper produces draft papers their examination
-          board can trust, with one-click export to PDF and Word.
+          the blueprint; QraftPaper produces draft papers for review, with
+          export to PDF and Word.
         </p>
       </LegalSection>
 
       <LegalSection heading="How we think about it">
         <p>
           <strong className="text-fg">Faithful to your format.</strong> Output
-          mirrors the structure and style of your real papers.
+          follows the structure and style you configure.
         </p>
         <p>
           <strong className="text-fg">Private by default.</strong> Your material
@@ -39,7 +39,7 @@ export default function AboutPage() {
         </p>
         <p>
           <strong className="text-fg">Educator in control.</strong> Every
-          generated paper is a reviewable draft — you have the final say.
+          generated paper is a reviewable draft - you have the final say.
         </p>
       </LegalSection>
 
@@ -52,7 +52,7 @@ export default function AboutPage() {
           >
             {supportEmail}
           </a>{" "}
-          — we&apos;d love to help set up your workspace.
+          - we&apos;d love to help set up your workspace.
         </p>
       </LegalSection>
     </LegalPage>
