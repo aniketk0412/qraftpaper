@@ -84,7 +84,7 @@ export default function OpengraphImage() {
               maxWidth: "920px",
             }}
           >
-            From syllabus to review-ready papers.
+            From syllabus to exam-ready papers.
           </div>
         </div>
 

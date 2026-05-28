@@ -48,7 +48,7 @@ export function SiteFooter() {
             <Logo />
             <p className="max-w-xs text-sm leading-relaxed text-fg-muted">
               AI-assisted assessment design for educators. QraftPaper turns
-              text-based syllabi, past papers and weightages into review-ready
+              text-based syllabi, past papers and weightages into exam-ready
               question papers.
             </p>
             <div className="flex gap-2">

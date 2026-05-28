@@ -20,7 +20,7 @@ export function Pricing() {
               <span className="text-accent">not trials</span>
             </>
           }
-          description="No free tier. Each plan includes a monthly generation allowance - you pay for review-ready drafts, not a sandbox."
+          description="No free tier. Each plan includes a monthly generation allowance - you pay for exam-ready drafts, not a sandbox."
         />
 
         <div className="mx-auto mt-14 grid max-w-3xl items-stretch gap-3 sm:grid-cols-2">

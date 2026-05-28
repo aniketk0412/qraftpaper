@@ -60,8 +60,8 @@ export function Quiz() {
             </Reveal>
             <Reveal delay={0.06}>
               <h2 className="text-gradient mt-5 max-w-md text-pretty text-[2.1rem] font-semibold leading-[1.06] tracking-[-0.02em] sm:text-5xl">
-                The same material, now a{" "}
-                <span className="text-accent">review-ready quiz</span>
+                The same material, now an{" "}
+                <span className="text-accent">exam-ready quiz</span>
               </h2>
             </Reveal>
             <Reveal delay={0.12}>

@@ -10,7 +10,7 @@ const words = [
   { t: "From" },
   { t: "syllabus" },
   { t: "to" },
-  { t: "review-ready", accent: true },
+  { t: "exam-ready", accent: true },
   { t: "papers" },
   { t: "in" },
   { t: "minutes." },

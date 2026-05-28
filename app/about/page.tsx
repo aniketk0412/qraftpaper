@@ -5,7 +5,7 @@ import { supportEmail } from "@/lib/site";
 export const metadata: Metadata = {
   title: "About - QraftPaper",
   description:
-    "QraftPaper helps educators turn text-based syllabi, past papers and weightages into review-ready question papers.",
+    "QraftPaper helps educators turn text-based syllabi, past papers and weightages into exam-ready question papers.",
 };
 
 export default function AboutPage() {
@@ -14,7 +14,7 @@ export default function AboutPage() {
       <LegalSection heading="What we do">
         <p>
           QraftPaper turns a syllabus, sample papers and previous-year papers
-          into review-ready question papers and quizzes. Educators set the
+          into exam-ready question papers and quizzes. Educators set the
           structure, inspect the generated draft and keep final control before
           anything reaches students.
         </p>

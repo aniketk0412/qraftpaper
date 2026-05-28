@@ -10,7 +10,7 @@ export const siteConfig = {
   name: "QraftPaper",
   title: "QraftPaper - AI Question Paper Generation",
   description:
-    "QraftPaper turns text-based syllabi, past papers and weightages into review-ready question papers and quizzes for educators.",
+    "QraftPaper turns text-based syllabi, past papers and weightages into exam-ready question papers and quizzes for educators.",
   url: siteUrl,
   supportEmail,
 } as const;
