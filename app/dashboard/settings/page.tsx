@@ -112,7 +112,7 @@ export default async function SettingsPage({
             <p className="mt-1 text-[0.84rem] text-fg-muted">
               You are on the{" "}
               <span className="font-medium capitalize text-fg">
-                {profile?.plan ?? "educator"}
+                {profile?.plan ?? "unpaid"}
               </span>{" "}
               plan.
             </p>
