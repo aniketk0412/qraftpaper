@@ -31,19 +31,19 @@ Copy `.env.example` → `.env.local` and fill these in.
 | `LEMONSQUEEZY_VARIANT_EDUCATOR` | Variant id of the **$7/mo** Educator product |
 | `LEMONSQUEEZY_VARIANT_DEPARTMENT` | Variant id of the **$24/mo** Department product |
 
-### Email (required for password reset)
-| Variable | Where to get it |
-|---|---|
-| `RESEND_API_KEY` | Vercel Marketplace Resend integration, or Resend API keys |
-| `EMAIL_FROM` | Verified Resend sender, e.g. `QraftPaper <support@yourdomain.com>` |
-
 ### Optional
 | Variable | Default / effect |
 |---|---|
 | `NEXT_PUBLIC_SITE_URL` | Public origin for canonical/OG/sitemap. Defaults to `https://qraftpaper.vercel.app`. |
+| `NEXT_PUBLIC_SUPPORT_EMAIL` | Email shown across the footer, legal pages and the "Forgot password?" mailto. Defaults to the launch placeholder — set it to a real inbox you can read. |
 | `OPENROUTER_GENERATION_MODEL` | Defaults to `anthropic/claude-haiku-4.5`. Any tool-calling model works. |
 | `OPENROUTER_EXTRACTION_MODEL` | Defaults to `anthropic/claude-haiku-4.5`. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Enable the signup captcha. Leave blank to disable it. |
+
+> **Note on password reset:** there is no transactional email provider wired in
+> yet. The "Forgot password?" link on /login is a `mailto:` fallback. Wire a
+> provider (Resend / Postmark / SES) before launching a self-serve reset
+> flow.
 
 ## 3. Local development
 
@@ -65,10 +65,13 @@ pricing page and the usage limiter, so they can never drift:
 |---|---|---|---|---|
 | Educator | $7 | 20 | 5 | 6 |
 | Department | $24 | 90 | 25 | 12 |
-| Institution | Custom | unlimited | unlimited | unlimited |
 
 Change a number there and both the marketing copy and enforcement update.
 **The price you set in LemonSqueezy must match the price shown here.**
+
+> The `institution` plan id is kept in `PLANS` for any hand-arranged enterprise
+> deal but is intentionally NOT in `PRICING_TIERS` — LemonSqueezy won't approve
+> a public "Custom / Talk to sales" tier without a real purchasable variant.
 
 ## 5. LemonSqueezy setup
 
