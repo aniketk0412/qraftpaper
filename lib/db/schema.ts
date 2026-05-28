@@ -18,7 +18,10 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   name: text("name"),
   institution: text("institution"),
-  plan: text("plan").notNull().default("educator"),
+  // Default to "unpaid" — a real plan only unlocks after the LemonSqueezy
+  // webhook fires. signupAction sets this explicitly today, but the schema
+  // default backs that up against any future insertion path.
+  plan: text("plan").notNull().default("unpaid"),
   status: text("status").notNull().default("active"),
   role: text("role").notNull().default("teacher"),
   emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
@@ -34,7 +37,7 @@ export const organizations = pgTable("organizations", {
   name: text("name").notNull(),
   domain: text("domain"),
   status: text("status").notNull().default("active"),
-  plan: text("plan").notNull().default("educator"),
+  plan: text("plan").notNull().default("unpaid"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
