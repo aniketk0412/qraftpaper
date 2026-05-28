@@ -16,11 +16,11 @@ export function Pricing() {
           eyebrow="Pricing"
           title={
             <>
-              Priced for institutions,{" "}
-              <span className="text-accent">not trials</span>
+              Cheaper than a single{" "}
+              <span className="text-accent">tutoring session</span>
             </>
           }
-          description="No free tier. Each plan includes a monthly generation allowance - you pay for exam-ready drafts, not a sandbox."
+          description="No free tier — you pay for actual generations, not a sandbox. Each plan includes a monthly allowance. Cancel anytime from the dashboard."
         />
 
         <div className="mx-auto mt-14 grid max-w-3xl items-stretch gap-3 sm:grid-cols-2">

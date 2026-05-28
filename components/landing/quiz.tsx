@@ -26,23 +26,23 @@ const LETTERS = ["A", "B", "C", "D"];
 const points = [
   {
     icon: ListChecks,
-    title: "Auto-written multiple-choice questions",
-    desc: "Four plausible options per question, drafted in your subject's voice.",
+    title: "MCQs from your actual syllabus",
+    desc: "Four plausible options each — not the kind of garbage where three answers are obviously wrong.",
   },
   {
     icon: SlidersHorizontal,
-    title: "Mapped to units and difficulty",
-    desc: "Every question carries a unit tag and an Easy/Medium/Hard rating.",
+    title: "Built-in timer + score history",
+    desc: "Take it like a real exam. We track every attempt so you can see if you're actually improving.",
   },
   {
     icon: Check,
-    title: "Answer key and explanations",
-    desc: "Each quiz ships with the correct answer and a short rationale.",
+    title: "Explanation for every answer",
+    desc: "Don't just learn what's right — learn why. Each question ships with a short rationale.",
   },
   {
     icon: Send,
-    title: "Export, print or share",
-    desc: "Take it to a PDF, a printout, or a public practice link.",
+    title: "Send the same quiz to your friends",
+    desc: "One public link, everyone takes the same questions. Compare scores in the group chat.",
   },
 ];
 
@@ -60,15 +60,15 @@ export function Quiz() {
             </Reveal>
             <Reveal delay={0.06}>
               <h2 className="text-gradient mt-5 max-w-md text-pretty text-[2.1rem] font-semibold leading-[1.06] tracking-[-0.02em] sm:text-5xl">
-                The same material, now an{" "}
-                <span className="text-accent">exam-ready quiz</span>
+                Same syllabus, now a{" "}
+                <span className="text-accent">timed MCQ test</span>
               </h2>
             </Reveal>
             <Reveal delay={0.12}>
               <p className="mt-4 max-w-md text-[0.97rem] leading-relaxed text-fg-muted">
-                Point QraftPaper at the same syllabus and previous year papers,
-                and it generates a balanced multiple-choice quiz — complete with
-                an answer key — in seconds.
+                Same syllabus, same PYQ context — but as a 20-question MCQ test
+                with a timer, instant scoring and answer explanations. Take it
+                solo, or share the link and race your friends.
               </p>
             </Reveal>
 

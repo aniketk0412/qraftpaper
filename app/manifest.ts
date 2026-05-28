@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "QraftPaper - AI Question Paper Generation",
+    name: "QraftPaper — AI mock papers for students",
     short_name: "QraftPaper",
     description:
-      "Turn text-based syllabi, previous-year papers and weightages into exam-ready question papers and quizzes.",
+      "Upload your syllabus + last year's question paper. Get mock exam papers and timed MCQ quizzes to actually practise on.",
     id: "/",
     start_url: "/",
     scope: "/",

@@ -7,13 +7,13 @@ import { easeOut, fadeUp, staggerParent } from "@/lib/motion";
 import { HeroVisual } from "./hero-visual";
 
 const words = [
-  { t: "From" },
+  { t: "Turn" },
+  { t: "your" },
   { t: "syllabus" },
-  { t: "to" },
+  { t: "into" },
   { t: "exam-ready", accent: true },
-  { t: "papers" },
-  { t: "in" },
-  { t: "minutes." },
+  { t: "practice" },
+  { t: "papers." },
 ];
 
 export function Hero() {
@@ -29,7 +29,7 @@ export function Hero() {
             >
               <span className="inline-flex items-center gap-2 rounded-full glass-strong px-3.5 py-1.5 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-fg-muted">
                 <Sparkles className="h-3.5 w-3.5 text-violet-bright" />
-                AI workspace for assessment design
+                AI exam-prep for college students
               </span>
             </motion.div>
 
@@ -69,9 +69,10 @@ export function Hero() {
               transition={{ duration: 0.7, delay: 0.6, ease: easeOut }}
               className="mt-7 max-w-lg text-pretty text-[1.02rem] leading-relaxed text-fg-muted"
             >
-              QraftPaper uses your syllabus, previous-year papers and unit
-              weightages to draft structured question papers educators can
-              review, edit and export.
+              Upload your syllabus and last year&apos;s question paper.
+              QraftPaper drafts mock papers and instant MCQ quizzes that look
+              and feel like the real exam — so you can stop pretending to
+              study and actually practise.
             </motion.p>
 
             <motion.div
@@ -82,11 +83,11 @@ export function Hero() {
               className="mt-9 flex flex-wrap items-center gap-3"
             >
               <GlowButton href="/signup" size="lg">
-                Sign up
+                Generate your first paper
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
               </GlowButton>
               <GlowButton href="#showcase" variant="secondary" size="lg">
-                See a live paper
+                See a sample paper
               </GlowButton>
             </motion.div>
 
@@ -98,7 +99,7 @@ export function Hero() {
               className="mt-7 flex items-center gap-3 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-fg-subtle"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-              Built for universities & institutions - No free tier
+              Built for college students cramming the week before exams
             </motion.div>
           </div>
 

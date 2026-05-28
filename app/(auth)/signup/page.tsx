@@ -35,34 +35,34 @@ export default async function SignupPage({
         Sign up
       </h1>
       <p className="mt-1.5 text-sm text-fg-muted">
-        QraftPaper is a paid platform for institutions. Create your account
-        below - you can subscribe and start generating once you sign in.
+        QraftPaper is a paid study tool — no free tier. Create your account
+        below; subscribe from the dashboard to start generating mock papers.
       </p>
 
       <form action={signupAction} className="mt-7 flex flex-col gap-4">
         <AuthField
           id="name"
           name="name"
-          label="Full name"
+          label="Your name"
           icon={User}
-          placeholder="Dr. Anita Rao"
+          placeholder="Anya R."
           autoComplete="name"
         />
         <AuthField
           id="email"
           name="email"
-          label="Work email"
+          label="Email"
           type="email"
           icon={Mail}
-          placeholder="you@institution.edu"
+          placeholder="you@somewhere.com"
           autoComplete="email"
         />
         <AuthField
           id="institution"
           name="institution"
-          label="Institution"
+          label="College / school"
           icon={Building2}
-          placeholder="Meridian University"
+          placeholder="Parul University"
         />
         <AuthField
           id="password"
@@ -90,8 +90,8 @@ export default async function SignupPage({
 
       <p className="mt-4 rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
         <span className="font-medium text-fg">No free tier.</span> Subscribe
-        from your dashboard once signed in to unlock generation - every plan
-        includes a monthly generation allowance.
+        from the dashboard once signed in — Solo starts at $7/month, cheaper
+        than one tuition class.
       </p>
 
       <p className="mt-5 text-center text-[0.74rem] leading-relaxed text-fg-subtle">

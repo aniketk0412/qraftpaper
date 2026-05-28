@@ -72,7 +72,7 @@ export default function OpengraphImage() {
               marginBottom: "20px",
             }}
           >
-            AI workspace for assessment design
+            AI exam-prep for college students
           </div>
           <div
             style={{
@@ -84,12 +84,12 @@ export default function OpengraphImage() {
               maxWidth: "920px",
             }}
           >
-            From syllabus to exam-ready papers.
+            Mock exams from your own syllabus.
           </div>
         </div>
 
         <div style={{ display: "flex", fontSize: "26px", color: "#9db0bb" }}>
-          Question papers and quizzes built for educator review.
+          Mock papers + timed MCQ quizzes from your syllabus and PYQs.
         </div>
       </div>
     ),

@@ -2,9 +2,9 @@ import { Check } from "lucide-react";
 import { Logo } from "@/components/logo";
 
 const points = [
-  "Draft structured papers from your own material",
-  "Review blueprint, marks and difficulty before export",
-  "Use previous-year papers as context for better drafts",
+  "Mock papers shaped by your actual syllabus and PYQs",
+  "Timed MCQ quizzes with score history across attempts",
+  "Print, export or share quiz links with your study group",
 ];
 
 export function AuthShowcase() {
@@ -29,10 +29,10 @@ export function AuthShowcase() {
 
       <div className="relative px-12">
         <p className="font-mono text-[0.7rem] uppercase tracking-[0.24em] text-violet-bright">
-          The examination workspace
+          Exam-prep that doesn&apos;t feel like cheating
         </p>
         <h2 className="mt-4 max-w-md text-pretty text-4xl font-semibold leading-[1.1] tracking-[-0.02em] text-gradient">
-          Draft papers faster, then keep final review in your hands.
+          Practice papers built from your own syllabus.
         </h2>
         <ul className="mt-8 flex flex-col gap-3.5">
           {points.map((p) => (

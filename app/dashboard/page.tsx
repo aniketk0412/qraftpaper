@@ -119,13 +119,13 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-violet-bright">
-              Workspace
+              Study workspace
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gradient">
-              Welcome back
+              Time to actually study.
             </h1>
             <p className="mt-1.5 text-sm text-fg-muted">
-              {"Here's what's moving in your examination workspace today."}
+              Pick a subject and generate a fresh mock paper or MCQ quiz.
             </p>
           </div>
           <GlowButton href="/dashboard/subjects/new" size="md">

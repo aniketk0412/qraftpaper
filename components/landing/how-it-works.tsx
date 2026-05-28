@@ -11,21 +11,21 @@ import { SectionHeading } from "@/components/ui/section-heading";
 const steps = [
   {
     icon: FileUp,
-    title: "Upload your reference material",
-    body: "Drop in one combined text-based PDF, or separate syllabus, sample paper and PYQ files. QraftPaper extracts readable text once and rejects image-only scans before they cost you credits.",
-    chips: ["Syllabus.pdf", "PYQ-2023.pdf", "Blueprint.pdf"],
+    title: "Upload your syllabus + last year's paper",
+    body: "One combined PDF works, or drop them separately. Text-based PDFs only — scanned photos get rejected before they cost you anything.",
+    chips: ["Syllabus.pdf", "PYQ-2023.pdf", "Sample.pdf"],
   },
   {
     icon: Sliders,
-    title: "Configure the exam blueprint",
-    body: "Set unit weightages, section structure, question types, mark distribution and the difficulty mix. Save it once and reuse it every cycle.",
-    chips: ["Unit III - 26%", "Hard - 30%", "70 marks"],
+    title: "Tell it the exam format",
+    body: "How many marks, how many hours, sections, difficulty mix. Save the blueprint once and reuse it for every new mock you generate.",
+    chips: ["70 marks", "3 sections", "Hard 30%"],
   },
   {
     icon: Wand2,
-    title: "Generate, refine and export",
-    body: "AI drafts a balanced paper for review. Edit inline, regenerate any single question, then export to PDF or Word.",
-    chips: ["Draft ready", "Regenerate Q5", "Export PDF"],
+    title: "Practise — print, share, retake",
+    body: "Generate as many practice papers and MCQ quizzes as you need. Export to PDF to solve by hand. Share quiz links with friends and compare scores.",
+    chips: ["Practice paper", "MCQ quiz", "Share link"],
   },
 ];
 
@@ -54,12 +54,12 @@ export function HowItWorks() {
           eyebrow="The workflow"
           title={
             <>
-              Three steps from blueprint
-              <br className="hidden sm:block" /> to{" "}
-              <span className="text-accent">finished paper</span>
+              From syllabus to{" "}
+              <span className="text-accent">first mock paper</span>
+              <br className="hidden sm:block" /> in three steps
             </>
           }
-          description="A workflow your examination cell can standardise across every department and every semester."
+          description="Takes longer to upload the PDFs than it does to generate the paper. Setup is once per subject — every paper after is one click."
         />
 
         <div ref={ref} className="relative mx-auto mt-16 max-w-3xl">

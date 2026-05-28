@@ -16,15 +16,15 @@ export function Features() {
     <section id="features" className="section-pad scroll-mt-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeading
-          eyebrow="The platform"
+          eyebrow="Why it beats pasting into ChatGPT"
           title={
             <>
-              Built for assessment teams
-              <br className="hidden sm:block" /> that{" "}
-              <span className="text-accent">need review control</span>
+              Practice papers that
+              <br className="hidden sm:block" /> actually{" "}
+              <span className="text-accent">look like your exam</span>
             </>
           }
-          description="QraftPaper drafts structured papers from your material, then gives educators the checks and editing flow needed before anything reaches students."
+          description="ChatGPT spits out random questions. QraftPaper learns your syllabus and your previous-year paper format — so the drafts mirror the real exam, not generic LLM filler."
           className="max-w-2xl"
         />
 
@@ -33,11 +33,11 @@ export function Features() {
             <GlassCard hover className="h-full p-7">
               <IconTile icon={Layers3} size="lg" />
               <h3 className="mt-5 text-xl font-semibold tracking-tight">
-                Format-faithful generation
+                Structured like the real paper
               </h3>
               <p className="mt-2 text-[0.92rem] leading-relaxed text-fg-muted">
-                Upload text-based reference material, configure sections and
-                marks, and generate drafts that follow the structure you set.
+                Sections, marks per question, hours — set them once and every
+                generation follows that blueprint. Not a wall of random Q&A.
               </p>
               <div className="mt-6 flex gap-2">
                 {["Section A", "Section B", "Section C"].map((s, i) => (
@@ -65,11 +65,12 @@ export function Features() {
             <GlassCard hover className="h-full p-7">
               <IconTile icon={ScanSearch} tone="gold" size="lg" />
               <h3 className="mt-5 text-xl font-semibold tracking-tight">
-                PYQ pattern intelligence
+                Trained on your PYQs
               </h3>
               <p className="mt-2 text-[0.92rem] leading-relaxed text-fg-muted">
-                Previous papers help guide topic coverage and question style,
-                while the editor keeps every generated paper reviewable.
+                Upload last year&apos;s paper and the model picks up your
+                professor&apos;s favourite topics, phrasing and weightage —
+                so practice feels like the actual paper, not a stranger&apos;s.
               </p>
               <div className="mt-6 flex items-end gap-1.5">
                 {[40, 62, 48, 78, 56, 88, 70, 94, 66].map((h, i) => (
@@ -86,18 +87,18 @@ export function Features() {
           {[
             {
               icon: Scale,
-              title: "Blueprint report",
-              body: "Compare generated sections, question counts, marks and difficulty against the requested structure.",
+              title: "Blueprint-match score",
+              body: "Live % score showing how close each generated paper is to your requested marks, sections and difficulty mix.",
             },
             {
               icon: BookMarked,
-              title: "Difficulty & Bloom's balance",
-              body: "Set the intended Easy/Normal/Hard mix and review where the draft needs adjustment.",
+              title: "Difficulty mix you control",
+              body: "Set Easy / Medium / Hard percentages and the draft balances toward it. Easier paper for revision, harder for mocks.",
             },
             {
               icon: Fingerprint,
-              title: "Repeat reduction",
-              body: "Uses past papers as context so drafts avoid obvious repeated wording where possible.",
+              title: "Doesn't repeat itself",
+              body: "Cross-checks against your previous papers so the same question doesn't show up twice in your study set.",
             },
           ].map((f, i) => (
             <Reveal key={f.title} className="lg:col-span-2" delay={i * 0.07}>
@@ -120,11 +121,12 @@ export function Features() {
                   <IconTile icon={FileOutput} size="lg" />
                   <div>
                     <h3 className="text-xl font-semibold tracking-tight">
-                      Export anywhere
+                      Print, share, practise
                     </h3>
                     <p className="mt-1.5 max-w-xl text-[0.9rem] leading-relaxed text-fg-muted">
-                      PDF and editable Word export for papers, plus shareable
-                      practice quiz links for students.
+                      PDF export to print and solve by hand. Word export to
+                      edit. Shareable quiz links to send the same MCQ test to
+                      your study group.
                     </p>
                   </div>
                 </div>

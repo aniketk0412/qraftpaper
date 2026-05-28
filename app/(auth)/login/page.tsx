@@ -39,17 +39,17 @@ export default async function LoginPage({
         Welcome back
       </h1>
       <p className="mt-1.5 text-sm text-fg-muted">
-        Sign in to your examination workspace.
+        Sign back into your study workspace.
       </p>
 
       <form action={loginAction} className="mt-8 flex flex-col gap-4">
         <AuthField
           id="email"
           name="email"
-          label="Work email"
+          label="Email"
           type="email"
           icon={Mail}
-          placeholder="you@institution.edu"
+          placeholder="you@somewhere.com"
           autoComplete="email"
         />
         <AuthField

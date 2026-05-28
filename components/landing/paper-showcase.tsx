@@ -11,15 +11,15 @@ export function PaperShowcase() {
     <section id="showcase" className="section-pad scroll-mt-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeading
-          eyebrow="Live output"
+          eyebrow="Sample output"
           title={
             <>
-              A sample paper, generated to
-              <br className="hidden sm:block" /> a{" "}
-              <span className="text-accent">real blueprint</span>
+              This is what an actual{" "}
+              <span className="text-accent">QraftPaper mock</span>
+              <br className="hidden sm:block" /> looks like
             </>
           }
-          description="This is sample QraftPaper output with a reviewable blueprint report for marks, sections and difficulty."
+          description="70-mark, 3-hour DSA mock paper from a real syllabus + PYQ upload. Notice the blueprint-match score showing how close the draft hit the requested structure."
         />
 
         <div className="mt-14 grid items-start gap-4 lg:grid-cols-[0.82fr_1.18fr]">

@@ -5,7 +5,7 @@ import { supportEmail } from "@/lib/site";
 export const metadata: Metadata = {
   title: "About - QraftPaper",
   description:
-    "QraftPaper helps educators turn text-based syllabi, past papers and weightages into exam-ready question papers.",
+    "QraftPaper is an AI exam-prep tool for college students. Upload your syllabus and last year's question paper, get mock exam papers and MCQ quizzes to practise on.",
 };
 
 export default function AboutPage() {
@@ -13,33 +13,36 @@ export default function AboutPage() {
     <LegalPage eyebrow="Company" title="About QraftPaper">
       <LegalSection heading="What we do">
         <p>
-          QraftPaper turns a syllabus, sample papers and previous-year papers
-          into exam-ready question papers and quizzes. Educators set the
-          structure, inspect the generated draft and keep final control before
-          anything reaches students.
+          QraftPaper is an AI exam-prep tool for college students. Upload your
+          syllabus and last year&apos;s question paper, and it generates mock
+          exam papers and timed MCQ quizzes that look and feel like the real
+          thing — so you can actually practise instead of re-reading notes.
         </p>
       </LegalSection>
 
       <LegalSection heading="Who it's for">
         <p>
-          Built for universities, colleges and examination boards. Educators set
-          the blueprint; QraftPaper produces draft papers for review, with
-          export to PDF and Word.
+          Engineering, medical, commerce, law and humanities students at Indian
+          (and elsewhere) colleges who have exams coming up and want practice
+          questions in the exact format of their real paper, not generic
+          textbook prompts.
         </p>
       </LegalSection>
 
       <LegalSection heading="How we think about it">
         <p>
-          <strong className="text-fg">Faithful to your format.</strong> Output
-          follows the structure and style you configure.
+          <strong className="text-fg">Mirrors your real paper.</strong> Output
+          follows the structure, marks split and difficulty mix of the PYQ
+          you upload.
         </p>
         <p>
-          <strong className="text-fg">Private by default.</strong> Your material
-          is encrypted and never used to train any model.
+          <strong className="text-fg">Private by default.</strong> Your syllabus
+          and uploads are encrypted and never used to train any model.
         </p>
         <p>
-          <strong className="text-fg">Educator in control.</strong> Every
-          generated paper is a reviewable draft - you have the final say.
+          <strong className="text-fg">It&apos;s a practice tool, not a teacher.</strong>{" "}
+          AI questions are not guaranteed to be 100% correct. Cross-check with
+          your textbook before relying on any answer.
         </p>
       </LegalSection>
 
@@ -52,7 +55,8 @@ export default function AboutPage() {
           >
             {supportEmail}
           </a>{" "}
-          - we&apos;d love to help set up your workspace.
+          if you have a feature request, a bug, or your generated paper is
+          straight-up wrong.
         </p>
       </LegalSection>
     </LegalPage>

@@ -45,7 +45,7 @@ export function Topbar({
             "Workspace" label — so a real subscriber sees "Overview · Parul
             University" instead of "Overview · Workspace". */}
         <p className="hidden min-w-0 truncate font-mono text-[0.7rem] uppercase tracking-[0.16em] text-fg-subtle sm:block">
-          {user.institution || "Workspace"}
+          {user.institution || "Study workspace"}
         </p>
       </div>
 

@@ -38,18 +38,18 @@ interface MenuRow {
 }
 
 const featureRows: MenuRow[] = [
-  { icon: Layers3, title: "Format-faithful generation", desc: "Follows your configured structure", href: "#features" },
-  { icon: ScanSearch, title: "PYQ pattern intelligence", desc: "Uses past papers as context", href: "#features" },
-  { icon: Scale, title: "Blueprint report", desc: "Compares marks and sections", href: "#features" },
-  { icon: BookMarked, title: "Difficulty & Bloom's", desc: "Shows the intended spread", href: "#features" },
-  { icon: Fingerprint, title: "Repeat reduction", desc: "Avoids obvious repeated wording", href: "#features" },
-  { icon: FileOutput, title: "Export anywhere", desc: "PDF, Word and shareable links", href: "#features" },
+  { icon: Layers3, title: "Real exam structure", desc: "Sections and marks like your paper", href: "#features" },
+  { icon: ScanSearch, title: "Trained on your PYQs", desc: "Mirrors your prof's style", href: "#features" },
+  { icon: Scale, title: "Blueprint-match score", desc: "Live % vs the structure you set", href: "#features" },
+  { icon: BookMarked, title: "Difficulty you control", desc: "Set Easy / Medium / Hard split", href: "#features" },
+  { icon: Fingerprint, title: "No repeats", desc: "Won't ask the same Q twice", href: "#features" },
+  { icon: FileOutput, title: "Print, share, retake", desc: "PDF, Word and public quiz links", href: "#features" },
 ];
 
 const howRows: MenuRow[] = [
-  { icon: FileUp, title: "Upload material", desc: "Syllabus, sample papers, PYQs", href: "#how" },
-  { icon: Sliders, title: "Configure blueprint", desc: "Units, weightage, difficulty", href: "#how" },
-  { icon: Wand2, title: "Generate & refine", desc: "Edit, regenerate, export", href: "#how" },
+  { icon: FileUp, title: "Upload syllabus + PYQ", desc: "One combined PDF or separate files", href: "#how" },
+  { icon: Sliders, title: "Set the exam format", desc: "Marks, sections, difficulty", href: "#how" },
+  { icon: Wand2, title: "Practise & retake", desc: "Print, share with friends, retry", href: "#how" },
 ];
 
 const showcaseRows: MenuRow[] = [

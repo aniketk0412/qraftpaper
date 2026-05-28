@@ -8,9 +8,9 @@ export const supportEmail =
 
 export const siteConfig = {
   name: "QraftPaper",
-  title: "QraftPaper - AI Question Paper Generation",
+  title: "QraftPaper — AI mock papers from your syllabus",
   description:
-    "QraftPaper turns text-based syllabi, past papers and weightages into exam-ready question papers and quizzes for educators.",
+    "Upload your syllabus and last year's question paper. QraftPaper generates structured mock exam papers and timed MCQ quizzes so you can practise instead of pretending to study.",
   url: siteUrl,
   supportEmail,
 } as const;

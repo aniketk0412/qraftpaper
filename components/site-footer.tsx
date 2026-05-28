@@ -47,9 +47,8 @@ export function SiteFooter() {
           <div className="flex flex-col gap-5">
             <Logo />
             <p className="max-w-xs text-sm leading-relaxed text-fg-muted">
-              AI-assisted assessment design for educators. QraftPaper turns
-              text-based syllabi, past papers and weightages into exam-ready
-              question papers.
+              AI exam-prep for students. Upload your syllabus and last year&apos;s
+              paper, get unlimited mock papers and MCQ quizzes to practise on.
             </p>
             <div className="flex gap-2">
               {[
