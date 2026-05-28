@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Building2, Lock, Mail } from "lucide-react";
+import { ArrowRight, Lock, Mail } from "lucide-react";
 import { AuthField } from "@/components/auth/auth-field";
 import { GlowButton } from "@/components/ui/glow-button";
 import { loginAction } from "../actions";
@@ -14,6 +14,8 @@ export const runtime = "nodejs";
 const errorMessages: Record<string, string> = {
   "invalid-credentials": "Use a valid work email and password.",
   "missing-fields": "Enter your work email and password.",
+  "signin-after-signup":
+    "Your account was created. Sign in once to continue to your workspace.",
 };
 
 export default async function LoginPage({
@@ -83,25 +85,6 @@ export default async function LoginPage({
           <ArrowRight className="h-4 w-4" />
         </GlowButton>
       </form>
-
-      <div className="my-6 flex items-center gap-3">
-        <span className="h-px flex-1 bg-line" />
-        <span className="font-mono text-[0.64rem] uppercase tracking-[0.2em] text-fg-subtle">
-          or
-        </span>
-        <span className="h-px flex-1 bg-line" />
-      </div>
-
-      <GlowButton
-        type="button"
-        variant="secondary"
-        size="lg"
-        className="w-full"
-        disabled
-      >
-        <Building2 className="h-4 w-4" />
-        Continue with institutional SSO
-      </GlowButton>
 
       <p className="mt-8 text-center text-[0.82rem] text-fg-muted">
         New to QraftPaper?{" "}

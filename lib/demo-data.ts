@@ -191,14 +191,6 @@ export const maxUnitWeight = Math.max(
   ...exampleWeightage.map((u) => u.weight),
 );
 
-export interface Testimonial {
-  text: string;
-  name: string;
-  role: string;
-  org: string;
-  initials: string;
-}
-
 /** Example AI-generated quiz showcased across the landing section and /quiz screen. */
 export const exampleQuiz: Quiz = {
   id: "demo",
@@ -305,26 +297,3 @@ export const exampleQuiz: Quiz = {
   ],
 };
 
-export const testimonials: Testimonial[] = [
-  {
-    text: "QraftPaper cut our paper-setting cycle from two weeks to a single afternoon. The blueprint accuracy is what won over our examination board.",
-    name: "Dr. Anita Rao",
-    role: "Controller of Examinations",
-    org: "Meridian University",
-    initials: "AR",
-  },
-  {
-    text: "We standardised paper quality across eleven departments. Every paper now reads like our most experienced paper-setter wrote it.",
-    name: "Prof. Daniel Mensah",
-    role: "Dean of Academics",
-    org: "Northgate Institute",
-    initials: "DM",
-  },
-  {
-    text: "The originality guard alone justified the cost. No more accidental repeats from previous year papers slipping through review.",
-    name: "Dr. Leena Varghese",
-    role: "Head of Examinations",
-    org: "Crestwood Polytechnic",
-    initials: "LV",
-  },
-];

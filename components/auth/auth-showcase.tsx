@@ -1,8 +1,5 @@
-import { Check, Quote } from "lucide-react";
+import { Check } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { testimonials } from "@/lib/demo-data";
-
-const featured = testimonials[0];
 
 const points = [
   "Generate exam-ready papers from your own material",
@@ -49,25 +46,7 @@ export function AuthShowcase() {
         </ul>
       </div>
 
-      <div className="relative p-12">
-        <div className="rounded-2xl glass-strong p-6">
-          <Quote className="h-6 w-6 text-violet/50" fill="currentColor" />
-          <p className="mt-3 text-[0.92rem] leading-relaxed text-fg/90">
-            {featured.text}
-          </p>
-          <div className="mt-4 flex items-center gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-card-hi font-mono text-xs font-medium text-fg ring-1 ring-line">
-              {featured.initials}
-            </span>
-            <div className="leading-tight">
-              <p className="text-[0.82rem] font-medium">{featured.name}</p>
-              <p className="text-[0.72rem] text-fg-muted">
-                {featured.role}, {featured.org}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="relative p-12" />
     </div>
   );
 }

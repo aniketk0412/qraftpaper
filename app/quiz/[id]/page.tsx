@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, eq } from "drizzle-orm";
-import { ArrowLeft, Download, FileText, ListChecks, UserPlus } from "lucide-react";
+import { ArrowLeft, Download, FileText, ListChecks } from "lucide-react";
 import { auth } from "@/auth";
 import { QuizRunner } from "@/components/quiz-runner";
 import { RegenerateQuizButton } from "@/components/quiz/regenerate-quiz-button";
@@ -87,15 +87,6 @@ export default async function QuizPage({
             >
               <Download className="h-3.5 w-3.5" />
               Export PDF
-            </GlowButton>
-            <GlowButton
-              type="button"
-              size="sm"
-              disabled
-              title="Quiz assignment is coming soon"
-            >
-              <UserPlus className="h-3.5 w-3.5" />
-              Assign quiz
             </GlowButton>
           </div>
         </div>

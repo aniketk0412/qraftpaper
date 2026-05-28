@@ -60,6 +60,7 @@ export async function loginAction(formData: FormData) {
       email,
       password,
       remember: String(remember),
+      redirect: false,
       redirectTo: "/dashboard",
     });
   } catch (error) {
@@ -69,6 +70,8 @@ export async function loginAction(formData: FormData) {
 
     throw error;
   }
+
+  redirect("/dashboard");
 }
 
 export async function signupAction(formData: FormData) {
@@ -169,10 +172,21 @@ export async function signupAction(formData: FormData) {
     }
   }
 
-  await signIn("credentials", {
-    email,
-    password,
-    remember: "true",
-    redirectTo: "/dashboard",
-  });
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      remember: "true",
+      redirect: false,
+      redirectTo: "/dashboard",
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      redirect("/login?error=signin-after-signup");
+    }
+
+    throw error;
+  }
+
+  redirect("/dashboard");
 }
