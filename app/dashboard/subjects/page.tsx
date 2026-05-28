@@ -79,22 +79,14 @@ export default async function SubjectsPage() {
                   <MiniStat label="Papers" value={String(subject.papers)} />
                   <MiniStat label="Profile" value={subject.hasProfile ? "Yes" : "No"} />
                 </div>
-                <div className="mt-5 flex gap-2">
+                <div className="mt-5">
                   <GlowButton
                     href="/dashboard"
                     variant="secondary"
                     size="sm"
-                    className="flex-1"
+                    className="w-full"
                   >
                     Generate
-                  </GlowButton>
-                  <GlowButton
-                    href="/dashboard/subjects/new"
-                    variant="ghost"
-                    size="sm"
-                    className="flex-1"
-                  >
-                    Upload more
                   </GlowButton>
                 </div>
               </GlassCard>
