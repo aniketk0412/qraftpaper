@@ -27,6 +27,7 @@ import { Logo } from "@/components/logo";
 import { GlowButton } from "@/components/ui/glow-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { easeOut } from "@/lib/motion";
+import { PRICING_TIERS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
 interface MenuRow {
@@ -62,11 +63,12 @@ const quizRows: MenuRow[] = [
   { icon: ListChecks, title: "Open the quiz preview", desc: "Try an interactive quiz", href: "/quiz" },
 ];
 
-const pricingTiers = [
-  { name: "Educator", price: "$39 / mo" },
-  { name: "Department", price: "$249 / mo" },
-  { name: "Institution", price: "Custom" },
-];
+// Read straight from PRICING_TIERS so the nav dropdown can never drift from
+// the real pricing section / billing limits.
+const pricingTiers = PRICING_TIERS.map((tier) => ({
+  name: tier.name,
+  price: tier.period ? `${tier.price} ${tier.period}`.trim() : tier.price,
+}));
 
 type MenuKey = "features" | "quiz" | "how" | "showcase" | "pricing";
 
