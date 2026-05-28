@@ -9,6 +9,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { SelectMenu } from "@/components/ui/select-menu";
+import { GenerationProgress } from "@/components/dashboard/generation-progress";
 import type { DashboardSubject } from "@/lib/subjects";
 
 export function GenerationPanel({ subjects }: { subjects: DashboardSubject[] }) {
@@ -110,6 +111,12 @@ export function GenerationPanel({ subjects }: { subjects: DashboardSubject[] }) 
   }
 
   return (
+    <>
+      <GenerationProgress
+        key={pending ?? "closed"}
+        kind={pending ?? "paper"}
+        open={pending !== null}
+      />
     <GlassCard className="mt-10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
@@ -176,5 +183,6 @@ export function GenerationPanel({ subjects }: { subjects: DashboardSubject[] }) 
 
       {status && <p className="mt-3 text-[0.78rem] text-fg-subtle">{status}</p>}
     </GlassCard>
+    </>
   );
 }

@@ -8,6 +8,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { SelectMenu } from "@/components/ui/select-menu";
+import { GenerationProgress } from "@/components/dashboard/generation-progress";
 import type { DashboardSubject } from "@/lib/subjects";
 import type { Difficulty } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -100,6 +101,12 @@ export function QuizLaunch({ subjects }: { subjects: DashboardSubject[] }) {
   }
 
   return (
+    <>
+      <GenerationProgress
+        key={pending ? "open" : "closed"}
+        kind="quiz"
+        open={pending}
+      />
     <GlassCard className="mt-10 p-5 sm:p-6">
       <div className="flex items-center gap-2.5">
         <IconTile icon={ListChecks} size="sm" tone="neutral" />
@@ -186,5 +193,6 @@ export function QuizLaunch({ subjects }: { subjects: DashboardSubject[] }) {
 
       {status && <p className="mt-3 text-[0.78rem] text-fg-subtle">{status}</p>}
     </GlassCard>
+    </>
   );
 }
