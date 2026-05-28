@@ -15,6 +15,7 @@ import {
   RateLimitError,
   UsageLimitError,
 } from "@/lib/usage";
+import { normalizeUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
 
@@ -31,8 +32,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const formData = await request.formData();
-  const subjectId = getString(formData, "subjectId");
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+  }
+  const subjectId = normalizeUuid(getString(formData, "subjectId"));
 
   if (!subjectId) {
     return NextResponse.json(

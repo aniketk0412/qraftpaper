@@ -14,6 +14,7 @@ import { MeterBar } from "@/components/ui/meter-bar";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
 import { difficultyBarFill } from "@/lib/difficulty";
+import { isUuid } from "@/lib/ids";
 import type { Difficulty } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -31,6 +32,10 @@ export default async function QuizPage({
   const { id } = await params;
 
   if (!session?.user?.id) {
+    notFound();
+  }
+
+  if (!isUuid(id)) {
     notFound();
   }
 

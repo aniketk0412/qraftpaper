@@ -8,6 +8,7 @@ import { getDb } from "@/lib/db";
 import { generationJobs, papers, subjects, users } from "@/lib/db/schema";
 import { generatePaperSections, type PaperGenerationConfig } from "@/lib/ai/generate";
 import { normalizePaperConfig } from "@/lib/generation-config";
+import { normalizeUuid } from "@/lib/ids";
 import {
   assertCanGenerate,
   assertSubjectPaperLimit,
@@ -27,11 +28,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as {
+  let body: {
     subjectId?: string;
     config?: Partial<PaperGenerationConfig>;
   };
-  const subjectId = body.subjectId?.trim();
+  try {
+    body = (await request.json()) as {
+      subjectId?: string;
+      config?: Partial<PaperGenerationConfig>;
+    };
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+  const subjectId = normalizeUuid(body.subjectId);
   const config = normalizePaperConfig(body.config);
 
   if (!subjectId || !config) {

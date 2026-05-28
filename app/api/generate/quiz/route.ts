@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateQuizQuestions, type QuizGenerationConfig } from "@/lib/ai/generate";
 import { normalizeQuizConfig } from "@/lib/generation-config";
+import { normalizeUuid } from "@/lib/ids";
 import { getDb } from "@/lib/db";
 import { generationJobs, quizzes, subjects, users } from "@/lib/db/schema";
 import {
@@ -27,11 +28,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as {
+  let body: {
     subjectId?: string;
     config?: Partial<QuizGenerationConfig>;
   };
-  const subjectId = body.subjectId?.trim();
+  try {
+    body = (await request.json()) as {
+      subjectId?: string;
+      config?: Partial<QuizGenerationConfig>;
+    };
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+  const subjectId = normalizeUuid(body.subjectId);
   const config = normalizeQuizConfig(body.config);
 
   if (!subjectId || !config) {

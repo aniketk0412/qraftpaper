@@ -8,10 +8,15 @@ import { QuizRunner } from "@/components/quiz-runner";
 import { GlowButton } from "@/components/ui/glow-button";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
+import { isUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
 
 async function loadQuiz(id: string) {
+  if (!isUuid(id)) {
+    return null;
+  }
+
   const [record] = await getDb()
     .select({ title: quizzes.title, content: quizzes.content })
     .from(quizzes)

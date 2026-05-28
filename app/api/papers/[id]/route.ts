@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
 import { paperVersions, papers } from "@/lib/db/schema";
+import { isUuid } from "@/lib/ids";
 import type { QuestionPaper } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -19,7 +20,16 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = (await request.json()) as { content?: QuestionPaper };
+  if (!isUuid(id)) {
+    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
+  }
+
+  let body: { content?: QuestionPaper };
+  try {
+    body = (await request.json()) as { content?: QuestionPaper };
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
 
   if (!body.content || body.content.id !== id) {
     return NextResponse.json(

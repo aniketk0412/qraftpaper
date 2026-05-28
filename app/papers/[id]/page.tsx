@@ -9,6 +9,7 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { getDb } from "@/lib/db";
 import { papers } from "@/lib/db/schema";
 import { normalizePaperConfig } from "@/lib/generation-config";
+import { isUuid } from "@/lib/ids";
 import type { PaperGenerationConfig } from "@/lib/ai/generate";
 
 export const metadata: Metadata = {
@@ -26,6 +27,10 @@ export default async function PaperEditorPage({
   const { id } = await params;
 
   if (!session?.user?.id) {
+    notFound();
+  }
+
+  if (!isUuid(id)) {
     notFound();
   }
 

@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
 import { renderQuizDocx } from "@/lib/export/render";
+import { isUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
 
@@ -19,6 +20,10 @@ export async function GET(
   }
 
   const { id } = await params;
+  if (!isUuid(id)) {
+    return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+  }
+
   const [quiz] = await getDb()
     .select()
     .from(quizzes)

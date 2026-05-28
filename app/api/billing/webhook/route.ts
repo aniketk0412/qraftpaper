@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { billingEvents, subscriptions, users } from "@/lib/db/schema";
 import { tierForVariantId, type BillingTier } from "@/lib/billing/lemonsqueezy";
+import { normalizeUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
 
@@ -99,7 +100,7 @@ async function handleSubscriptionEvent(payload: LemonWebhookPayload) {
   const mappedTier = variantId ? tierForVariantId(variantId) : null;
   const customTier = toBillingTier(payload.meta?.custom_data?.tier);
   const tier = mappedTier ?? customTier ?? "educator";
-  const userId = payload.meta?.custom_data?.userId;
+  const userId = normalizeUuid(payload.meta?.custom_data?.userId);
 
   if (!subscriptionId || !userId) {
     return;

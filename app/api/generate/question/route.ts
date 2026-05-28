@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { regeneratePaperQuestion } from "@/lib/ai/generate";
 import { getDb } from "@/lib/db";
 import { papers, subjects } from "@/lib/db/schema";
+import { normalizeUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
 
@@ -15,11 +16,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as {
+  let body: {
     paperId?: string;
     questionId?: string;
   };
-  const paperId = body.paperId?.trim();
+  try {
+    body = (await request.json()) as {
+      paperId?: string;
+      questionId?: string;
+    };
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+  const paperId = normalizeUuid(body.paperId);
   const questionId = body.questionId?.trim();
 
   if (!paperId || !questionId) {

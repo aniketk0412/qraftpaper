@@ -29,7 +29,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as { name?: string; code?: string };
+  let body: { name?: string; code?: string };
+  try {
+    body = (await request.json()) as { name?: string; code?: string };
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
   const name = body.name ? sanitizeInline(body.name, 120) : "";
   const code = body.code ? sanitizeInline(body.code, 40) : "";
 

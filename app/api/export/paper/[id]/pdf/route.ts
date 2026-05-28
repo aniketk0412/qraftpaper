@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
 import { papers } from "@/lib/db/schema";
 import { renderPaperPdf } from "@/lib/export/render";
+import { isUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
 
@@ -19,6 +20,10 @@ export async function GET(
   }
 
   const { id } = await params;
+  if (!isUuid(id)) {
+    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
+  }
+
   const [paper] = await getDb()
     .select()
     .from(papers)
