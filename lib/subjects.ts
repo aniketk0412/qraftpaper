@@ -1,8 +1,14 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { desc, eq, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import { papers, subjects } from "@/lib/db/schema";
+
+/** Cache tag for a user's subject list — invalidated by routes that mutate
+ *  subjects (POST /api/subjects, DELETE /api/subjects/[id]). Keep these in
+ *  sync with the `revalidateTag` calls in those routes. */
+export const subjectsTagFor = (userId: string) => `subjects:${userId}`;
 
 export interface DashboardSubject {
   id: string;
@@ -14,9 +20,7 @@ export interface DashboardSubject {
   hasProfile: boolean;
 }
 
-// cache() dedupes the call within a request — the dashboard layout and the
-// dashboard page both ask for the same subjects on one render.
-export const listUserSubjects = cache(async (userId: string) => {
+async function fetchUserSubjects(userId: string): Promise<DashboardSubject[]> {
   const rows = await getDb()
     .select({
       id: subjects.id,
@@ -51,6 +55,23 @@ export const listUserSubjects = cache(async (userId: string) => {
       hasProfile: Boolean(row.profileGeneratedAt),
     };
   });
+}
+
+/**
+ * Per-request dedupe (React `cache`) wrapping a per-user Next data cache.
+ * The data cache survives across navigations within the same dashboard
+ * session — the dashboard layout no longer re-queries Postgres on every
+ * route change. Cache is keyed and tagged by userId, so subject mutations
+ * (see /api/subjects POST + /api/subjects/[id] DELETE) only invalidate the
+ * caller's slice via `revalidateTag(subjectsTagFor(userId))`.
+ */
+export const listUserSubjects = cache(async (userId: string) => {
+  const cached = unstable_cache(
+    () => fetchUserSubjects(userId),
+    [`subjects:list:${userId}`],
+    { revalidate: 60, tags: [subjectsTagFor(userId)] },
+  );
+  return cached();
 });
 
 function formatRelativeDate(date: Date) {

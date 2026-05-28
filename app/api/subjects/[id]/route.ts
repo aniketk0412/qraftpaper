@@ -1,10 +1,12 @@
 import { and, eq } from "drizzle-orm";
+import { updateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
 import { subjects } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
+import { subjectsTagFor } from "@/lib/subjects";
 
 export const runtime = "nodejs";
 
@@ -37,6 +39,8 @@ export async function DELETE(
   if (deleted.length === 0) {
     return NextResponse.json({ error: "Subject not found" }, { status: 404 });
   }
+
+  updateTag(subjectsTagFor(session.user.id));
 
   return NextResponse.json({ ok: true });
 }

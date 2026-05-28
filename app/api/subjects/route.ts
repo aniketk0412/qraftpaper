@@ -1,10 +1,11 @@
 import { and, eq, sql } from "drizzle-orm";
+import { updateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
 import { subjects, users } from "@/lib/db/schema";
-import { listUserSubjects } from "@/lib/subjects";
+import { listUserSubjects, subjectsTagFor } from "@/lib/subjects";
 import { assertCanCreateSubject, UsageLimitError } from "@/lib/usage";
 import { sanitizeInline } from "@/lib/ai/safety";
 
@@ -103,6 +104,10 @@ export async function POST(request: Request) {
     .from(subjects)
     .where(eq(subjects.id, subject.id))
     .limit(1);
+
+  // Bust the per-user subjects cache so the dashboard reflects the new row
+  // on the next render without waiting out the 60 s revalidate window.
+  updateTag(subjectsTagFor(session.user.id));
 
   return NextResponse.json({ subject: ownedSubject }, { status: 201 });
 }
