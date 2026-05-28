@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import "./globals.css";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
@@ -7,14 +7,19 @@ import { SiteBackground } from "@/components/effects/site-background";
 import { CursorGlow } from "@/components/effects/cursor-glow";
 import { siteConfig, siteUrl } from "@/lib/site";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Self-hosted via next/font — Inter for the SaaS-modern body/headline feel
+// (Söhne / GT America class, closest free equivalent on Google Fonts), with
+// JetBrains Mono for monospace eyebrow labels and code-like text.
+const sans = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const mono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -93,7 +98,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      className={`${sans.variable} ${mono.variable} antialiased`}
     >
       <body className="min-h-screen bg-canvas text-fg">
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

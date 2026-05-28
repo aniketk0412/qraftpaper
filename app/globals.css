@@ -37,9 +37,10 @@
   /* Tint — deep navy, used for subtle overlays/highlights on light surfaces */
   --color-tint: #1a2332;
 
-  /* Fonts */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  /* Fonts — Inter for sans (closest free Google Font to Söhne / GT America
+     style used by modern SaaS sites), JetBrains Mono for mono labels. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
   /* Radii */
   --radius-xl: 1.5rem;
