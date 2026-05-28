@@ -142,8 +142,23 @@ export function PaperEditor({
     });
 
     if (!response.ok) {
+      // Surface the actual reason instead of a generic "failed" — the route
+      // returns 402 (over plan limit), 429 (rate limit) and 502 (AI failure)
+      // with human-readable error strings, and the user has no other way
+      // to find that out.
+      let detail: string | undefined;
+      try {
+        const body = (await response.json()) as { error?: string };
+        detail = body.error;
+      } catch {
+        /* response wasn't JSON */
+      }
       setRegenId(null);
-      setStatus("Regeneration failed");
+      setStatus(
+        detail
+          ? `Regeneration failed: ${detail}`
+          : `Regeneration failed (${response.status})`,
+      );
       return;
     }
 
