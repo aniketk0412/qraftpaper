@@ -39,6 +39,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: process.cwd(),
+  },
   serverExternalPackages: ["pdf-parse"],
   async headers() {
     // Keep authenticated/private surfaces out of search indexes — these hold
