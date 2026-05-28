@@ -11,6 +11,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { MeterBar } from "@/components/ui/meter-bar";
+import { isQuiz } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
 import { difficultyBarFill } from "@/lib/difficulty";
@@ -45,7 +46,7 @@ export default async function QuizPage({
     .where(and(eq(quizzes.id, id), eq(quizzes.userId, session.user.id)))
     .limit(1);
 
-  if (!quizRecord?.content) {
+  if (!quizRecord?.content || !isQuiz(quizRecord.content)) {
     notFound();
   }
 

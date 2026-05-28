@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { generationJobs, papers, subjects, users } from "@/lib/db/schema";
 import { generatePaperSections, type PaperGenerationConfig } from "@/lib/ai/generate";
@@ -143,6 +144,24 @@ export async function POST(request: Request) {
     totalMarks: config.totalMarks,
     sections,
   };
+
+  if (!isQuestionPaper(paper)) {
+    if (job) {
+      await getDb()
+        .update(generationJobs)
+        .set({
+          status: "failed",
+          error: "Generated paper failed validation",
+          finishedAt: new Date(),
+        })
+        .where(eq(generationJobs.id, job.id));
+    }
+
+    return NextResponse.json(
+      { error: "Paper generation returned invalid content. Please try again." },
+      { status: 502 },
+    );
+  }
 
   const [created] = await getDb()
     .insert(papers)

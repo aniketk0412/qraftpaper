@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { isQuiz } from "@/lib/content-validation";
 import { generateQuizQuestions, type QuizGenerationConfig } from "@/lib/ai/generate";
 import { normalizeQuizConfig } from "@/lib/generation-config";
 import { normalizeUuid } from "@/lib/ids";
@@ -141,6 +142,24 @@ export async function POST(request: Request) {
     durationMins: config.durationMins,
     questions,
   };
+
+  if (!isQuiz(quiz)) {
+    if (job) {
+      await getDb()
+        .update(generationJobs)
+        .set({
+          status: "failed",
+          error: "Generated quiz failed validation",
+          finishedAt: new Date(),
+        })
+        .where(eq(generationJobs.id, job.id));
+    }
+
+    return NextResponse.json(
+      { error: "Quiz generation returned invalid content. Please try again." },
+      { status: 502 },
+    );
+  }
 
   const [created] = await getDb()
     .insert(quizzes)

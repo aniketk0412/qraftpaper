@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { paperVersions, papers } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
@@ -31,7 +32,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  if (!body.content || body.content.id !== id) {
+  if (!isQuestionPaper(body.content) || body.content.id !== id) {
     return NextResponse.json(
       { error: "Valid paper content is required" },
       { status: 400 },

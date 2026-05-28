@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { papers } from "@/lib/db/schema";
 import { renderPaperPdf } from "@/lib/export/render";
@@ -32,6 +33,12 @@ export async function GET(
 
   if (!paper?.content) {
     return NextResponse.json({ error: "Paper not found" }, { status: 404 });
+  }
+  if (!isQuestionPaper(paper.content)) {
+    return NextResponse.json(
+      { error: "Paper content is invalid. Open the editor and save it again." },
+      { status: 409 },
+    );
   }
 
   const buffer = await renderPaperPdf(paper.content);

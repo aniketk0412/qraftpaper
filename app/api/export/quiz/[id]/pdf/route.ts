@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { isQuiz } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
 import { renderQuizPdf } from "@/lib/export/render";
@@ -32,6 +33,12 @@ export async function GET(
 
   if (!quiz?.content) {
     return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+  }
+  if (!isQuiz(quiz.content)) {
+    return NextResponse.json(
+      { error: "Quiz content is invalid. Regenerate the quiz and try again." },
+      { status: 409 },
+    );
   }
 
   const buffer = await renderQuizPdf(quiz.content);

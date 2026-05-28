@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
+import { isQuiz } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
@@ -38,7 +39,7 @@ export async function POST(
     .where(eq(quizzes.id, id))
     .limit(1);
 
-  if (!record?.content) {
+  if (!record?.content || !isQuiz(record.content)) {
     return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
   }
 

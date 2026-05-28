@@ -6,6 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { PaperEditor } from "@/components/paper-editor";
 import { GlowButton } from "@/components/ui/glow-button";
+import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { papers } from "@/lib/db/schema";
 import { normalizePaperConfig } from "@/lib/generation-config";
@@ -40,7 +41,7 @@ export default async function PaperEditorPage({
     .where(and(eq(papers.id, id), eq(papers.userId, session.user.id)))
     .limit(1);
 
-  if (!paperRecord?.content) {
+  if (!paperRecord?.content || !isQuestionPaper(paperRecord.content)) {
     notFound();
   }
 

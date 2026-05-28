@@ -6,6 +6,7 @@ import { ArrowRight, ListChecks, Sparkles } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { QuizRunner } from "@/components/quiz-runner";
 import { GlowButton } from "@/components/ui/glow-button";
+import { isQuiz } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
@@ -22,7 +23,7 @@ async function loadQuiz(id: string) {
     .from(quizzes)
     .where(eq(quizzes.id, id))
     .limit(1);
-  return record?.content ?? null;
+  return record?.content && isQuiz(record.content) ? record.content : null;
 }
 
 export async function generateMetadata({
