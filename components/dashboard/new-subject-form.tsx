@@ -7,9 +7,26 @@ import { useState } from "react";
 import { GlowButton } from "@/components/ui/glow-button";
 
 const fileFields = [
-  { name: "syllabus", label: "Syllabus PDF" },
-  { name: "sample", label: "Sample paper PDF" },
-  { name: "pyq", label: "Previous-year paper PDF" },
+  {
+    name: "combined",
+    label: "Combined study-material PDF",
+    hint: "Recommended: syllabus, samples and PYQs in one text-based PDF.",
+  },
+  {
+    name: "syllabus",
+    label: "Syllabus PDF",
+    hint: "Optional if it is already included in the combined PDF.",
+  },
+  {
+    name: "sample",
+    label: "Sample paper PDF",
+    hint: "Optional if it is already included in the combined PDF.",
+  },
+  {
+    name: "pyq",
+    label: "Previous-year paper PDF",
+    hint: "Optional if it is already included in the combined PDF.",
+  },
 ];
 
 export function NewSubjectForm() {
@@ -49,12 +66,18 @@ export function NewSubjectForm() {
 
       const uploadData = new FormData();
       uploadData.set("subjectId", subject.id);
+      let uploadedFileCount = 0;
 
       for (const field of fileFields) {
         const value = formData.get(field.name);
-        if (value instanceof File) {
+        if (value instanceof File && value.size > 0) {
           uploadData.set(field.name, value);
+          uploadedFileCount += 1;
         }
+      }
+
+      if (uploadedFileCount === 0) {
+        throw new Error("Upload at least one text-based PDF for this subject.");
       }
 
       const uploadResponse = await fetch("/api/documents/upload", {
@@ -146,14 +169,13 @@ export function NewSubjectForm() {
                 {field.label}
               </span>
               <span className="block text-[0.72rem] text-fg-subtle">
-                Stored privately and extracted once.
+                {field.hint}
               </span>
             </span>
             <input
               name={field.name}
               type="file"
               accept="application/pdf"
-              required
               className="max-w-[11rem] text-[0.72rem] text-fg-muted file:mr-3 file:rounded-full file:border-0 file:bg-accent file:px-3 file:py-1.5 file:text-[0.72rem] file:font-medium file:text-on-accent"
             />
           </label>

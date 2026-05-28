@@ -13,13 +13,14 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { easeOut } from "@/lib/motion";
+import { supportEmail } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 const menu: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: UserRound, label: "Profile", href: "/dashboard/settings" },
   { icon: Settings, label: "Workspace settings", href: "/dashboard/settings" },
   { icon: CreditCard, label: "Billing & plan", href: "/billing" },
-  { icon: LifeBuoy, label: "Help & support", href: "mailto:support@qraftpaper.app" },
+  { icon: LifeBuoy, label: "Help & support", href: `mailto:${supportEmail}` },
 ];
 
 export interface DashboardUser {

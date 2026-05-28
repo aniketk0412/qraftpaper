@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import { AuthField } from "@/components/auth/auth-field";
 import { GlowButton } from "@/components/ui/glow-button";
+import { supportEmail } from "@/lib/site";
 import { loginAction } from "../actions";
 
 export const metadata: Metadata = {
@@ -67,7 +68,7 @@ export default async function LoginPage({
             Keep me signed in
           </label>
           <Link
-            href="mailto:support@qraftpaper.app?subject=Password%20reset"
+            href={`mailto:${supportEmail}?subject=Password%20reset`}
             className="text-[0.78rem] text-violet-bright transition-colors hover:text-violet"
           >
             Forgot password?

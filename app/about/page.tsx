@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/legal/legal-page";
+import { supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About — QraftPaper",
@@ -23,8 +24,7 @@ export default function AboutPage() {
         <p>
           Built for universities, colleges and examination boards. Educators set
           the blueprint; QraftPaper produces draft papers their examination
-          board can trust, with exports to PDF and Word and a full audit trail
-          on institution plans.
+          board can trust, with one-click export to PDF and Word.
         </p>
       </LegalSection>
 
@@ -48,9 +48,9 @@ export default function AboutPage() {
           Email{" "}
           <a
             className="text-accent transition-colors hover:text-accent-soft"
-            href="mailto:support@qraftpaper.app"
+            href={`mailto:${supportEmail}`}
           >
-            support@qraftpaper.app
+            {supportEmail}
           </a>{" "}
           — we&apos;d love to help set up your workspace.
         </p>

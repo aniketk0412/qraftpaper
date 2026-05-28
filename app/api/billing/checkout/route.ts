@@ -46,13 +46,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ checkoutUrl });
   } catch (error) {
+    console.error("[billing:checkout] failed to create checkout", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to create Lemon Squeezy checkout.",
-      },
+      { error: "Unable to start checkout right now. Please try again shortly." },
       { status: 502 },
     );
   }

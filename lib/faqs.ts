@@ -17,7 +17,7 @@ export const faqs = [
   },
   {
     q: "Is our examination data secure?",
-    a: "All uploads are encrypted in transit and at rest. Institution plans add SSO, granular role controls and a full audit trail. Your papers and syllabi are never used to train any model.",
+    a: "All uploads are encrypted in transit and at rest. Passwords are stored hashed, with login-attempt throttling and account lockout against brute force. Your papers and syllabi are never used to train any AI model.",
   },
   {
     q: "Which subjects and streams are supported?",

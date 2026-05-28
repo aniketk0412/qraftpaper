@@ -43,7 +43,7 @@ const featureRows: MenuRow[] = [
   { icon: Scale, title: "Weightage engine", desc: "Marks split to your blueprint", href: "#features" },
   { icon: BookMarked, title: "Difficulty & Bloom's", desc: "Balanced cognitive spread", href: "#features" },
   { icon: Fingerprint, title: "Originality guard", desc: "No repeats from past papers", href: "#features" },
-  { icon: FileOutput, title: "Export & govern", desc: "PDF, Word, SSO, audit logs", href: "#features" },
+  { icon: FileOutput, title: "Export anywhere", desc: "PDF, Word and shareable links", href: "#features" },
 ];
 
 const howRows: MenuRow[] = [

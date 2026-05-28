@@ -18,7 +18,7 @@ import {
 
 export const runtime = "nodejs";
 
-const allowedDocumentTypes = new Set(["syllabus", "sample", "pyq"]);
+const allowedDocumentTypes = ["combined", "syllabus", "sample", "pyq"] as const;
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB per file
 const MIN_EXTRACTED_CHARS = 200; // below this it isn't real study material
@@ -69,10 +69,11 @@ export async function POST(request: Request) {
     const file = formData.get(type);
 
     if (!(file instanceof File)) {
-      return NextResponse.json(
-        { error: `${type} PDF is required` },
-        { status: 400 },
-      );
+      continue;
+    }
+
+    if (file.size === 0) {
+      continue;
     }
 
     if (file.type && file.type !== "application/pdf") {
@@ -145,6 +146,13 @@ export async function POST(request: Request) {
         extractedText: document.extractedText ?? "",
       });
     }
+  }
+
+  if (storedDocuments.length === 0) {
+    return NextResponse.json(
+      { error: "Upload at least one text-based PDF for this subject." },
+      { status: 400 },
+    );
   }
 
   const [job] = await getDb()

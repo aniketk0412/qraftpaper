@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Globe, Mail, MessageSquare } from "lucide-react";
+import { Globe, Mail } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { supportEmail } from "@/lib/site";
 
 const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -8,7 +9,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: "Features", href: "/#features" },
       { label: "How it works", href: "/#how" },
-      { label: "Showcase", href: "/#showcase" },
+      { label: "Sample paper", href: "/#showcase" },
       { label: "Pricing", href: "/#pricing" },
     ],
   },
@@ -16,9 +17,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Customers", href: "/#showcase" },
-      { label: "Careers", href: "mailto:careers@qraftpaper.app" },
-      { label: "Contact", href: "mailto:support@qraftpaper.app" },
+      { label: "Contact", href: `mailto:${supportEmail}` },
     ],
   },
   {
@@ -36,7 +35,6 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "Privacy", href: "/privacy" },
       { label: "Terms", href: "/terms" },
       { label: "Data Processing", href: "/privacy#data-processing" },
-      { label: "Compliance", href: "/privacy#security" },
     ],
   },
 ];
@@ -59,12 +57,7 @@ export function SiteFooter() {
                 {
                   Icon: Mail,
                   label: "Email us",
-                  href: "mailto:support@qraftpaper.app",
-                },
-                {
-                  Icon: MessageSquare,
-                  label: "Community",
-                  href: "mailto:support@qraftpaper.app",
+                  href: `mailto:${supportEmail}`,
                 },
               ].map(({ Icon, label, href }) => (
                 <a
@@ -99,11 +92,10 @@ export function SiteFooter() {
 
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-line pt-8 sm:flex-row">
           <p className="text-xs text-fg-subtle">
-            © {new Date().getFullYear()} QraftPaper Labs. All rights reserved.
+            © {new Date().getFullYear()} QraftPaper. All rights reserved.
           </p>
-          <p className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-fg-subtle">
-            <span className="h-1.5 w-1.5 rounded-full bg-fg shadow-[0_0_8px_2px_rgba(20,32,46,0.4)]" />
-            All systems operational
+          <p className="text-xs text-fg-subtle">
+            Operated by Aniket Kumbhar
           </p>
         </div>
       </div>

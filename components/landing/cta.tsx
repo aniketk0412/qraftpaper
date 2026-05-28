@@ -15,7 +15,7 @@ export function Cta() {
             <div className="relative">
               <span className="inline-flex items-center gap-2 rounded-full glass px-3.5 py-1.5 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-fg-muted">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_10px_2px_rgba(45,139,139,0.5)]" />
-                Limited onboarding cohorts
+                Ready in minutes
               </span>
 
               <h2 className="mx-auto mt-6 max-w-2xl text-balance text-[2.2rem] font-semibold leading-[1.05] tracking-[-0.03em] text-gradient sm:text-5xl">
@@ -23,8 +23,8 @@ export function Cta() {
                 <span className="text-accent">before this meeting ends</span>
               </h2>
               <p className="mx-auto mt-5 max-w-lg text-[0.97rem] leading-relaxed text-fg-muted">
-                Join the institutions replacing weeks of paper-setting with a
-                workflow that takes minutes — without compromising on rigour.
+                Replace weeks of paper-setting with a workflow that takes
+                minutes — without compromising on rigour.
               </p>
 
               <div className="mt-9 flex flex-wrap items-center justify-center gap-3">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/legal/legal-page";
+import { supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Terms of Service — QraftPaper",
@@ -182,9 +183,9 @@ export default function TermsPage() {
           after changes constitutes acceptance. Questions? Email{" "}
           <a
             className="text-accent transition-colors hover:text-accent-soft"
-            href="mailto:support@qraftpaper.app"
+            href={`mailto:${supportEmail}`}
           >
-            support@qraftpaper.app
+            {supportEmail}
           </a>
           .
         </p>

@@ -122,16 +122,16 @@ export function Features() {
                   <IconTile icon={FileOutput} size="lg" />
                   <div>
                     <h3 className="text-xl font-semibold tracking-tight">
-                      Export anywhere, govern everything
+                      Export anywhere
                     </h3>
                     <p className="mt-1.5 max-w-xl text-[0.9rem] leading-relaxed text-fg-muted">
-                      Print-ready PDF and editable Word export, with SSO, role
-                      controls, and a full audit trail of every generated paper.
+                      Print-ready PDF and editable Word export of every paper
+                      and quiz — share with your board or upload to your LMS.
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {["PDF export", "Word export", "SSO / SAML", "Audit logs", "Role controls"].map(
+                  {["PDF export", "Word export", "Shareable quiz links"].map(
                     (t) => (
                       <span
                         key={t}

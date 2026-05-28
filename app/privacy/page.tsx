@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/legal/legal-page";
+import { supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — QraftPaper",
@@ -95,11 +96,11 @@ export default function PrivacyPage() {
       <LegalSection heading="Security">
         <p id="security">
           All uploads are encrypted in transit and at rest. Passwords are stored
-          hashed, never in plain text. Institution plans add single sign-on,
-          granular role controls and a full audit trail. Access is limited to the
-          people in your workspace. No system is perfectly secure, but we work to
-          protect your data and will notify affected users of a breach as
-          required by law.
+          hashed, never in plain text. Access is limited to the people in your
+          workspace, with login-attempt throttling and account lockout against
+          brute force. No system is perfectly secure, but we work to protect
+          your data and will notify affected users of a breach as required by
+          law.
         </p>
       </LegalSection>
 
@@ -120,9 +121,9 @@ export default function PrivacyPage() {
           processing. To make a request, contact{" "}
           <a
             className="text-accent transition-colors hover:text-accent-soft"
-            href="mailto:privacy@qraftpaper.app"
+            href={`mailto:${supportEmail}`}
           >
-            privacy@qraftpaper.app
+            {supportEmail}
           </a>
           .
         </p>
@@ -143,9 +144,9 @@ export default function PrivacyPage() {
           workspace owners. Questions or requests? Email{" "}
           <a
             className="text-accent transition-colors hover:text-accent-soft"
-            href="mailto:privacy@qraftpaper.app"
+            href={`mailto:${supportEmail}`}
           >
-            privacy@qraftpaper.app
+            {supportEmail}
           </a>
           .
         </p>
