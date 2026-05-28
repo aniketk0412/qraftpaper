@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { auth } from "@/auth";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
+import { VerifyEmailBanner } from "@/components/dashboard/verify-email-banner";
 import { getDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
@@ -32,6 +33,7 @@ export default async function DashboardLayout({
           email: users.email,
           institution: users.institution,
           plan: users.plan,
+          emailVerifiedAt: users.emailVerifiedAt,
         })
         .from(users)
         .where(eq(users.id, session.user.id))
@@ -56,7 +58,10 @@ export default async function DashboardLayout({
         user={user}
         plan={profile?.plan ?? "unpaid"}
       />
-      <main className="px-5 py-8 sm:px-8">{children}</main>
+      <main className="px-5 py-8 sm:px-8">
+        {profile && !profile.emailVerifiedAt && <VerifyEmailBanner />}
+        {children}
+      </main>
     </div>
   );
 }

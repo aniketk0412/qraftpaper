@@ -1,19 +1,18 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { auth } from "@/auth";
 import { Logo } from "@/components/logo";
 import { AuthShowcase } from "@/components/auth/auth-showcase";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export default async function AuthLayout({ children }: { children: ReactNode }) {
-  const session = await auth();
+// NOTE: this layout does NOT redirect signed-in users away. /verify-email,
+// /reset-password and /forgot-password are all valid for a signed-in user
+// to hit (e.g. just-signed-up account verifying their email, or someone
+// resetting their password while still logged in on another device).
+// The login + signup pages enforce the "already signed in → /dashboard"
+// behaviour themselves.
 
-  if (session?.user) {
-    redirect("/dashboard");
-  }
-
+export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <AuthShowcase />

@@ -104,6 +104,30 @@ export const passwordResetTokens = pgTable(
   ],
 );
 
+/** Single-use tokens sent to confirm a new signup owns the email address.
+ *  Mirrors passwordResetTokens — hashed at rest, expires fast, marks `usedAt`
+ *  on success and re-issues invalidate older unused tokens for the same user. */
+export const emailVerificationTokens = pgTable(
+  "email_verification_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("email_verification_tokens_hash_idx").on(table.tokenHash),
+    index("email_verification_tokens_user_created_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+  ],
+);
+
 export const subjects = pgTable("subjects", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")

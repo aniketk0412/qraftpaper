@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, Lock, Mail } from "lucide-react";
+import { auth } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
 import { GlowButton } from "@/components/ui/glow-button";
 import { loginAction } from "../actions";
@@ -27,6 +29,11 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string | string[]; reset?: string | string[] }>;
 }) {
+  // Already signed in? Skip the form entirely — moved out of (auth)/layout
+  // so /verify-email and /reset-password remain accessible while logged in.
+  const session = await auth();
+  if (session?.user) redirect("/dashboard");
+
   const { error, reset } = await searchParams;
   const errorKey = Array.isArray(error) ? error[0] : error;
   const resetKey = Array.isArray(reset) ? reset[0] : reset;

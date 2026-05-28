@@ -9,9 +9,11 @@ import { redirect } from "next/navigation";
 
 import { signIn } from "@/auth";
 import { identifyUser, trackEvent } from "@/lib/analytics";
+import { issueVerificationEmail, hashVerificationToken } from "@/lib/verification";
 import { getDb } from "@/lib/db";
 import {
   auditLogs,
+  emailVerificationTokens,
   organizationMembers,
   organizations,
   passwordResetTokens,
@@ -354,6 +356,14 @@ export async function signupAction(formData: FormData) {
     } catch {
       /* swallow */
     }
+
+    // Fire-and-forget verification email. The user still gets signed in even
+    // if email transport is down — they'll see the banner and can resend.
+    try {
+      await issueVerificationEmail({ userId: user.id, email: user.email });
+    } catch (error) {
+      console.error("[signup] verification email failed", error);
+    }
   }
 
   try {
@@ -373,4 +383,119 @@ export async function signupAction(formData: FormData) {
   }
 
   redirect("/dashboard");
+}
+
+/**
+ * Resolves an email-verification token. Marks the user as verified and
+ * invalidates the token on success.
+ */
+export async function verifyEmailAction(formData: FormData) {
+  const token = getRequiredString(formData, "token");
+  if (!token) {
+    redirect("/verify-email?error=invalid-token");
+  }
+
+  const db = getDb();
+  const [record] = await db
+    .select({
+      id: emailVerificationTokens.id,
+      userId: emailVerificationTokens.userId,
+      expiresAt: emailVerificationTokens.expiresAt,
+    })
+    .from(emailVerificationTokens)
+    .where(
+      and(
+        eq(emailVerificationTokens.tokenHash, hashVerificationToken(token)),
+        isNull(emailVerificationTokens.usedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!record || record.expiresAt < new Date()) {
+    redirect("/verify-email?error=invalid-token");
+  }
+
+  await db
+    .update(users)
+    .set({ emailVerifiedAt: new Date() })
+    .where(eq(users.id, record.userId));
+
+  await db
+    .update(emailVerificationTokens)
+    .set({ usedAt: new Date() })
+    .where(eq(emailVerificationTokens.id, record.id));
+
+  await db.insert(auditLogs).values({
+    userId: record.userId,
+    action: "email_verified",
+    entityType: "user",
+    entityId: record.userId,
+    ipAddress: await getRequestIp(),
+  });
+
+  redirect("/dashboard?verified=1");
+}
+
+/**
+ * Re-sends a verification email to the signed-in unverified user. Throttled
+ * 3/hour per IP so a hijacked button isn't an outbound-email cannon.
+ */
+export async function resendVerificationAction() {
+  const { auth } = await import("@/auth");
+  const session = await auth();
+  if (!session?.user?.id || !session.user.email) {
+    redirect("/login");
+  }
+
+  const db = getDb();
+  const [profile] = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      emailVerifiedAt: users.emailVerifiedAt,
+    })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+
+  if (!profile) {
+    redirect("/login");
+  }
+  if (profile.emailVerifiedAt) {
+    redirect("/dashboard?verified=1");
+  }
+
+  const ip = await getRequestIp();
+  if (ip) {
+    const since = new Date(Date.now() - 60 * 60 * 1000);
+    const [recent] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(auditLogs)
+      .where(
+        and(
+          eq(auditLogs.action, "email_verification_requested"),
+          eq(auditLogs.ipAddress, ip),
+          gte(auditLogs.createdAt, since),
+        ),
+      );
+    if ((recent?.n ?? 0) >= 3) {
+      redirect("/dashboard?resent=throttled");
+    }
+  }
+
+  await db.insert(auditLogs).values({
+    userId: profile.id,
+    action: "email_verification_requested",
+    entityType: "user",
+    entityId: profile.id,
+    ipAddress: ip,
+  });
+
+  try {
+    await issueVerificationEmail({ userId: profile.id, email: profile.email });
+  } catch (error) {
+    console.error("[resend-verification] failed", error);
+  }
+
+  redirect("/dashboard?resent=1");
 }

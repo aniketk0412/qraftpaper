@@ -13,6 +13,10 @@ import {
   RateLimitError,
   UsageLimitError,
 } from "@/lib/usage";
+import {
+  assertEmailVerified,
+  EmailNotVerifiedError,
+} from "@/lib/verification-gate";
 
 export const runtime = "nodejs";
 
@@ -86,9 +90,13 @@ export async function POST(request: Request) {
   const plan = account?.plan ?? "unpaid";
 
   try {
+    await assertEmailVerified(session.user.id);
     await assertWithinRateLimit(session.user.id);
     await assertCanGenerate(session.user.id, plan);
   } catch (error) {
+    if (error instanceof EmailNotVerifiedError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     if (error instanceof RateLimitError) {
       return NextResponse.json({ error: error.message }, { status: 429 });
     }

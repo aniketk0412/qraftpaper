@@ -15,6 +15,10 @@ import {
   RateLimitError,
   UsageLimitError,
 } from "@/lib/usage";
+import {
+  assertEmailVerified,
+  EmailNotVerifiedError,
+} from "@/lib/verification-gate";
 import { normalizeUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
@@ -58,8 +62,12 @@ export async function POST(request: Request) {
   }
 
   try {
+    await assertEmailVerified(session.user.id);
     await assertWithinRateLimit(session.user.id);
   } catch (error) {
+    if (error instanceof EmailNotVerifiedError) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     if (error instanceof RateLimitError) {
       return NextResponse.json({ error: error.message }, { status: 429 });
     }

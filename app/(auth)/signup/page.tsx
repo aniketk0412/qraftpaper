@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, Building2, Lock, Mail, User } from "lucide-react";
+import { auth } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
 import { Turnstile } from "@/components/auth/turnstile";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -25,6 +27,9 @@ export default async function SignupPage({
 }: {
   searchParams: Promise<{ error?: string | string[] }>;
 }) {
+  const session = await auth();
+  if (session?.user) redirect("/dashboard");
+
   const { error } = await searchParams;
   const errorKey = Array.isArray(error) ? error[0] : error;
   const errorMessage = errorKey ? errorMessages[errorKey] : undefined;
