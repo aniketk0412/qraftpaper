@@ -89,7 +89,7 @@ const navItems: NavItem[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", hasMenu: false },
 ];
 
-export function SiteNav() {
+export function SiteNav({ signedIn = false }: { signedIn?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -179,12 +179,20 @@ export function SiteNav() {
 
           <div className="hidden items-center gap-2 lg:flex">
             <ThemeToggle />
-            <GlowButton href="/login" variant="ghost" size="md">
-              Sign in
-            </GlowButton>
-            <GlowButton href="/signup" variant="primary" size="md">
-              Sign up
-            </GlowButton>
+            {signedIn ? (
+              <GlowButton href="/dashboard" variant="primary" size="md">
+                Open dashboard
+              </GlowButton>
+            ) : (
+              <>
+                <GlowButton href="/login" variant="ghost" size="md">
+                  Sign in
+                </GlowButton>
+                <GlowButton href="/signup" variant="primary" size="md">
+                  Sign up
+                </GlowButton>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-2 lg:hidden">
@@ -222,12 +230,20 @@ export function SiteNav() {
                 </Link>
               ))}
               <div className="mt-3 flex flex-col gap-2 border-t border-line pt-4">
-                <GlowButton href="/login" variant="secondary" size="md">
-                  Sign in
-                </GlowButton>
-                <GlowButton href="/signup" variant="primary" size="md">
-                  Sign up
-                </GlowButton>
+                {signedIn ? (
+                  <GlowButton href="/dashboard" variant="primary" size="md">
+                    Open dashboard
+                  </GlowButton>
+                ) : (
+                  <>
+                    <GlowButton href="/login" variant="secondary" size="md">
+                      Sign in
+                    </GlowButton>
+                    <GlowButton href="/signup" variant="primary" size="md">
+                      Sign up
+                    </GlowButton>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

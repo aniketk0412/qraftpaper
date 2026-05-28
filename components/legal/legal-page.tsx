@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
+import { auth } from "@/auth";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
 
-export function LegalPage({
+export async function LegalPage({
   eyebrow,
   title,
   updated,
@@ -13,9 +14,12 @@ export function LegalPage({
   updated?: string;
   children: ReactNode;
 }) {
+  // Read session so the nav can show "Open dashboard" instead of
+  // "Sign in / Sign up" when a logged-in user lands on /about /privacy /terms.
+  const session = await auth();
   return (
     <>
-      <SiteNav />
+      <SiteNav signedIn={Boolean(session?.user)} />
       <main className="mx-auto max-w-3xl px-5 pb-24 pt-32 sm:px-8">
         <p className="font-mono text-[0.7rem] uppercase tracking-[0.24em] text-violet-bright">
           {eyebrow}
