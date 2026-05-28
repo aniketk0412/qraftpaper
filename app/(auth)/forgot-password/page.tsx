@@ -7,6 +7,8 @@ import { requestPasswordResetAction } from "../actions";
 
 export const metadata: Metadata = {
   title: "Reset password - QraftPaper",
+  // Recovery flow — keep it out of search indexes.
+  robots: { index: false, follow: false },
 };
 
 export const runtime = "nodejs";

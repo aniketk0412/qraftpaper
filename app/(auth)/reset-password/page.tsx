@@ -7,6 +7,8 @@ import { resetPasswordAction } from "../actions";
 
 export const metadata: Metadata = {
   title: "Choose new password - QraftPaper",
+  // Reset URLs carry a token; keep them out of every search/archive crawl.
+  robots: { index: false, follow: false },
 };
 
 export const runtime = "nodejs";

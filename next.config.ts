@@ -45,9 +45,17 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["pdf-parse"],
   async headers() {
     // Keep authenticated/private surfaces out of search indexes — these hold
-    // user papers, billing and account data, not marketing pages. Two sources
-    // per route so both the base path and any sub-path are covered.
-    const privateRoots = ["dashboard", "papers", "billing", "account"];
+    // user papers, billing and account data, not marketing pages. Recovery
+    // routes (forgot/reset-password) carry tokens in the URL, so they get
+    // the same treatment via a robust X-Robots-Tag header.
+    const privateRoots = [
+      "dashboard",
+      "papers",
+      "billing",
+      "account",
+      "forgot-password",
+      "reset-password",
+    ];
     const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
     const privateHeaders = privateRoots.flatMap((root) => [
       { source: `/${root}`, headers: noindex },
