@@ -8,7 +8,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { IconTile } from "@/components/ui/icon-tile";
 import { billingTiers } from "@/lib/billing/lemonsqueezy";
 import { getDb } from "@/lib/db";
-import { subscriptions } from "@/lib/db/schema";
+import { subscriptions, users } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
 import { cn } from "@/lib/utils";
 import { CheckoutButton } from "./checkout-button";
@@ -39,14 +39,29 @@ export default async function BillingPage({
         .orderBy(desc(subscriptions.createdAt))
         .limit(1)
     : [];
+  const [profile] = session?.user?.id
+    ? await getDb()
+        .select({
+          name: users.name,
+          email: users.email,
+          institution: users.institution,
+          plan: users.plan,
+        })
+        .from(users)
+        .where(eq(users.id, session.user.id))
+        .limit(1)
+    : [];
   const { checkout } = await searchParams;
   const checkoutStatus = Array.isArray(checkout) ? checkout[0] : checkout;
-  const currentPlan = session?.user?.plan ?? "unpaid";
+  const currentPlan = profile?.plan ?? session?.user?.plan ?? "unpaid";
   const user = {
-    name: session?.user?.name ?? null,
-    email: session?.user?.email ?? "",
-    institution: session?.user?.institution ?? null,
-    initials: deriveInitials(session?.user?.name, session?.user?.email),
+    name: profile?.name ?? session?.user?.name ?? null,
+    email: profile?.email ?? session?.user?.email ?? "",
+    institution: profile?.institution ?? session?.user?.institution ?? null,
+    initials: deriveInitials(
+      profile?.name ?? session?.user?.name,
+      profile?.email ?? session?.user?.email,
+    ),
   };
 
   return (

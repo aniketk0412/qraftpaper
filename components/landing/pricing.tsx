@@ -20,7 +20,7 @@ export function Pricing() {
               <span className="text-accent">not trials</span>
             </>
           }
-          description="No free tier. Each plan includes a monthly generation allowance — you pay for finished output, not a sandbox."
+          description="No free tier. Each plan includes a monthly generation allowance - you pay for review-ready drafts, not a sandbox."
         />
 
         <div className="mx-auto mt-14 grid max-w-3xl items-stretch gap-3 sm:grid-cols-2">
@@ -72,7 +72,7 @@ export function Pricing() {
 
                 <div className="relative mt-6">
                   <GlowButton
-                    href="/billing"
+                    href="/signup"
                     variant={tier.featured ? "primary" : "secondary"}
                     size="md"
                     className="w-full"
@@ -106,7 +106,7 @@ export function Pricing() {
 
         <Reveal delay={0.1}>
           <p className="mt-8 text-center font-mono text-[0.7rem] uppercase tracking-[0.16em] text-fg-subtle">
-            Billed monthly · Cancel anytime · All purchases final
+            Billed monthly - Cancel anytime - All purchases final
           </p>
         </Reveal>
       </div>
