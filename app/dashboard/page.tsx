@@ -161,42 +161,88 @@ export default async function DashboardPage() {
       </Reveal>
 
       <div className="mt-10 grid gap-3 lg:grid-cols-[1.5fr_1fr]">
-        <Reveal>
-          <div className="overflow-hidden rounded-2xl glass-strong">
-            <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
-              <div className="flex items-center gap-2.5">
-                <FileText className="h-4 w-4 text-violet-bright" />
-                <div className="leading-tight">
-                  <p className="text-sm font-medium">Sample generated paper</p>
-                  <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
-                    {examplePaper.subjectCode} · {examplePaper.totalMarks} marks
+        {recentPapers.length === 0 ? (
+          // Only show the sample-paper teaser to users who have never generated
+          // their own paper — otherwise it's just clutter telling paid customers
+          // to "subscribe to unlock generation".
+          <Reveal>
+            <div className="overflow-hidden rounded-2xl glass-strong">
+              <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+                <div className="flex items-center gap-2.5">
+                  <FileText className="h-4 w-4 text-violet-bright" />
+                  <div className="leading-tight">
+                    <p className="text-sm font-medium">Sample generated paper</p>
+                    <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
+                      {examplePaper.subjectCode} · {examplePaper.totalMarks} marks
+                    </p>
+                  </div>
+                </div>
+                <span className="flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-gold">
+                  <Lock className="h-3 w-3" />
+                  Sample
+                </span>
+              </div>
+
+              <div className="relative">
+                <div className="max-h-[26rem] overflow-hidden">
+                  <PaperSheet paper={examplePaper} />
+                </div>
+                {/* gradient fade masks the cut-off sheet and houses the upgrade CTA */}
+                <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-canvas via-canvas/95 to-transparent px-6 pb-6 pt-24 text-center">
+                  <p className="max-w-sm text-sm text-fg-muted">
+                    This is an example paper. Subscribe and create a subject to
+                    generate papers from your own syllabus, PYQs and weightages.
                   </p>
+                  <GlowButton href="/billing" size="md">
+                    Subscribe to unlock generation
+                    <ArrowRight className="h-4 w-4" />
+                  </GlowButton>
                 </div>
               </div>
-              <span className="flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-gold">
-                <Lock className="h-3 w-3" />
-                Sample
-              </span>
             </div>
-
-            <div className="relative">
-              <div className="max-h-[26rem] overflow-hidden">
-                <PaperSheet paper={examplePaper} />
+          </Reveal>
+        ) : (
+          // Show the most recent real paper instead of the sample mock.
+          <Reveal>
+            <GlassCard className="flex h-full flex-col p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <FileText className="h-4 w-4 text-violet-bright" />
+                  <div className="leading-tight">
+                    <p className="text-sm font-medium">Latest paper</p>
+                    <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
+                      {recentPapers[0].content?.subjectCode ?? "Paper"} ·{" "}
+                      {recentPapers[0].content?.totalMarks ?? 0} marks
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/dashboard/papers"
+                  className="flex items-center gap-1 text-[0.74rem] text-violet-bright transition-colors hover:text-violet"
+                >
+                  View all
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
-              {/* gradient fade masks the cut-off sheet and houses the upgrade CTA */}
-              <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-canvas via-canvas/95 to-transparent px-6 pb-6 pt-24 text-center">
-                <p className="max-w-sm text-sm text-fg-muted">
-                  This is an example paper. Subscribe to generate papers from
-                  your own syllabus, PYQs and weightages.
-                </p>
-                <GlowButton href="/billing" size="md">
-                  Subscribe to unlock generation
+              <h3 className="mt-4 text-lg font-semibold tracking-tight">
+                {recentPapers[0].title}
+              </h3>
+              <p className="mt-1 text-[0.82rem] text-fg-muted">
+                {recentPapers[0].content?.subject ?? "Generated paper"}
+              </p>
+              <div className="mt-auto pt-4">
+                <GlowButton
+                  href={`/papers/${recentPapers[0].id}`}
+                  size="md"
+                  className="w-full"
+                >
+                  Open editor
                   <ArrowRight className="h-4 w-4" />
                 </GlowButton>
               </div>
-            </div>
-          </div>
-        </Reveal>
+            </GlassCard>
+          </Reveal>
+        )}
 
         <Reveal delay={0.1}>
           <GlassCard className="h-full p-5">

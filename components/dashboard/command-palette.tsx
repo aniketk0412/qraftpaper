@@ -48,9 +48,9 @@ const actionItems: CommandItem[] = [
   {
     id: "act-quiz",
     label: "Generate a quiz",
-    sub: "Open the quiz workspace",
+    sub: "Pick a subject from the dashboard",
     icon: ListChecks,
-    href: "/quiz",
+    href: "/dashboard",
     group: "Actions",
   },
   {

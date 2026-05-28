@@ -54,13 +54,13 @@ const howRows: MenuRow[] = [
 
 const showcaseRows: MenuRow[] = [
   { icon: FileText, title: "Sample question paper", desc: "Real generated output", href: "#showcase" },
-  { icon: ListChecks, title: "Sample quiz", desc: "AI-generated quiz preview", href: "/quiz" },
-  { icon: PencilRuler, title: "Paper editor", desc: "Inline edit & regenerate", href: "/papers/demo" },
+  { icon: ListChecks, title: "Sample quiz", desc: "AI-generated quiz preview", href: "#quiz" },
+  { icon: PencilRuler, title: "How editing works", desc: "Inline edit & regenerate", href: "#features" },
 ];
 
 const quizRows: MenuRow[] = [
   { icon: Sparkles, title: "How quiz generation works", desc: "Quizzes from syllabus + PYQs", href: "#quiz" },
-  { icon: ListChecks, title: "Open the quiz preview", desc: "Try an interactive quiz", href: "/quiz" },
+  { icon: ListChecks, title: "Try the interactive quiz", desc: "Pick answers and see explanations", href: "#quiz" },
 ];
 
 // Read straight from PRICING_TIERS so the nav dropdown can never drift from
