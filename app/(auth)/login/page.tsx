@@ -7,7 +7,7 @@ import { supportEmail } from "@/lib/site";
 import { loginAction } from "../actions";
 
 export const metadata: Metadata = {
-  title: "Sign in — QraftPaper",
+  title: "Sign in - QraftPaper",
 };
 
 export const runtime = "nodejs";
@@ -53,7 +53,7 @@ export default async function LoginPage({
           label="Password"
           type="password"
           icon={Lock}
-          placeholder="••••••••••"
+          placeholder="********"
           autoComplete="current-password"
         />
 

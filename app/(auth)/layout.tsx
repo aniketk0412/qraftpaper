@@ -1,11 +1,19 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { auth } from "@/auth";
 import { Logo } from "@/components/logo";
 import { AuthShowcase } from "@/components/auth/auth-showcase";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export default function AuthLayout({ children }: { children: ReactNode }) {
+export default async function AuthLayout({ children }: { children: ReactNode }) {
+  const session = await auth();
+
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <AuthShowcase />
