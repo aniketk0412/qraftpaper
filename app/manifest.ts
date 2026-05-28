@@ -25,7 +25,10 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/apple-icon",
         sizes: "180x180",
         type: "image/png",
-        purpose: "maskable",
+        // "any" — the apple-icon centers the Q mark with no safe-zone padding,
+        // so declaring it "maskable" would let Android crop the logo on round
+        // adaptive icons. Use "any" until a properly padded variant exists.
+        purpose: "any",
       },
     ],
   };
