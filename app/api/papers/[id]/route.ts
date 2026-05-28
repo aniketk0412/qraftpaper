@@ -75,3 +75,30 @@ export async function PATCH(
 
   return NextResponse.json({ paper: updated.content, record: updated });
 }
+
+/** DELETE /api/papers/[id] — remove a paper the caller owns. */
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  if (!isUuid(id)) {
+    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
+  }
+
+  const deleted = await getDb()
+    .delete(papers)
+    .where(and(eq(papers.id, id), eq(papers.userId, session.user.id)))
+    .returning({ id: papers.id });
+
+  if (deleted.length === 0) {
+    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

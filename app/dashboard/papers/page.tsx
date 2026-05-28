@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
+import { DeleteButton } from "@/components/ui/delete-button";
 import { BackLink } from "@/components/dashboard/back-link";
 import { getDb } from "@/lib/db";
 import { papers } from "@/lib/db/schema";
@@ -74,7 +75,7 @@ export default async function PapersPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <GlowButton
                     href={`/api/export/paper/${paper.id}/pdf`}
                     variant="secondary"
@@ -89,6 +90,10 @@ export default async function PapersPage() {
                   >
                     Open editor <ArrowRight className="h-3.5 w-3.5" />
                   </GlowButton>
+                  <DeleteButton
+                    endpoint={`/api/papers/${paper.id}`}
+                    label="paper"
+                  />
                 </div>
               </div>
             </GlassCard>

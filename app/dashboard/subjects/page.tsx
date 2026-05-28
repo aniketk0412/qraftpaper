@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
+import { DeleteButton } from "@/components/ui/delete-button";
 import { BackLink } from "@/components/dashboard/back-link";
 import { getDb } from "@/lib/db";
 import { documents, subjects } from "@/lib/db/schema";
@@ -79,15 +80,19 @@ export default async function SubjectsPage() {
                   <MiniStat label="Papers" value={String(subject.papers)} />
                   <MiniStat label="Profile" value={subject.hasProfile ? "Yes" : "No"} />
                 </div>
-                <div className="mt-5">
+                <div className="mt-5 flex items-center gap-2">
                   <GlowButton
                     href="/dashboard"
                     variant="secondary"
                     size="sm"
-                    className="w-full"
+                    className="flex-1"
                   >
                     Generate
                   </GlowButton>
+                  <DeleteButton
+                    endpoint={`/api/subjects/${subject.id}`}
+                    label="subject"
+                  />
                 </div>
               </GlassCard>
             </Reveal>
