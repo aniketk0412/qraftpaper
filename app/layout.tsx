@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
+import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { SiteBackground } from "@/components/effects/site-background";
 import { CursorGlow } from "@/components/effects/cursor-glow";
 import { siteConfig, siteUrl } from "@/lib/site";
@@ -104,13 +105,15 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-canvas text-fg">
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <MotionConfig reducedMotion="user">
-          <SiteBackground />
-          <CursorGlow />
-          <SmoothScroll>
-            <div className="relative z-10">{children}</div>
-          </SmoothScroll>
-        </MotionConfig>
+        <PostHogProvider>
+          <MotionConfig reducedMotion="user">
+            <SiteBackground />
+            <CursorGlow />
+            <SmoothScroll>
+              <div className="relative z-10">{children}</div>
+            </SmoothScroll>
+          </MotionConfig>
+        </PostHogProvider>
         <Analytics />
         <SpeedInsights />
       </body>

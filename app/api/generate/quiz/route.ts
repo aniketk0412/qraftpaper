@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { trackEvent } from "@/lib/analytics";
 import { isQuiz } from "@/lib/content-validation";
 import { generateQuizQuestions, type QuizGenerationConfig } from "@/lib/ai/generate";
 import { normalizeQuizConfig } from "@/lib/generation-config";
@@ -183,6 +184,21 @@ export async function POST(request: Request) {
         finishedAt: new Date(),
       })
       .where(eq(generationJobs.id, job.id));
+  }
+
+  try {
+    await trackEvent({
+      distinctId: session.user.id,
+      event: "quiz_generated",
+      properties: {
+        plan,
+        subjectId,
+        questionCount: config.questionCount,
+        durationMins: config.durationMins,
+      },
+    });
+  } catch {
+    /* swallow */
   }
 
   return NextResponse.json({ quiz, record: created }, { status: 201 });

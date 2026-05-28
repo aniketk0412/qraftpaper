@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { signIn } from "@/auth";
+import { identifyUser, trackEvent } from "@/lib/analytics";
 import { getDb } from "@/lib/db";
 import {
   auditLogs,
@@ -334,6 +335,24 @@ export async function signupAction(formData: FormData) {
         entityId: organization.id,
         ipAddress: ip,
       });
+    }
+  }
+
+  if (user) {
+    // Best-effort identification + signup event; analytics must never block
+    // a real signup, so wrap and swallow.
+    try {
+      await identifyUser({
+        distinctId: user.id,
+        properties: { email, name, institution, plan: "unpaid" },
+      });
+      await trackEvent({
+        distinctId: user.id,
+        event: "signup_completed",
+        properties: { institution },
+      });
+    } catch {
+      /* swallow */
     }
   }
 

@@ -3,6 +3,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
+import { trackEvent } from "@/lib/analytics";
 import { getDb } from "@/lib/db";
 import { billingEvents, subscriptions, users } from "@/lib/db/schema";
 import { tierForVariantId, type BillingTier } from "@/lib/billing/lemonsqueezy";
@@ -166,6 +167,16 @@ async function handleSubscriptionEvent(payload: LemonWebhookPayload) {
         status: "active",
       })
       .where(eq(users.id, userId));
+
+    try {
+      await trackEvent({
+        distinctId: userId,
+        event: active ? "subscription_activated" : "subscription_cancelled",
+        properties: { plan: active ? tier : "unpaid", status },
+      });
+    } catch {
+      /* swallow */
+    }
   }
 }
 

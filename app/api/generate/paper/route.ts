@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { trackEvent } from "@/lib/analytics";
 import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { generationJobs, papers, subjects, users } from "@/lib/db/schema";
@@ -186,6 +187,21 @@ export async function POST(request: Request) {
         finishedAt: new Date(),
       })
       .where(eq(generationJobs.id, job.id));
+  }
+
+  try {
+    await trackEvent({
+      distinctId: session.user.id,
+      event: "paper_generated",
+      properties: {
+        plan,
+        subjectId,
+        totalMarks: config.totalMarks,
+        sections: config.sections.length,
+      },
+    });
+  } catch {
+    /* swallow */
   }
 
   return NextResponse.json({ paper, record: created }, { status: 201 });
