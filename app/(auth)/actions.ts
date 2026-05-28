@@ -1,7 +1,8 @@
 "use server";
 
+import { createHash, randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, isNull, sql } from "drizzle-orm";
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -12,12 +13,28 @@ import {
   auditLogs,
   organizationMembers,
   organizations,
+  passwordResetTokens,
   users,
 } from "@/lib/db/schema";
+import { sendEmail } from "@/lib/email";
+import { siteUrl } from "@/lib/site";
 
 function getRequiredString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function tokenHash(token: string) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+async function getRequestIp() {
+  const headerList = await headers();
+  return (
+    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    headerList.get("x-real-ip") ??
+    null
+  );
 }
 
 async function verifyTurnstile(
@@ -74,6 +91,143 @@ export async function loginAction(formData: FormData) {
   redirect("/dashboard");
 }
 
+export async function requestPasswordResetAction(formData: FormData) {
+  const email = getRequiredString(formData, "email").toLowerCase();
+
+  if (!email) {
+    redirect("/forgot-password?sent=1");
+  }
+
+  const db = getDb();
+  const ip = await getRequestIp();
+
+  if (ip) {
+    const since = new Date(Date.now() - 60 * 60 * 1000);
+    const [recent] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(auditLogs)
+      .where(
+        and(
+          eq(auditLogs.action, "password_reset_requested"),
+          eq(auditLogs.ipAddress, ip),
+          gte(auditLogs.createdAt, since),
+        ),
+      );
+
+    if ((recent?.n ?? 0) >= 8) {
+      redirect("/forgot-password?sent=1");
+    }
+  }
+
+  const [user] = await db
+    .select({ id: users.id, email: users.email })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  const emailHash = tokenHash(email);
+
+  await db.insert(auditLogs).values({
+    userId: user?.id,
+    action: "password_reset_requested",
+    entityType: "user",
+    entityId: user?.id,
+    metadata: { emailHash },
+    ipAddress: ip,
+  });
+
+  if (user) {
+    const token = randomBytes(32).toString("base64url");
+    const resetUrl = `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`;
+
+    await db.insert(passwordResetTokens).values({
+      userId: user.id,
+      tokenHash: tokenHash(token),
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+    });
+
+    try {
+      const result = await sendEmail({
+        to: user.email,
+        subject: "Reset your QraftPaper password",
+        idempotencyKey: `password-reset-${user.id}-${tokenHash(token).slice(0, 16)}`,
+        text: `Use this link to reset your QraftPaper password. It expires in 30 minutes.\n\n${resetUrl}\n\nIf you did not request this, ignore this email.`,
+        html: `
+          <div style="font-family:Arial,sans-serif;line-height:1.5;color:#1a2332">
+            <h1 style="font-size:20px">Reset your QraftPaper password</h1>
+            <p>Use the link below to set a new password. It expires in 30 minutes.</p>
+            <p><a href="${resetUrl}" style="color:#1f7d7d">Reset password</a></p>
+            <p style="font-size:13px;color:#566779">If you did not request this, you can ignore this email.</p>
+          </div>
+        `,
+      });
+
+      if (result.skipped) {
+        console.warn("[password-reset] email disabled; reset email not sent");
+      }
+    } catch (error) {
+      console.error("[password-reset] email send failed", error);
+    }
+  }
+
+  redirect("/forgot-password?sent=1");
+}
+
+export async function resetPasswordAction(formData: FormData) {
+  const token = getRequiredString(formData, "token");
+  const password = getRequiredString(formData, "password");
+
+  if (!token || password.length < 8) {
+    redirect(`/reset-password?token=${encodeURIComponent(token)}&error=invalid-fields`);
+  }
+
+  const db = getDb();
+  const [record] = await db
+    .select({
+      id: passwordResetTokens.id,
+      userId: passwordResetTokens.userId,
+      expiresAt: passwordResetTokens.expiresAt,
+    })
+    .from(passwordResetTokens)
+    .where(
+      and(
+        eq(passwordResetTokens.tokenHash, tokenHash(token)),
+        isNull(passwordResetTokens.usedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!record || record.expiresAt < new Date()) {
+    redirect("/reset-password?error=invalid-token");
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  await db
+    .update(users)
+    .set({
+      passwordHash,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+    })
+    .where(eq(users.id, record.userId));
+
+  await db
+    .update(passwordResetTokens)
+    .set({ usedAt: new Date() })
+    .where(eq(passwordResetTokens.id, record.id));
+
+  await db.insert(auditLogs).values({
+    userId: record.userId,
+    action: "password_reset_completed",
+    entityType: "user",
+    entityId: record.userId,
+    ipAddress: await getRequestIp(),
+  });
+
+  redirect("/login?reset=success");
+}
+
 export async function signupAction(formData: FormData) {
   const name = getRequiredString(formData, "name");
   const email = getRequiredString(formData, "email").toLowerCase();
@@ -88,11 +242,7 @@ export async function signupAction(formData: FormData) {
 
   // Lightweight per-IP throttle to slow scripted mass sign-ups. (A captcha or
   // email verification is the real fix — this is a first-layer speed bump.)
-  const headerList = await headers();
-  const ip =
-    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    headerList.get("x-real-ip") ??
-    null;
+  const ip = await getRequestIp();
 
   if (ip) {
     const since = new Date(Date.now() - 60 * 60 * 1000);

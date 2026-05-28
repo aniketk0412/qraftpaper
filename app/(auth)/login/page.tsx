@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import { AuthField } from "@/components/auth/auth-field";
 import { GlowButton } from "@/components/ui/glow-button";
-import { supportEmail } from "@/lib/site";
 import { loginAction } from "../actions";
 
 export const metadata: Metadata = {
@@ -19,14 +18,20 @@ const errorMessages: Record<string, string> = {
     "Your account was created. Sign in once to continue to your workspace.",
 };
 
+const statusMessages: Record<string, string> = {
+  success: "Your password has been updated. Sign in with the new password.",
+};
+
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string | string[] }>;
+  searchParams: Promise<{ error?: string | string[]; reset?: string | string[] }>;
 }) {
-  const { error } = await searchParams;
+  const { error, reset } = await searchParams;
   const errorKey = Array.isArray(error) ? error[0] : error;
+  const resetKey = Array.isArray(reset) ? reset[0] : reset;
   const errorMessage = errorKey ? errorMessages[errorKey] : undefined;
+  const statusMessage = resetKey ? statusMessages[resetKey] : undefined;
 
   return (
     <div>
@@ -68,7 +73,7 @@ export default async function LoginPage({
             Keep me signed in
           </label>
           <Link
-            href={`mailto:${supportEmail}?subject=Password%20reset`}
+            href="/forgot-password"
             className="text-[0.78rem] text-violet-bright transition-colors hover:text-violet"
           >
             Forgot password?
@@ -78,6 +83,11 @@ export default async function LoginPage({
         {errorMessage && (
           <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
             {errorMessage}
+          </p>
+        )}
+        {statusMessage && (
+          <p className="rounded-xl border border-accent/25 bg-accent/[0.08] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
+            {statusMessage}
           </p>
         )}
 

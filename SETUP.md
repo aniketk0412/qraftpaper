@@ -31,6 +31,12 @@ Copy `.env.example` → `.env.local` and fill these in.
 | `LEMONSQUEEZY_VARIANT_EDUCATOR` | Variant id of the **$7/mo** Educator product |
 | `LEMONSQUEEZY_VARIANT_DEPARTMENT` | Variant id of the **$24/mo** Department product |
 
+### Email (required for password reset)
+| Variable | Where to get it |
+|---|---|
+| `RESEND_API_KEY` | Vercel Marketplace Resend integration, or Resend API keys |
+| `EMAIL_FROM` | Verified Resend sender, e.g. `QraftPaper <support@yourdomain.com>` |
+
 ### Optional
 | Variable | Default / effect |
 |---|---|
