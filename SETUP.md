@@ -104,8 +104,14 @@ verifies the signature and flips the user's plan. No code changes needed.
 
 - Vercel builds the **`master`** branch (production).
 - Set all env vars in **Project → Settings → Environment Variables**, then
-  redeploy (env changes don't apply to a running build).
+  redeploy (env changes don't apply to a running build). Make sure
+  `DATABASE_URL` is checked for the **Production** environment.
 - `robots.txt`, `sitemap.xml`, and the OG image are generated automatically.
+- **Pending Drizzle migrations run automatically on production deploys** via
+  `scripts/maybe-migrate.mjs` (called from the `build` script). Preview
+  deploys deliberately skip migrations so a feature branch can't ship a
+  schema change to prod. If a migration fails the deploy fails — better than
+  shipping app code against a stale schema.
 
 ## 7. AI cost control
 
