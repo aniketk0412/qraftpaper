@@ -76,18 +76,42 @@ export async function POST(request: Request) {
       eventName,
       dedupeKey,
       payload,
-      processedAt: new Date(),
     })
     .onConflictDoNothing({ target: billingEvents.dedupeKey })
     .returning({ id: billingEvents.id });
 
-  if (!event) {
-    return NextResponse.json({ ok: true, duplicate: true });
+  const eventId = event?.id;
+  let eventToMarkProcessed = eventId;
+
+  if (!eventToMarkProcessed) {
+    const [existingEvent] = await getDb()
+      .select({
+        id: billingEvents.id,
+        processedAt: billingEvents.processedAt,
+      })
+      .from(billingEvents)
+      .where(eq(billingEvents.dedupeKey, dedupeKey))
+      .limit(1);
+
+    if (existingEvent?.processedAt) {
+      return NextResponse.json({ ok: true, duplicate: true });
+    }
+
+    if (!existingEvent) {
+      return NextResponse.json({ error: "Unable to load event" }, { status: 500 });
+    }
+
+    eventToMarkProcessed = existingEvent.id;
   }
 
   if (eventName.startsWith("subscription_")) {
     await handleSubscriptionEvent(payload);
   }
+
+  await getDb()
+    .update(billingEvents)
+    .set({ processedAt: new Date() })
+    .where(eq(billingEvents.id, eventToMarkProcessed));
 
   return NextResponse.json({ ok: true });
 }
