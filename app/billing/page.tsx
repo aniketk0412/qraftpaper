@@ -102,8 +102,8 @@ export default async function BillingPage({
               <div className="mt-5 rounded-xl border border-line bg-tint/[0.03] p-4">
                 <p className="text-sm font-medium">Usage is plan-gated</p>
                 <p className="mt-1 text-[0.82rem] leading-relaxed text-fg-muted">
-                  Educator includes 40 generations/month. Department includes 400
-                  generations/month. Institution plans are handled directly.
+                  Educator includes {billingTiers.educator.generationCap}.
+                  Department includes {billingTiers.department.generationCap}.
                 </p>
               </div>
             </GlassCard>

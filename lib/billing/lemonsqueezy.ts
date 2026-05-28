@@ -1,5 +1,7 @@
 import { createCheckout, lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
 
+import { PLANS } from "@/lib/plans";
+
 export type BillingTier = "educator" | "department";
 
 export interface BillingTierInfo {
@@ -10,21 +12,26 @@ export interface BillingTierInfo {
   generationCap: string;
 }
 
+// Derive every label from PLANS so the billing page can never drift from the
+// public pricing section or the enforced plan limits. If you change a price
+// or allowance, update lib/plans.ts — nothing else needs to know.
+function fromPlan(tier: BillingTier): BillingTierInfo {
+  const plan = PLANS[tier];
+  return {
+    tier,
+    label: plan.name,
+    priceLabel: `${plan.price} ${plan.period}`.trim(),
+    blurb: plan.tagline,
+    generationCap:
+      plan.generationsPerMonth === null
+        ? "Custom monthly allowance"
+        : `${plan.generationsPerMonth} generations / month`,
+  };
+}
+
 export const billingTiers: Record<BillingTier, BillingTierInfo> = {
-  educator: {
-    tier: "educator",
-    label: "Educator",
-    priceLabel: "$39 / month",
-    blurb: "For an individual educator setting their own papers.",
-    generationCap: "40 generations / month",
-  },
-  department: {
-    tier: "department",
-    label: "Department",
-    priceLabel: "$249 / month",
-    blurb: "For a department standardising papers across faculty.",
-    generationCap: "400 generations / month",
-  },
+  educator: fromPlan("educator"),
+  department: fromPlan("department"),
 };
 
 /** True only when every Lemon Squeezy secret needed at runtime is present. */

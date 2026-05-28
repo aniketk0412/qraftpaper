@@ -12,6 +12,7 @@ import { Pricing } from "@/components/landing/pricing";
 import { Faq } from "@/components/landing/faq";
 import { Cta } from "@/components/landing/cta";
 import { faqs } from "@/lib/faqs";
+import { PLANS } from "@/lib/plans";
 import { siteConfig, siteUrl } from "@/lib/site";
 
 const jsonLd = {
@@ -41,7 +42,9 @@ const jsonLd = {
       description: siteConfig.description,
       offers: {
         "@type": "Offer",
-        price: "39",
+        // Entry tier price from the single source of truth — strip the "$" so
+        // Schema.org sees a plain numeric string.
+        price: PLANS.educator.price.replace(/[^0-9.]/g, ""),
         priceCurrency: "USD",
       },
     },
