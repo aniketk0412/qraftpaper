@@ -9,7 +9,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { MeterBar } from "@/components/ui/meter-bar";
 import { difficultyBarFill, difficultyDarkChip } from "@/lib/difficulty";
@@ -33,6 +33,14 @@ export function PaperEditor({
   const [draft, setDraft] = useState("");
   const [regenId, setRegenId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [autosaveState, setAutosaveState] = useState<
+    "idle" | "pending" | "saved" | "failed"
+  >("idle");
+  // Skip the first effect run (initial mount) so we don't post the unchanged
+  // server-loaded paper back the moment the editor opens.
+  const firstRenderRef = useRef(true);
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedSignatureRef = useRef<string>(JSON.stringify(initial));
 
   const allQuestions = useMemo(
     () => paper.sections.flatMap((s) => s.questions),
@@ -51,6 +59,54 @@ export function PaperEditor({
     () => (config ? evaluateBlueprintMatch(config, paper) : null),
     [config, paper],
   );
+
+  // Debounced autosave: every keystroke / inline edit / delete schedules a
+  // PATCH 2 s later. If the paper changes again before the timer fires we
+  // reset, so we batch fast-typing into a single save. Signature compare
+  // skips no-op saves when state churns without real content change.
+  useEffect(() => {
+    if (firstRenderRef.current) {
+      firstRenderRef.current = false;
+      return;
+    }
+    const signature = JSON.stringify(paper);
+    if (signature === lastSavedSignatureRef.current) return;
+
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    setAutosaveState("pending");
+    autosaveTimerRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/papers/${paperId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: paper }),
+        });
+        if (!response.ok) {
+          setAutosaveState("failed");
+          return;
+        }
+        lastSavedSignatureRef.current = signature;
+        setAutosaveState("saved");
+      } catch {
+        setAutosaveState("failed");
+      }
+    }, 2000);
+
+    return () => {
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    };
+  }, [paper, paperId]);
+
+  // Warn the user if they navigate away while a save is still pending.
+  useEffect(() => {
+    if (autosaveState !== "pending") return;
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [autosaveState]);
 
   function saveEdit(id: string) {
     setPaper((p) => ({
@@ -73,22 +129,6 @@ export function PaperEditor({
         questions: s.questions.filter((q) => q.id !== id),
       })),
     }));
-  }
-
-  async function savePaper() {
-    setStatus("Saving...");
-    const response = await fetch(`/api/papers/${paperId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: paper }),
-    });
-
-    if (!response.ok) {
-      setStatus("Save failed");
-      return;
-    }
-
-    setStatus("Saved");
   }
 
   async function regenerate(id: string) {
@@ -124,6 +164,28 @@ export function PaperEditor({
           <span>{paper.durationMins / 60} hours</span>
           <span className="text-fg-subtle">·</span>
           <span className="text-violet-bright">{totalMarks} marks</span>
+          <span className="ml-auto inline-flex items-center gap-1.5 text-[0.62rem]">
+            {autosaveState === "pending" && (
+              <>
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
+                <span className="text-fg-muted">Saving</span>
+              </>
+            )}
+            {autosaveState === "saved" && (
+              <>
+                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                <span className="text-fg-muted">Saved</span>
+              </>
+            )}
+            {autosaveState === "failed" && (
+              <>
+                <span className="h-1.5 w-1.5 rounded-full bg-tint/40" />
+                <span className="text-fg-muted">
+                  Save failed — retrying on next edit
+                </span>
+              </>
+            )}
+          </span>
         </div>
 
         <div className="flex flex-col gap-6">
@@ -374,18 +436,9 @@ export function PaperEditor({
             </GlassCard>
           )}
 
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={savePaper}
-              className="flex items-center gap-2.5 rounded-xl glass px-4 py-3 text-[0.82rem] text-fg-muted transition-colors hover:text-fg"
-            >
-              <Check className="h-4 w-4 text-violet-bright" />
-              Save paper
-            </button>
-            {status && (
-              <p className="px-1 text-[0.74rem] text-fg-subtle">{status}</p>
-            )}
-          </div>
+          {status && (
+            <p className="px-1 text-[0.74rem] text-fg-subtle">{status}</p>
+          )}
         </div>
       </div>
     </div>
