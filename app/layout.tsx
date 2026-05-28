@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { MotionConfig } from "motion/react";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { SiteBackground } from "@/components/effects/site-background";
@@ -109,6 +111,8 @@ export default function RootLayout({
             <div className="relative z-10">{children}</div>
           </SmoothScroll>
         </MotionConfig>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
