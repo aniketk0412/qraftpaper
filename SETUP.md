@@ -31,19 +31,24 @@ Copy `.env.example` → `.env.local` and fill these in.
 | `LEMONSQUEEZY_VARIANT_EDUCATOR` | Variant id of the **$7/mo** Educator product |
 | `LEMONSQUEEZY_VARIANT_DEPARTMENT` | Variant id of the **$24/mo** Department product |
 
+### Email (required for password reset)
+| Variable | Where to get it |
+|---|---|
+| `RESEND_API_KEY` | Vercel Marketplace Resend integration, or Resend API keys |
+| `EMAIL_FROM` | Verified Resend sender, e.g. `QraftPaper <support@yourdomain.com>` |
+
+Without `RESEND_API_KEY` the `/forgot-password` flow silently skips sending
+the email (it logs a warning server-side) — the token is still generated, so
+the route stays functional in dev, but no link reaches the user.
+
 ### Optional
 | Variable | Default / effect |
 |---|---|
 | `NEXT_PUBLIC_SITE_URL` | Public origin for canonical/OG/sitemap. Defaults to `https://qraftpaper.vercel.app`. |
-| `NEXT_PUBLIC_SUPPORT_EMAIL` | Email shown across the footer, legal pages and the "Forgot password?" mailto. Defaults to the launch placeholder — set it to a real inbox you can read. |
+| `NEXT_PUBLIC_SUPPORT_EMAIL` | Email shown across the footer and legal pages. Defaults to the launch placeholder — set it to a real inbox you can read. |
 | `OPENROUTER_GENERATION_MODEL` | Defaults to `anthropic/claude-haiku-4.5`. Any tool-calling model works. |
 | `OPENROUTER_EXTRACTION_MODEL` | Defaults to `anthropic/claude-haiku-4.5`. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Enable the signup captcha. Leave blank to disable it. |
-
-> **Note on password reset:** there is no transactional email provider wired in
-> yet. The "Forgot password?" link on /login is a `mailto:` fallback. Wire a
-> provider (Resend / Postmark / SES) before launching a self-serve reset
-> flow.
 
 ## 3. Local development
 
