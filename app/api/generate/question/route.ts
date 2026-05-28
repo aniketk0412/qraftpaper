@@ -4,8 +4,15 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { regeneratePaperQuestion } from "@/lib/ai/generate";
 import { getDb } from "@/lib/db";
-import { papers, subjects } from "@/lib/db/schema";
+import { generationJobs, papers, subjects, users } from "@/lib/db/schema";
 import { normalizeUuid } from "@/lib/ids";
+import {
+  assertCanGenerate,
+  assertWithinRateLimit,
+  incrementGenerationUsage,
+  RateLimitError,
+  UsageLimitError,
+} from "@/lib/usage";
 
 export const runtime = "nodejs";
 
@@ -71,12 +78,82 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Question not found" }, { status: 404 });
   }
 
-  const regeneratedQuestion = await regeneratePaperQuestion({
-    subjectName: subject.name,
-    subjectCode: subject.code,
-    profile: subject.profile,
-    question,
-  });
+  const [account] = await getDb()
+    .select({ plan: users.plan })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+  const plan = account?.plan ?? "unpaid";
+
+  try {
+    await assertWithinRateLimit(session.user.id);
+    await assertCanGenerate(session.user.id, plan);
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
+    if (error instanceof UsageLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 402 });
+    }
+
+    throw error;
+  }
+
+  const [job] = await getDb()
+    .insert(generationJobs)
+    .values({
+      userId: session.user.id,
+      subjectId: subject.id,
+      paperId: paper.id,
+      type: "question",
+      status: "running",
+      startedAt: new Date(),
+      input: { paperId, questionId },
+    })
+    .returning();
+
+  let regeneratedQuestion;
+
+  try {
+    regeneratedQuestion = await regeneratePaperQuestion({
+      subjectName: subject.name,
+      subjectCode: subject.code,
+      profile: subject.profile,
+      question,
+    });
+  } catch (error) {
+    if (job) {
+      await getDb()
+        .update(generationJobs)
+        .set({
+          status: "failed",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Question regeneration failed",
+          finishedAt: new Date(),
+        })
+        .where(eq(generationJobs.id, job.id));
+    }
+
+    console.error("[generate:question] failed", error);
+    return NextResponse.json(
+      { error: "Question regeneration failed. Please try again." },
+      { status: 502 },
+    );
+  }
+
+  await incrementGenerationUsage(session.user.id);
+
+  if (job) {
+    await getDb()
+      .update(generationJobs)
+      .set({
+        status: "succeeded",
+        finishedAt: new Date(),
+      })
+      .where(eq(generationJobs.id, job.id));
+  }
 
   return NextResponse.json({ question: regeneratedQuestion });
 }
