@@ -137,9 +137,18 @@ export default async function BillingPage({
                     </div>
 
                     <div className="mt-6">
-                      <p className="text-3xl font-semibold tracking-tight text-gradient">
-                        {tier.priceLabel}
-                      </p>
+                      {/* Matches the public pricing card exactly: big price,
+                          small muted period on the same baseline. */}
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-4xl font-semibold tracking-tight text-gradient">
+                          {tier.price}
+                        </span>
+                        {tier.period && (
+                          <span className="text-sm text-fg-subtle">
+                            {tier.period}
+                          </span>
+                        )}
+                      </div>
                       <p className="mt-2 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-fg-subtle">
                         {tier.generationCap}
                       </p>

@@ -7,20 +7,26 @@ export type BillingTier = "educator" | "department";
 export interface BillingTierInfo {
   tier: BillingTier;
   label: string;
-  priceLabel: string;
+  /** Bare price like "$7" — rendered large alongside `period`. */
+  price: string;
+  /** Period suffix like "/ month" — rendered small next to `price`. */
+  period: string;
   blurb: string;
   generationCap: string;
 }
 
 // Derive every label from PLANS so the billing page can never drift from the
 // public pricing section or the enforced plan limits. If you change a price
-// or allowance, update lib/plans.ts — nothing else needs to know.
+// or allowance, update lib/plans.ts — nothing else needs to know. Price and
+// period are kept SEPARATE so the billing card can render them with the same
+// baseline-split treatment the marketing pricing card uses.
 function fromPlan(tier: BillingTier): BillingTierInfo {
   const plan = PLANS[tier];
   return {
     tier,
     label: plan.name,
-    priceLabel: `${plan.price} ${plan.period}`.trim(),
+    price: plan.price,
+    period: plan.period,
     blurb: plan.tagline,
     generationCap:
       plan.generationsPerMonth === null

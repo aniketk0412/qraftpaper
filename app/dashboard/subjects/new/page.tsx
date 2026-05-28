@@ -25,7 +25,7 @@ export default function NewSubjectPage() {
               <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-violet-bright">
                 New subject
               </p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gradient">
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gradient">
                 Upload source material
               </h1>
               <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">
