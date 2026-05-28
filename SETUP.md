@@ -59,17 +59,26 @@ npm run db:migrate    # apply migrations to DATABASE_URL
 npm run dev           # http://localhost:3000
 ```
 
-Checks: `npm run test` (Vitest), `npm run lint` (ESLint), `npx tsc --noEmit` (types).
+Checks:
+- `npm run test` — Vitest unit tests for pure logic
+- `npm run test:e2e` — Playwright smoke (auto-starts dev server, runs the
+  public-pages spec in `e2e/`). Set `BASE_URL=https://your-preview.vercel.app`
+  to run against a deployed preview instead.
+- `npm run lint` — ESLint
+- `npx tsc --noEmit` — type check
 
 ## 4. Plans & pricing
 
 Plans are defined in **one place — `lib/plans.ts`** — which feeds both the
-pricing page and the usage limiter, so they can never drift:
+pricing page and the usage limiter, so they can never drift. The product is
+positioned for students; plan IDs are kept as `educator` / `department` so
+existing DB rows and LemonSqueezy variants don't have to migrate, only the
+display labels change:
 
-| Plan | Price | Generations/mo | Subjects | Papers/subject |
-|---|---|---|---|---|
-| Educator | $7 | 20 | 5 | 6 |
-| Department | $24 | 90 | 25 | 12 |
+| Display name | Plan ID | Price | Generations/mo | Subjects | Papers/subject |
+|---|---|---|---|---|---|
+| Solo | `educator` | $7 | 20 | 5 | 6 |
+| Crew | `department` | $24 | 90 | 25 | 12 |
 
 Change a number there and both the marketing copy and enforcement update.
 **The price you set in LemonSqueezy must match the price shown here.**
