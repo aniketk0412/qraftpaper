@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
@@ -58,6 +58,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 402 });
     }
     throw error;
+  }
+
+  const [duplicate] = await getDb()
+    .select({ id: subjects.id })
+    .from(subjects)
+    .where(
+      and(
+        eq(subjects.userId, session.user.id),
+        sql`lower(${subjects.code}) = lower(${code})`,
+      ),
+    )
+    .limit(1);
+
+  if (duplicate) {
+    return NextResponse.json(
+      { error: "A subject with this code already exists" },
+      { status: 409 },
+    );
   }
 
   const [subject] = await getDb()
