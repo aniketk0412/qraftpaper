@@ -140,6 +140,16 @@ export async function requestPasswordResetAction(formData: FormData) {
     const token = randomBytes(32).toString("base64url");
     const resetUrl = `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`;
 
+    await db
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(
+        and(
+          eq(passwordResetTokens.userId, user.id),
+          isNull(passwordResetTokens.usedAt),
+        ),
+      );
+
     await db.insert(passwordResetTokens).values({
       userId: user.id,
       tokenHash: tokenHash(token),
@@ -215,7 +225,12 @@ export async function resetPasswordAction(formData: FormData) {
   await db
     .update(passwordResetTokens)
     .set({ usedAt: new Date() })
-    .where(eq(passwordResetTokens.id, record.id));
+    .where(
+      and(
+        eq(passwordResetTokens.userId, record.userId),
+        isNull(passwordResetTokens.usedAt),
+      ),
+    );
 
   await db.insert(auditLogs).values({
     userId: record.userId,
