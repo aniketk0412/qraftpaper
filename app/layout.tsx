@@ -37,9 +37,10 @@ export const metadata: Metadata = {
   creator: "QraftPaper",
   publisher: "QraftPaper",
   category: "education",
-  alternates: {
-    canonical: "/",
-  },
+  // Don't set a global canonical — that would tell search engines every page
+  // is a duplicate of "/". Per-page metadata can set its own canonical when
+  // we have one to declare; otherwise Next.js leaves the URL canonical to
+  // itself.
   robots: {
     index: true,
     follow: true,

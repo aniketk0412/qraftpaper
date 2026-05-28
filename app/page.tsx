@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
 import { Hero } from "@/components/landing/hero";
@@ -54,6 +55,12 @@ const jsonLd = {
       })),
     },
   ],
+};
+
+// Explicit canonical for the home page; we removed the global one in the
+// layout (it was making every page declare itself a duplicate of "/").
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
 };
 
 export default function Home() {
