@@ -18,7 +18,7 @@ export function Cta() {
                 Ready in minutes
               </span>
 
-              <h2 className="mx-auto mt-6 max-w-2xl text-balance text-[2.2rem] font-semibold leading-[1.05] tracking-[-0.03em] text-gradient sm:text-5xl">
+              <h2 className="mx-auto mt-6 max-w-2xl text-balance text-[2.1rem] font-semibold leading-[1.06] tracking-[-0.02em] text-gradient sm:text-5xl">
                 Set your next question paper{" "}
                 <span className="text-accent">before this meeting ends</span>
               </h2>
