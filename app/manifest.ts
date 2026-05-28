@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description:
       "Turn your syllabus, previous year papers and weightages into exam-ready question papers and quizzes.",
     id: "/",
-    start_url: "/dashboard",
+    start_url: "/",
     scope: "/",
     display: "standalone",
     background_color: "#e8ecf0",

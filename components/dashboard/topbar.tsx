@@ -21,7 +21,7 @@ export function Topbar({
         <p className="text-sm font-medium">Overview</p>
         <span className="hidden h-4 w-px bg-line sm:block" />
         <p className="hidden truncate font-mono text-[0.7rem] uppercase tracking-[0.16em] text-fg-subtle sm:block">
-          {user.institution ?? "Workspace"}
+          Workspace
         </p>
       </div>
 

@@ -62,7 +62,7 @@ export function UserMenu({ user }: { user: DashboardUser }) {
         )}
         aria-label="Account menu"
       >
-        {user.initials}
+        <UserRound className="h-5 w-5" />
       </button>
 
       <AnimatePresence>
