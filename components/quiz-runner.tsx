@@ -1,16 +1,31 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Check, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
-import { useState } from "react";
+import {
+  ArrowRight,
+  Check,
+  Clock,
+  Loader2,
+  RotateCcw,
+  Sparkles,
+  X,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { GlowButton } from "@/components/ui/glow-button";
 import { MeterBar } from "@/components/ui/meter-bar";
 import { easeOut } from "@/lib/motion";
 import { difficultyDarkChip } from "@/lib/difficulty";
+import { loadQuizHistory, saveQuizAttempt } from "@/lib/quiz-history";
 import type { Quiz, QuizQuestion } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
 const LETTERS = ["A", "B", "C", "D"];
+
+function formatTime(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 // When rendered for a shared (public) quiz the answer key is stripped, so
 // correctIndex/explanation are optional and revealed by the grading API.
@@ -43,6 +58,11 @@ export function QuizRunner({
   const [grading, setGrading] = useState(false);
   const [finished, setFinished] = useState(false);
 
+  const totalSeconds = Math.max(1, quiz.durationMins * 60);
+  const [deadline, setDeadline] = useState(() => Date.now() + totalSeconds * 1000);
+  const [remaining, setRemaining] = useState(totalSeconds);
+  const savedRef = useRef(false);
+
   const total = quiz.questions.length;
   const question = quiz.questions[step];
   const picked = answers[question.id];
@@ -53,6 +73,33 @@ export function QuizRunner({
       sum + (reveals[q.id] && answers[q.id] === reveals[q.id].correctIndex ? 1 : 0),
     0,
   );
+
+  // Countdown — derived from a deadline so it survives tab throttling. Auto
+  // submits when time runs out. (setState calls live in the timer callback, not
+  // the effect body.)
+  useEffect(() => {
+    if (finished) return;
+    const id = setInterval(() => {
+      const left = Math.max(0, Math.round((deadline - Date.now()) / 1000));
+      setRemaining(left);
+      if (left <= 0) setFinished(true);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [finished, deadline]);
+
+  // Record the attempt once, locally, when the quiz finishes.
+  useEffect(() => {
+    if (!finished || savedRef.current) return;
+    savedRef.current = true;
+    saveQuizAttempt({
+      quizId: quiz.id,
+      title: quiz.title,
+      subjectCode: quiz.subjectCode,
+      score,
+      total,
+      takenAt: Date.now(),
+    });
+  }, [finished, score, total, quiz]);
 
   async function pick(index: number) {
     if (answered || grading) return;
@@ -107,10 +154,16 @@ export function QuizRunner({
     setReveals({});
     setStep(0);
     setFinished(false);
+    savedRef.current = false;
+    setDeadline(Date.now() + totalSeconds * 1000);
+    setRemaining(totalSeconds);
   }
 
   if (finished) {
     const pct = Math.round((score / total) * 100);
+    const previous = (typeof window !== "undefined" ? loadQuizHistory() : [])
+      .filter((h) => h.quizId === quiz.id)
+      .slice(0, 5);
     return (
       <div className="overflow-hidden rounded-2xl glass-strong">
         <span className="pointer-events-none absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-tint/20 to-transparent" />
@@ -131,6 +184,30 @@ export function QuizRunner({
           <div className="mt-6 w-full max-w-xs">
             <MeterBar pct={pct} height="h-2" />
           </div>
+
+          {previous.length > 0 && (
+            <div className="mt-8 w-full max-w-xs text-left">
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-fg-subtle">
+                Previous attempts
+              </p>
+              <ul className="mt-2 flex flex-col gap-1.5">
+                {previous.map((attempt, i) => (
+                  <li
+                    key={`${attempt.takenAt}-${i}`}
+                    className="flex items-center justify-between text-[0.8rem]"
+                  >
+                    <span className="text-fg-muted">
+                      {new Date(attempt.takenAt).toLocaleDateString()}
+                    </span>
+                    <span className="font-mono text-fg">
+                      {attempt.score}/{attempt.total}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={restart}
@@ -156,6 +233,17 @@ export function QuizRunner({
             Question {step + 1} of {total}
           </p>
           <div className="flex items-center gap-1.5">
+            <span
+              className={cn(
+                "flex items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-wider tabular-nums",
+                remaining <= 30
+                  ? "border-accent/40 bg-accent/10 text-accent"
+                  : "border-line bg-tint/[0.03] text-fg-muted",
+              )}
+            >
+              <Clock className="h-3 w-3" />
+              {formatTime(remaining)}
+            </span>
             <span
               className={cn(
                 "rounded border px-1.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-wider",
@@ -217,7 +305,7 @@ export function QuizRunner({
                         "grid h-7 w-7 shrink-0 place-items-center rounded-md font-mono text-[0.74rem] font-medium transition-colors",
                         state === "idle" &&
                           "bg-tint/[0.05] text-fg-muted group-hover:bg-tint/15 group-hover:text-fg",
-                        state === "correct" && "bg-accent text-white",
+                        state === "correct" && "bg-accent text-on-accent",
                         state === "wrong" && "bg-tint/12 text-fg",
                         state === "dim" && "bg-tint/[0.04] text-fg-subtle",
                       )}

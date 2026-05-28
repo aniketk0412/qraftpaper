@@ -123,9 +123,10 @@ export function planLimits(planId: string): PlanLimits {
   };
 }
 
-/** Tiers shown on the public pricing page, in display order. */
-export const PRICING_TIERS: Plan[] = [
-  PLANS.educator,
-  PLANS.department,
-  PLANS.institution,
-];
+/** Tiers shown on the public pricing page, in display order.
+ * Institution is intentionally NOT listed here — LemonSqueezy reviewers won't
+ * approve a public "Custom / Talk to sales" tier, and we don't currently sell
+ * a real top-tier variant. Enterprise deals are still handled by assigning the
+ * `institution` plan id manually after a direct conversation.
+ */
+export const PRICING_TIERS: Plan[] = [PLANS.educator, PLANS.department];

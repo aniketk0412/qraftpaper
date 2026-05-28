@@ -132,7 +132,7 @@ function QuizPreviewCard() {
         <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
           <div className="flex items-center gap-2.5">
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent">
-              <Sparkles className="h-4 w-4 text-white" />
+              <Sparkles className="h-4 w-4 text-on-accent" />
             </span>
             <div className="leading-tight">
               <p className="text-[0.82rem] font-medium">AI Quiz</p>
@@ -196,7 +196,7 @@ function QuizPreviewCard() {
                           "grid h-6 w-6 shrink-0 place-items-center rounded font-mono text-[0.66rem] font-medium",
                           state === "idle" &&
                             "bg-tint/[0.05] text-fg-muted group-hover:bg-tint/15 group-hover:text-fg",
-                          state === "correct" && "bg-accent text-white",
+                          state === "correct" && "bg-accent text-on-accent",
                           state === "wrong" && "bg-tint/12 text-fg",
                           state === "dim" && "bg-tint/[0.04] text-fg-subtle",
                         )}

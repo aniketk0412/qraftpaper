@@ -10,13 +10,27 @@ export const runtime = "nodejs";
 // the client up front; a taker submits an answer and only then learns whether
 // it was right (plus the explanation). Stateless, so it raises the bar against
 // "read the answers from the page source" without claiming to be tamper-proof.
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
 
-  const body = (await request.json()) as { answers?: Record<string, number> };
+  // Reject non-UUID ids up front — otherwise the Postgres uuid cast throws and
+  // leaks a 500/stack for what is really a "not found".
+  if (!UUID_RE.test(id)) {
+    return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+  }
+
+  let body: { answers?: Record<string, number> };
+  try {
+    body = (await request.json()) as { answers?: Record<string, number> };
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
   const answers =
     body.answers && typeof body.answers === "object" ? body.answers : {};
 

@@ -91,6 +91,15 @@ export async function POST(request: Request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
+    // Don't trust the client-supplied MIME type — verify the real file header.
+    // Every PDF begins with "%PDF-"; anything else is a renamed/spoofed file.
+    if (!buffer.subarray(0, 5).toString("latin1").startsWith("%PDF-")) {
+      return NextResponse.json(
+        { error: `${file.name} isn't a real PDF file.` },
+        { status: 400 },
+      );
+    }
+
     let extractedText: string;
     try {
       extractedText = await extractPdfText(buffer);

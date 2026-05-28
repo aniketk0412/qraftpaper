@@ -1,4 +1,4 @@
-import { CheckCircle2, CreditCard, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, CreditCard, ShieldCheck } from "lucide-react";
 import { desc, eq } from "drizzle-orm";
 
 import { auth } from "@/auth";
@@ -172,18 +172,6 @@ export default async function BillingPage({
             </div>
           </div>
 
-          <GlassCard className="mt-4 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <IconTile icon={Sparkles} size="sm" />
-              <div>
-                <p className="text-sm font-medium">Need an institution plan?</p>
-                <p className="mt-0.5 text-[0.82rem] text-fg-muted">
-                  Universities with SSO, audit and custom deployment needs should
-                  use the enterprise sales flow.
-                </p>
-              </div>
-            </div>
-          </GlassCard>
         </div>
       </main>
     </div>

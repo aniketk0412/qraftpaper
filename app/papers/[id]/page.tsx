@@ -8,6 +8,8 @@ import { PaperEditor } from "@/components/paper-editor";
 import { GlowButton } from "@/components/ui/glow-button";
 import { getDb } from "@/lib/db";
 import { papers } from "@/lib/db/schema";
+import { normalizePaperConfig } from "@/lib/generation-config";
+import type { PaperGenerationConfig } from "@/lib/ai/generate";
 
 export const metadata: Metadata = {
   title: "Paper editor — QraftPaper",
@@ -38,6 +40,11 @@ export default async function PaperEditorPage({
   }
 
   const paper = paperRecord.content;
+  // config is untyped jsonb; normalize it so the editor can show a real
+  // blueprint-match report (null when the paper predates config capture).
+  const config = normalizePaperConfig(
+    paperRecord.config as Partial<PaperGenerationConfig> | undefined,
+  );
 
   return (
     <div className="min-h-screen">
@@ -86,7 +93,7 @@ export default async function PaperEditorPage({
       </header>
 
       <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        <PaperEditor paper={paper} paperId={paper.id} />
+        <PaperEditor paper={paper} paperId={paper.id} config={config} />
       </main>
     </div>
   );

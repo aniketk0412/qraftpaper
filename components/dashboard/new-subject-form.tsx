@@ -154,7 +154,7 @@ export function NewSubjectForm() {
               type="file"
               accept="application/pdf"
               required
-              className="max-w-[11rem] text-[0.72rem] text-fg-muted file:mr-3 file:rounded-full file:border-0 file:bg-accent file:px-3 file:py-1.5 file:text-[0.72rem] file:font-medium file:text-white"
+              className="max-w-[11rem] text-[0.72rem] text-fg-muted file:mr-3 file:rounded-full file:border-0 file:bg-accent file:px-3 file:py-1.5 file:text-[0.72rem] file:font-medium file:text-on-accent"
             />
           </label>
         ))}

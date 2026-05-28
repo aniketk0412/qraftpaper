@@ -31,6 +31,8 @@
   /* Signature accent — teal, deepened to meet WCAG AA on white/cards */
   --color-accent: #1f7d7d;
   --color-accent-soft: #5fb3b3;
+  /* Text colour for content sitting ON the solid accent (theme-aware). */
+  --color-on-accent: #ffffff;
 
   /* Tint — deep navy, used for subtle overlays/highlights on light surfaces */
   --color-tint: #1a2332;
@@ -111,6 +113,7 @@ html[data-theme="dark"] {
   --color-gold-deep: #2d8b8b;
   --color-accent: #46b3b3;
   --color-accent-soft: #8ad8d8;
+  --color-on-accent: #07131b;
   --color-tint: #ffffff;
   --glass-a: rgba(255, 255, 255, 0.06);
   --glass-b: rgba(255, 255, 255, 0.02);
@@ -131,6 +134,12 @@ html[data-theme="dark"] {
 
 * {
   border-color: var(--color-line);
+}
+
+/* Guarantee a visible keyboard-focus indicator on every interactive element. */
+:where(a, button, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 html {

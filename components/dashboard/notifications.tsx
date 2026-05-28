@@ -91,7 +91,7 @@ export function Notifications() {
       >
         <Bell className="h-[18px] w-[18px]" />
         {unread > 0 && (
-          <span className="absolute right-2 top-2 grid h-3.5 w-3.5 place-items-center rounded-full bg-accent text-[0.5rem] font-bold text-ink ring-2 ring-canvas">
+          <span className="absolute right-2 top-2 grid h-3.5 w-3.5 place-items-center rounded-full bg-accent text-[0.5rem] font-bold text-on-accent ring-2 ring-canvas">
             {unread}
           </span>
         )}

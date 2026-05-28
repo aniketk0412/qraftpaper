@@ -67,7 +67,7 @@ export function HowItWorks() {
                 <div className="relative flex flex-col gap-5 sm:flex-row sm:gap-7">
                   <div className="relative z-10 shrink-0">
                     <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent shadow-[0_8px_26px_-10px_rgba(45,139,139,0.45)]">
-                      <step.icon className="h-5 w-5 text-white" />
+                      <step.icon className="h-5 w-5 text-on-accent" />
                     </div>
                   </div>
                   <GlassCard hover className="flex-1 p-6 sm:p-7">

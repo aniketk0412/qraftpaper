@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { generateQuizQuestions, type QuizGenerationConfig } from "@/lib/ai/generate";
+import { normalizeQuizConfig } from "@/lib/generation-config";
 import { getDb } from "@/lib/db";
 import { generationJobs, quizzes, subjects, users } from "@/lib/db/schema";
 import {
@@ -15,7 +16,7 @@ import {
   RateLimitError,
   UsageLimitError,
 } from "@/lib/usage";
-import type { Difficulty, Quiz } from "@/lib/types";
+import type { Quiz } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -159,41 +160,3 @@ export async function POST(request: Request) {
   return NextResponse.json({ quiz, record: created }, { status: 201 });
 }
 
-function normalizeQuizConfig(
-  config: Partial<QuizGenerationConfig> | undefined,
-): QuizGenerationConfig | null {
-  if (!config) return null;
-
-  const questionCount = numberOrNull(config.questionCount);
-  const durationMins = numberOrNull(config.durationMins);
-
-  if (
-    !questionCount ||
-    !durationMins ||
-    questionCount <= 0 ||
-    durationMins <= 0
-  ) {
-    return null;
-  }
-
-  return {
-    // Clamp so a crafted request can't ask the model for a huge quiz.
-    questionCount: Math.min(Math.round(questionCount), 30),
-    durationMins: Math.min(Math.round(durationMins), 300),
-    difficultyMix: normalizeDifficultyMix(config.difficultyMix),
-  };
-}
-
-function normalizeDifficultyMix(value: unknown) {
-  const input = value as Partial<Record<Difficulty, unknown>> | undefined;
-  return {
-    Easy: numberOrNull(input?.Easy) ?? 30,
-    Medium: numberOrNull(input?.Medium) ?? 50,
-    Hard: numberOrNull(input?.Hard) ?? 20,
-  };
-}
-
-function numberOrNull(value: unknown) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}

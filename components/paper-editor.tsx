@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import {
+  AlertTriangle,
   Check,
   Pencil,
   RefreshCw,
@@ -15,20 +16,19 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { MeterBar } from "@/components/ui/meter-bar";
 import { difficultyBarFill, difficultyDarkChip } from "@/lib/difficulty";
 import { cn } from "@/lib/utils";
-import {
-  type Difficulty,
-  type QuestionPaper,
-  exampleWeightage,
-  maxUnitWeight,
-} from "@/lib/demo-data";
+import { type Difficulty, type QuestionPaper } from "@/lib/demo-data";
+import { evaluateBlueprintMatch } from "@/lib/blueprint-match";
+import type { PaperGenerationConfig } from "@/lib/ai/generate";
 import type { PaperQuestion } from "@/lib/types";
 
 export function PaperEditor({
   paper: initial,
   paperId,
+  config,
 }: {
   paper: QuestionPaper;
   paperId: string;
+  config: PaperGenerationConfig | null;
 }) {
   const [paper, setPaper] = useState<QuestionPaper>(initial);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -46,6 +46,13 @@ export function PaperEditor({
     allQuestions.forEach((q) => (c[q.difficulty] += 1));
     return c;
   }, [allQuestions]);
+
+  // Recomputed live as the paper is edited, so the score always reflects the
+  // current draft rather than what was generated.
+  const blueprint = useMemo(
+    () => (config ? evaluateBlueprintMatch(config, paper) : null),
+    [config, paper],
+  );
 
   function saveEdit(id: string) {
     setPaper((p) => ({
@@ -172,7 +179,7 @@ export function PaperEditor({
                                 <div className="mt-2 flex gap-2">
                                   <button
                                     onClick={() => saveEdit(q.id)}
-                                    className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[0.74rem] font-medium text-white transition-colors hover:bg-[#247373]"
+                                    className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[0.74rem] font-medium text-on-accent transition-colors hover:bg-[#247373]"
                                   >
                                     <Check className="h-3.5 w-3.5" />
                                     Save
@@ -304,25 +311,70 @@ export function PaperEditor({
             </div>
           </GlassCard>
 
-          <GlassCard className="p-5">
-            <h4 className="text-sm font-semibold tracking-tight">
-              Blueprint match
-            </h4>
-            <div className="mt-4 flex flex-col gap-2.5">
-              {exampleWeightage.map((u) => (
-                <div key={u.unit}>
-                  <div className="flex justify-between text-[0.74rem]">
-                    <span className="font-mono text-fg-subtle">{u.unit}</span>
-                    <span className="text-fg-muted">{u.weight}%</span>
+          {blueprint && (
+            <GlassCard className="p-5">
+              <div className="flex items-baseline justify-between">
+                <h4 className="text-sm font-semibold tracking-tight">
+                  Blueprint match
+                </h4>
+                <span
+                  className={cn(
+                    "font-mono text-sm font-semibold",
+                    blueprint.overall >= 85
+                      ? "text-violet-bright"
+                      : blueprint.overall >= 60
+                        ? "text-gold"
+                        : "text-fg",
+                  )}
+                >
+                  {blueprint.overall}%
+                </span>
+              </div>
+              <p className="mt-1 text-[0.72rem] leading-snug text-fg-subtle">
+                How closely this draft matches the blueprint you requested.
+              </p>
+
+              <div className="mt-4 flex flex-col gap-3">
+                {blueprint.dimensions.map((d) => (
+                  <div key={d.key}>
+                    <div className="flex justify-between text-[0.74rem]">
+                      <span className="flex items-center gap-1.5 text-fg-muted">
+                        {d.ok ? (
+                          <Check className="h-3 w-3 text-violet-bright" />
+                        ) : (
+                          <AlertTriangle className="h-3 w-3 text-gold" />
+                        )}
+                        {d.label}
+                      </span>
+                      <span className="font-mono text-fg-subtle">
+                        {d.actual}
+                        <span className="text-fg-subtle/60"> / {d.target}</span>
+                      </span>
+                    </div>
+                    <MeterBar
+                      pct={d.score}
+                      fill={d.ok ? undefined : "bg-gold"}
+                      className="mt-1"
+                    />
                   </div>
-                  <MeterBar
-                    pct={(u.weight / maxUnitWeight) * 100}
-                    className="mt-1"
-                  />
-                </div>
-              ))}
-            </div>
-          </GlassCard>
+                ))}
+              </div>
+
+              {blueprint.flags.length > 0 && (
+                <ul className="mt-4 flex flex-col gap-1.5 border-t border-line pt-3">
+                  {blueprint.flags.map((flag, i) => (
+                    <li
+                      key={i}
+                      className="flex gap-1.5 text-[0.72rem] leading-snug text-fg-muted"
+                    >
+                      <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-gold" />
+                      {flag}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </GlassCard>
+          )}
 
           <div className="flex flex-col gap-2">
             <button

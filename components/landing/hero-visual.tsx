@@ -118,7 +118,7 @@ export function HeroVisual() {
           <div className="flex items-center justify-between border-b border-line pb-4">
             <div className="flex items-center gap-2.5">
               <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent">
-                <FileCheck2 className="h-[18px] w-[18px] text-white" />
+                <FileCheck2 className="h-[18px] w-[18px] text-on-accent" />
               </span>
               <div className="leading-tight">
                 <p className="text-sm font-medium">Data Structures & Algorithms</p>
