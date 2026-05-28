@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "motion/react";
-import { useRef } from "react";
+import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
+import { useRef, useState } from "react";
 import { ArrowRight, FileUp, Sliders, Wand2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -35,7 +35,16 @@ export function HowItWorks() {
     target: ref,
     offset: ["start 65%", "end 65%"],
   });
-  const scaleY = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  // The connecting line fills as you scroll down — but we ratchet the high-
+  // water mark and never run it backwards, so scrolling back up doesn't make
+  // the filled gradient un-fill (which read as "the animation disappears").
+  const [maxProgress, setMaxProgress] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    setMaxProgress((prev) => (latest > prev ? latest : prev));
+  });
+  const scaleY = useTransform(scrollYProgress, (latest) =>
+    Math.max(latest, maxProgress),
+  );
 
   return (
     <section id="how" className="section-pad scroll-mt-24">

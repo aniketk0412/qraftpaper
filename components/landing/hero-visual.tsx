@@ -72,7 +72,9 @@ export function HeroVisual() {
       <div className="absolute -inset-10 -z-10 rounded-full bg-violet/12 blur-[100px]" />
 
       <motion.div
-        animate={{ y: [0, -12, 0] }}
+        // Only run the bobbing animation while the hero is on screen — keeps
+        // the rest of the page at 60fps when this is scrolled out of view.
+        animate={inView ? { y: [0, -12, 0] } : { y: 0 }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         className="absolute -right-3 top-10 z-20 hidden sm:block"
       >
@@ -90,7 +92,7 @@ export function HeroVisual() {
       </motion.div>
 
       <motion.div
-        animate={{ y: [0, 13, 0] }}
+        animate={inView ? { y: [0, 13, 0] } : { y: 0 }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
         className="absolute -left-5 bottom-16 z-20 hidden sm:block"
       >
@@ -108,11 +110,16 @@ export function HeroVisual() {
       </motion.div>
 
       <div className="relative overflow-hidden rounded-2xl glass-strong p-1.5 shadow-2xl">
-        <motion.div
-          animate={{ y: ["-8%", "108%"] }}
-          transition={{ duration: 3.4, repeat: Infinity, ease: "linear" }}
-          className="pointer-events-none absolute inset-x-0 z-10 h-24 bg-gradient-to-b from-transparent via-violet/12 to-transparent"
-        />
+        {/* Only render the heavy scan-line gradient sweep when the hero is in
+            view — it repaints a 96px tall layer at 60fps and is the single
+            biggest cause of jank on lower-end devices when scrolling. */}
+        {inView && (
+          <motion.div
+            animate={{ y: ["-8%", "108%"] }}
+            transition={{ duration: 3.4, repeat: Infinity, ease: "linear" }}
+            className="pointer-events-none absolute inset-x-0 z-10 h-24 bg-gradient-to-b from-transparent via-violet/12 to-transparent"
+          />
+        )}
 
         <div className="rounded-[0.85rem] bg-canvas p-5">
           <div className="flex items-center justify-between border-b border-line pb-4">

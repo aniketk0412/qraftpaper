@@ -1,11 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 
 const SIZE = 900;
 
 export function CursorGlow() {
+  // Skip the effect entirely on devices that signal "I don't want fancy
+  // animation" or where there's no fine cursor (touch / mobile). The element
+  // is a 900x900 GPU layer with a radial gradient — cheap when used but
+  // unnecessary cost when it can never improve the experience.
+  const [enabled, setEnabled] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const fineCursor = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const decide = () => setEnabled(fineCursor.matches && !reducedMotion.matches);
+    decide();
+    reducedMotion.addEventListener("change", decide);
+    fineCursor.addEventListener("change", decide);
+    return () => {
+      reducedMotion.removeEventListener("change", decide);
+      fineCursor.removeEventListener("change", decide);
+    };
+  }, []);
+
   const x = useMotionValue(-1000);
   const y = useMotionValue(-1000);
   const sx = useSpring(x, { stiffness: 130, damping: 24, mass: 0.45 });
@@ -16,13 +35,16 @@ export function CursorGlow() {
   const ty = useTransform(sy, (v) => v - SIZE / 2);
 
   useEffect(() => {
+    if (!enabled) return;
     const onMove = (e: PointerEvent) => {
       x.set(e.clientX);
       y.set(e.clientY);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
     return () => window.removeEventListener("pointermove", onMove);
-  }, [x, y]);
+  }, [enabled, x, y]);
+
+  if (!enabled) return null;
 
   return (
     <motion.div

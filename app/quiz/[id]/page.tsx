@@ -57,7 +57,7 @@ export default async function QuizPage({
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-line bg-canvas/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-3.5 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <Link

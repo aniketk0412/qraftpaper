@@ -36,7 +36,7 @@ export function Topbar({
   const title = pageTitleFor(pathname);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-canvas/70 px-5 backdrop-blur-xl sm:px-8">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-canvas/85 px-5 backdrop-blur-md sm:px-8">
       <div className="flex items-center gap-3">
         <MobileNav plan={plan} />
         <p className="text-sm font-medium">{title}</p>

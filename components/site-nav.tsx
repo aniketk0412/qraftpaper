@@ -122,7 +122,7 @@ export function SiteNav() {
         className={cn(
           "border-b transition-all duration-500",
           scrolled || active
-            ? "border-line bg-canvas/80 backdrop-blur-xl"
+            ? "border-line bg-canvas/85 backdrop-blur-md"
             : "border-transparent bg-transparent",
         )}
       >
