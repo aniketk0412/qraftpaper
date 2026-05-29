@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { desc, eq, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
-import { papers, subjects } from "@/lib/db/schema";
+import { papers, quizAttempts, quizzes, subjects } from "@/lib/db/schema";
 
 /** Cache tag for a user's subject list — invalidated by routes that mutate
  *  subjects (POST /api/subjects, DELETE /api/subjects/[id]). Keep these in
@@ -22,10 +22,17 @@ export interface DashboardSubject {
   examDate: string | null;
   /** Whole days until the exam. Negative if already past. */
   daysToExam: number | null;
+  /** Average percentage score across all quiz attempts in this subject —
+   *  the "mastery" number on the card. null = no quizzes taken yet. */
+  masteryPct: number | null;
+  /** Distinct quizzes the user has taken at least once. */
+  quizzesTaken: number;
 }
 
 async function fetchUserSubjects(userId: string): Promise<DashboardSubject[]> {
-  const rows = await getDb()
+  const db = getDb();
+
+  const rows = await db
     .select({
       id: subjects.id,
       name: subjects.name,
@@ -48,6 +55,33 @@ async function fetchUserSubjects(userId: string): Promise<DashboardSubject[]> {
     )
     .orderBy(desc(subjects.createdAt));
 
+  // Per-subject mastery aggregation across all quizzes the user owns in that
+  // subject — and across all attempts on those quizzes. Calculated as
+  // sum(score) / sum(total) per subject. Subjects with no quizzes drop out
+  // of the result and the dashboard renders null.
+  const masteryRows = await db
+    .select({
+      subjectId: quizzes.subjectId,
+      totalScore: sql<number>`coalesce(sum(${quizAttempts.score}), 0)::int`,
+      totalPossible: sql<number>`coalesce(sum(${quizAttempts.total}), 0)::int`,
+      attempts: sql<number>`count(${quizAttempts.id})::int`,
+    })
+    .from(quizzes)
+    .leftJoin(quizAttempts, eq(quizAttempts.quizId, quizzes.id))
+    .where(eq(quizzes.userId, userId))
+    .groupBy(quizzes.subjectId);
+
+  const masteryBySubject = new Map<string, { pct: number | null; quizzes: number }>();
+  for (const row of masteryRows) {
+    if (!row.subjectId) continue;
+    masteryBySubject.set(row.subjectId, {
+      pct: row.totalPossible > 0
+        ? Math.round((row.totalScore / row.totalPossible) * 100)
+        : null,
+      quizzes: row.attempts,
+    });
+  }
+
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
@@ -61,6 +95,7 @@ async function fetchUserSubjects(userId: string): Promise<DashboardSubject[]> {
           )
         : null;
 
+    const mastery = masteryBySubject.get(row.id);
     return {
       id: row.id,
       name: row.name,
@@ -71,6 +106,8 @@ async function fetchUserSubjects(userId: string): Promise<DashboardSubject[]> {
       hasProfile: Boolean(row.profileGeneratedAt),
       examDate: examDate ? examDate.toISOString().slice(0, 10) : null,
       daysToExam,
+      masteryPct: mastery?.pct ?? null,
+      quizzesTaken: mastery?.quizzes ?? 0,
     };
   });
 }

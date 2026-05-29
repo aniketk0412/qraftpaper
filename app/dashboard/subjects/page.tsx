@@ -93,7 +93,14 @@ export default async function SubjectsPage() {
                 <div className="mt-5 grid grid-cols-3 gap-2 border-t border-line pt-4 text-center">
                   <MiniStat label="Docs" value={String(docs)} />
                   <MiniStat label="Papers" value={String(subject.papers)} />
-                  <MiniStat label="Profile" value={subject.hasProfile ? "Yes" : "No"} />
+                  <MiniStat
+                    label="Mastery"
+                    value={
+                      subject.masteryPct !== null
+                        ? `${subject.masteryPct}%`
+                        : "—"
+                    }
+                  />
                 </div>
                 <div className="mt-4 border-t border-line pt-3">
                   <ExamDatePicker

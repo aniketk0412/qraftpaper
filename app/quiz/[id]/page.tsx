@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql, avg, count } from "drizzle-orm";
 import { ArrowLeft, Download, FileText, ListChecks } from "lucide-react";
 import { auth } from "@/auth";
 import { QuizRunner } from "@/components/quiz-runner";
@@ -13,7 +13,7 @@ import { IconTile } from "@/components/ui/icon-tile";
 import { MeterBar } from "@/components/ui/meter-bar";
 import { isQuiz } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
-import { quizzes } from "@/lib/db/schema";
+import { quizAttempts, quizzes } from "@/lib/db/schema";
 import { difficultyBarFill } from "@/lib/difficulty";
 import { isUuid } from "@/lib/ids";
 import type { Difficulty } from "@/lib/types";
@@ -54,6 +54,20 @@ export default async function QuizPage({
   const total = quiz.questions.length;
   const counts: Record<Difficulty, number> = { Easy: 0, Medium: 0, Hard: 0 };
   quiz.questions.forEach((q) => (counts[q.difficulty] += 1));
+
+  // How many people have taken this quiz from a shared link + average score.
+  // Powers the "12 friends took this — average 14/20" social-proof line.
+  const [attemptStats] = await getDb()
+    .select({
+      attempts: count(quizAttempts.id),
+      avgScore: avg(sql`${quizAttempts.score}::float / NULLIF(${quizAttempts.total}, 0)`),
+    })
+    .from(quizAttempts)
+    .where(eq(quizAttempts.quizId, id));
+  const attemptCount = Number(attemptStats?.attempts ?? 0);
+  const avgScorePct = attemptStats?.avgScore
+    ? Math.round(Number(attemptStats.avgScore) * 100)
+    : null;
 
   return (
     <div className="min-h-screen">
@@ -146,12 +160,24 @@ export default async function QuizPage({
           <GlassCard className="p-5">
             <div className="flex items-center gap-2.5">
               <IconTile icon={ListChecks} size="sm" />
-              <p className="text-sm font-medium">From your material</p>
+              <p className="text-sm font-medium">Friends who took this</p>
             </div>
-            <p className="mt-2 text-[0.8rem] leading-relaxed text-fg-muted">
-              Every question is generated from the uploaded syllabus and
-              previous year papers, then mapped to a unit and difficulty.
-            </p>
+            {attemptCount === 0 ? (
+              <p className="mt-2 text-[0.8rem] leading-relaxed text-fg-muted">
+                No one has taken this quiz yet. Use the Share button up top to
+                send the link to your study group — their attempts will show
+                up here.
+              </p>
+            ) : (
+              <>
+                <p className="mt-3 text-3xl font-semibold tracking-tight">
+                  {attemptCount}
+                </p>
+                <p className="mt-0.5 text-[0.8rem] text-fg-muted">
+                  attempts{avgScorePct !== null ? ` · ${avgScorePct}% average` : ""}
+                </p>
+              </>
+            )}
           </GlassCard>
 
           <RegenerateQuizButton
