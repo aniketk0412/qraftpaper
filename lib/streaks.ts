@@ -34,6 +34,8 @@ export interface StreakSummary {
   longest: number;
   /** Total distinct days the user has practised. */
   totalDays: number;
+  /** True if the user has logged activity today (in UTC). */
+  practisedToday: boolean;
 }
 
 /**
@@ -64,12 +66,19 @@ export async function getStreakSummary(userId: string): Promise<StreakSummary> {
       .select({ total: sql<number>`count(*)::int` })
       .from(studyActivity)
       .where(eq(studyActivity.userId, userId));
-    return { current: 0, longest: 0, totalDays: total };
+    return {
+      current: 0,
+      longest: 0,
+      totalDays: total,
+      practisedToday: false,
+    };
   }
 
   const dateSet = new Set(
     rows.map((row) => row.activityDate.toISOString().slice(0, 10)),
   );
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const practisedToday = dateSet.has(todayKey);
 
   // Current streak: walk backwards from today (or yesterday — a missed today
   // doesn't break a streak until midnight of the next day).
@@ -104,5 +113,5 @@ export async function getStreakSummary(userId: string): Promise<StreakSummary> {
     prev = t;
   }
 
-  return { current, longest, totalDays: dateSet.size };
+  return { current, longest, totalDays: dateSet.size, practisedToday };
 }

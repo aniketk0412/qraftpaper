@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { auth } from "@/auth";
 import { PaperSheet } from "@/components/paper-sheet";
+import { FirstRunEmptyState } from "@/components/dashboard/empty-state";
 import { GenerationPanel } from "@/components/dashboard/generation-panel";
 import { QuizLaunch } from "@/components/dashboard/quiz-launch";
 import { SubjectsSection } from "@/components/dashboard/subjects-section";
@@ -23,6 +24,7 @@ import { papers, quizzes } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
 import { STARTER_BLUEPRINTS } from "@/lib/blueprints";
 import { getStreakSummary } from "@/lib/streaks";
+import { cn } from "@/lib/utils";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 
 export const runtime = "nodejs";
@@ -73,7 +75,7 @@ export default async function DashboardPage() {
   // Streak summary drives the Flame stat tile + the "Practise today" nudge.
   const streak = userId
     ? await getStreakSummary(userId)
-    : { current: 0, longest: 0, totalDays: 0 };
+    : { current: 0, longest: 0, totalDays: 0, practisedToday: false };
 
   const activity = [
     ...recentPapers.map((paper) => ({
@@ -124,19 +126,52 @@ export default async function DashboardPage() {
     },
   ];
 
+  // Welcome copy that adapts to streak state. The goal is to feel like
+  // Duolingo's homepage — instant feedback on whether you showed up today.
+  const welcome =
+    streak.current === 0
+      ? {
+          eyebrow: "Welcome to QraftPaper",
+          title: "Generate your first mock paper today.",
+          sub: "Add a subject, drop in your syllabus, and you'll see your first practice paper in under a minute.",
+        }
+      : streak.current === 1
+        ? {
+            eyebrow: "Day 1 on the board",
+            title: "Nice — come back tomorrow to keep the streak.",
+            sub: "Practising at least once a day builds the habit. Two days in a row is harder than you'd think.",
+          }
+        : streak.practisedToday
+          ? {
+              eyebrow: `${streak.current}-day streak`,
+              title: "You've shown up today. Keep going.",
+              sub:
+                streak.current >= streak.longest
+                  ? "This is your personal best — every day from here resets the bar higher."
+                  : `${streak.longest - streak.current} more days to match your record of ${streak.longest}.`,
+            }
+          : {
+              eyebrow: `${streak.current}-day streak — don't break it`,
+              title: "Do anything today and the streak holds.",
+              sub: "Generate a quick MCQ, take a quiz, or just regenerate one question. Any activity counts.",
+            };
+
   return (
     <div className="mx-auto max-w-6xl">
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-violet-bright">
-              Study workspace
+            <p className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-violet-bright">
+              {streak.current > 0 && (
+                <Flame className="h-3.5 w-3.5 text-gold" />
+              )}
+              {welcome.eyebrow}
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gradient">
-              Time to actually study.
+              {welcome.title}
             </h1>
-            <p className="mt-1.5 text-sm text-fg-muted">
-              Pick a subject and generate a fresh mock paper or MCQ quiz.
+            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-fg-muted">
+              {welcome.sub}
             </p>
           </div>
           <GlowButton href="/dashboard/subjects/new" size="md">
@@ -147,29 +182,58 @@ export default async function DashboardPage() {
       </Reveal>
 
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {stats.map((s, i) => (
-          <Reveal key={s.label} delay={i * 0.06}>
-            <GlassCard hover className="h-full p-5">
-              <IconTile icon={s.icon} tone="neutral" size="sm" />
-              <p className="mt-4 text-3xl font-semibold tracking-tight">
-                {s.value}
-              </p>
-              <p className="mt-0.5 text-[0.82rem] text-fg-muted">{s.label}</p>
-              <p className="mt-2 font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
-                {s.note}
-              </p>
-            </GlassCard>
-          </Reveal>
-        ))}
+        {stats.map((s, i) => {
+          // First tile = streak. Highlight it with a gold ring + flame tone
+          // when the streak is active so the dashboard reads "I'm winning"
+          // rather than "I'm reading a CRM."
+          const isStreak = i === 0;
+          const streakActive = isStreak && streak.current > 0;
+          return (
+            <Reveal key={s.label} delay={i * 0.06}>
+              <GlassCard
+                hover
+                className={cn(
+                  "h-full p-5",
+                  streakActive && "ring-1 ring-gold/30",
+                )}
+              >
+                <IconTile
+                  icon={s.icon}
+                  tone={streakActive ? "gold" : "neutral"}
+                  size="sm"
+                />
+                <p
+                  className={cn(
+                    "mt-4 text-3xl font-semibold tracking-tight",
+                    streakActive && "text-gold",
+                  )}
+                >
+                  {s.value}
+                </p>
+                <p className="mt-0.5 text-[0.82rem] text-fg-muted">{s.label}</p>
+                <p className="mt-2 font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
+                  {s.note}
+                </p>
+              </GlassCard>
+            </Reveal>
+          );
+        })}
       </div>
 
-      <SubjectsSection subjects={subjects} />
-
-      <GenerationPanel subjects={subjects} />
-
-      <Reveal>
-        <QuizLaunch subjects={subjects} />
-      </Reveal>
+      {subjects.length === 0 ? (
+        // Brand-new account — instead of three empty "configure your blueprint"
+        // panels, show one warm onboarding card with a clear "create subject"
+        // CTA and a "try the sample quiz now" escape hatch.
+        <FirstRunEmptyState />
+      ) : (
+        <>
+          <SubjectsSection subjects={subjects} />
+          <GenerationPanel subjects={subjects} />
+          <Reveal>
+            <QuizLaunch subjects={subjects} />
+          </Reveal>
+        </>
+      )}
 
       <div className="mt-10 grid gap-3 lg:grid-cols-[1.5fr_1fr]">
         {recentPapers.length === 0 ? (

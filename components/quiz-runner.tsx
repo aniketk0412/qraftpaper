@@ -87,7 +87,10 @@ export function QuizRunner({
     return () => clearInterval(id);
   }, [finished, deadline]);
 
-  // Record the attempt once, locally, when the quiz finishes.
+  // Record the attempt once when the quiz finishes — both locally (so the
+  // taker sees previous attempts) and server-side (so the quiz owner can see
+  // how many people tried their quiz, and so streaks bump for signed-in
+  // takers).
   useEffect(() => {
     if (!finished || savedRef.current) return;
     savedRef.current = true;
@@ -99,7 +102,15 @@ export function QuizRunner({
       total,
       takenAt: Date.now(),
     });
-  }, [finished, score, total, quiz]);
+    const durationSeconds = totalSeconds - remaining;
+    void fetch(`/api/quiz/${quiz.id}/complete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ score, total, durationSeconds }),
+    }).catch(() => {
+      /* analytics failures must never disrupt the user */
+    });
+  }, [finished, score, total, quiz, totalSeconds, remaining]);
 
   async function pick(index: number) {
     if (answered || grading) return;
