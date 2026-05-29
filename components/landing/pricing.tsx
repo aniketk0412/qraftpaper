@@ -32,7 +32,7 @@ export function Pricing({
           description="No free tier — you pay for actual generations, not a sandbox. Each plan includes a monthly allowance. Cancel anytime from the dashboard."
         />
 
-        <div className="mx-auto mt-14 grid max-w-3xl items-stretch gap-3 sm:grid-cols-2">
+        <div className="mx-auto mt-14 grid max-w-md items-stretch gap-3">
           {PRICING_TIERS.map((tier, i) => (
             <Reveal key={tier.name} delay={i * 0.09}>
               <div

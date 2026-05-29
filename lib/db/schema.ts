@@ -137,6 +137,9 @@ export const subjects = pgTable("subjects", {
   code: text("code").notNull(),
   profile: jsonb("profile").$type<SubjectProfile>(),
   profileGeneratedAt: timestamp("profile_generated_at", { withTimezone: true }),
+  // Optional: when the actual exam happens, drives the "X days to go"
+  // countdown on the subject card. Pure date — no need for time-of-day.
+  examDate: timestamp("exam_date", { withTimezone: true, mode: "date" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 }, (table) => [
   uniqueIndex("subjects_user_code_lower_idx").on(
@@ -144,6 +147,55 @@ export const subjects = pgTable("subjects", {
     sql`lower(${table.code})`,
   ),
 ]);
+
+/**
+ * One row per user per UTC day they did something meaningful (generated a
+ * paper, took a quiz, regenerated a question). Used to compute the
+ * Duolingo-style streak counter without scanning the entire papers / quizzes
+ * history every dashboard render.
+ *
+ * UNIQUE (user_id, activity_date) — the streak code uses an UPSERT so
+ * recording an action twice in the same day is a no-op.
+ */
+export const studyActivity = pgTable(
+  "study_activity",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    activityDate: timestamp("activity_date", { withTimezone: true, mode: "date" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("study_activity_user_date_idx").on(table.userId, table.activityDate),
+    index("study_activity_user_idx").on(table.userId),
+  ],
+);
+
+/**
+ * Server-side record of every shared-quiz attempt. The take/[id] route fires
+ * one of these when a user finishes, so the quiz owner can see how many
+ * people took their quiz and the score distribution. Anonymous takers get a
+ * null userId.
+ */
+export const quizAttempts = pgTable(
+  "quiz_attempts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    quizId: uuid("quiz_id").notNull(),
+    // null when an anonymous visitor took a shared quiz link.
+    takerUserId: uuid("taker_user_id"),
+    score: integer("score").notNull(),
+    total: integer("total").notNull(),
+    durationSeconds: integer("duration_seconds"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("quiz_attempts_quiz_idx").on(table.quizId, table.createdAt),
+    index("quiz_attempts_taker_idx").on(table.takerUserId, table.createdAt),
+  ],
+);
 
 export const documents = pgTable("documents", {
   id: uuid("id").primaryKey().defaultRandom(),

@@ -19,10 +19,7 @@ import {
   RateLimitError,
   UsageLimitError,
 } from "@/lib/usage";
-import {
-  assertEmailVerified,
-  EmailNotVerifiedError,
-} from "@/lib/verification-gate";
+import { recordStudyActivity } from "@/lib/streaks";
 import type { QuestionPaper } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -83,14 +80,16 @@ export async function POST(request: Request) {
   const plan = account?.plan ?? "unpaid";
 
   try {
-    await assertEmailVerified(session.user.id);
+    // Email-verification gate intentionally OMITTED for the first paid
+    // generation — onboarding wall was killing conversion. The banner on
+    // the dashboard still nags unverified users to confirm; the paid plan
+    // requirement + per-IP rate limit + captcha at signup already block
+    // abuse meaningfully. Re-introduce later if we see verified-account
+    // abuse signals in PostHog.
     await assertWithinRateLimit(session.user.id);
     await assertCanGenerate(session.user.id, plan);
     await assertSubjectPaperLimit(session.user.id, subjectId, plan);
   } catch (error) {
-    if (error instanceof EmailNotVerifiedError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
     if (error instanceof RateLimitError) {
       return NextResponse.json({ error: error.message }, { status: 429 });
     }
@@ -185,6 +184,7 @@ export async function POST(request: Request) {
     .returning();
 
   await incrementGenerationUsage(session.user.id);
+  await recordStudyActivity(session.user.id);
 
   if (job && created) {
     await getDb()

@@ -43,6 +43,13 @@
       "when": 1779993438048,
       "tag": "0005_large_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780033997304,
+      "tag": "0006_zippy_pestilence",
+      "breakpoints": true
     }
   ]
 }

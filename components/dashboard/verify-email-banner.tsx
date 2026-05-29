@@ -16,12 +16,12 @@ export function VerifyEmailBanner() {
         </span>
         <div className="leading-snug">
           <p className="text-[0.92rem] font-medium">
-            Verify your email to unlock generation
+            Confirm your email so you don&apos;t lose your account
           </p>
           <p className="mt-0.5 text-[0.8rem] text-fg-muted">
-            Check your inbox for a link from QraftPaper. You can browse and
-            take the sample quiz now, but generating your own papers is
-            blocked until you confirm.
+            Check your inbox — we sent a one-click link from QraftPaper.
+            You can keep practising in the meantime, but a verified email
+            is how we reach you if anything goes wrong with your subscription.
           </p>
         </div>
       </div>

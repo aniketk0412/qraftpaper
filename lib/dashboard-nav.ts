@@ -5,7 +5,6 @@ import {
   LayoutDashboard,
   Ruler,
   Settings,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -23,7 +22,6 @@ export const workspaceNav: NavItem[] = [
 ];
 
 export const accountNav: NavItem[] = [
-  { label: "Team", icon: Users, href: "/dashboard/team" },
   { label: "Billing", icon: CreditCard, href: "/billing" },
   { label: "Settings", icon: Settings, href: "/dashboard/settings" },
 ];

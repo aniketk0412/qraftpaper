@@ -57,20 +57,22 @@ export const PLANS: Record<PlanId, Plan> = {
     price: "$7",
     priceInr: "₹579",
     period: "/ month",
-    tagline: "For one student grinding through their own syllabus.",
-    cta: "Get started",
-    featured: false,
+    tagline: "Everything you need to actually prep for one exam season.",
+    cta: "Start practising",
+    featured: true,
     generationsPerMonth: 20,
     maxSubjects: 5,
     papersPerSubject: 6,
     quizzesPerSubject: 10,
     features: [
-      "20 papers & quizzes / month",
-      "Up to 5 subjects",
-      "Up to 6 papers per subject",
+      "20 mock papers + quizzes a month",
+      "Up to 5 subjects in your study set",
       "Mirrors your previous-year paper style",
-      "PDF & Word export to print and practice",
-      "Shareable quiz links",
+      "Timed MCQ quizzes with instant scoring",
+      "Daily streak + per-topic mastery tracking",
+      "PDF & Word export — print and solve by hand",
+      "Shareable quiz links for friends",
+      "Cancel anytime from your dashboard",
     ],
   },
   department: {
@@ -132,9 +134,10 @@ export function planLimits(planId: string): PlanLimits {
 }
 
 /** Tiers shown on the public pricing page, in display order.
- * Institution is intentionally NOT listed here — LemonSqueezy reviewers won't
- * approve a public "Custom / Talk to sales" tier, and we don't currently sell
- * a real top-tier variant. Enterprise deals are still handled by assigning the
- * `institution` plan id manually after a direct conversation.
+ *
+ * Single-tier today: just Solo. The Crew/department tier is kept in PLANS
+ * for legacy DB rows + future workspace-sharing work, but it is NOT publicly
+ * sold — there is no shared-workspace feature yet, so selling it would be
+ * vapourware. Institution stays internal-only for the same reason.
  */
-export const PRICING_TIERS: Plan[] = [PLANS.educator, PLANS.department];
+export const PRICING_TIERS: Plan[] = [PLANS.educator];

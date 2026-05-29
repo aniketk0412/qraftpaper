@@ -2,8 +2,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   BookOpen,
-  Clock,
   FileText,
+  Flame,
   Lock,
   Ruler,
   Sparkles,
@@ -22,6 +22,7 @@ import { getDb } from "@/lib/db";
 import { papers, quizzes } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
 import { STARTER_BLUEPRINTS } from "@/lib/blueprints";
+import { getStreakSummary } from "@/lib/streaks";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 
 export const runtime = "nodejs";
@@ -69,6 +70,11 @@ export default async function DashboardPage() {
         .limit(4)
     : [];
 
+  // Streak summary drives the Flame stat tile + the "Practise today" nudge.
+  const streak = userId
+    ? await getStreakSummary(userId)
+    : { current: 0, longest: 0, totalDays: 0 };
+
   const activity = [
     ...recentPapers.map((paper) => ({
       id: paper.id,
@@ -88,22 +94,27 @@ export default async function DashboardPage() {
 
   const stats = [
     {
-      icon: BookOpen,
-      label: "Active subjects",
-      value: String(subjects.length),
-      note: "owned by your account",
+      icon: Flame,
+      label: streak.current === 1 ? "Day streak" : "Day streak",
+      value: String(streak.current),
+      note:
+        streak.current === 0
+          ? "Start today to begin one"
+          : streak.current >= streak.longest
+            ? "Personal best — keep it going"
+            : `Best: ${streak.longest} days`,
     },
     {
       icon: FileText,
-      label: "Papers generated",
+      label: "Papers this month",
       value: String(paperStats?.count ?? 0),
-      note: "this month",
+      note: "this billing month",
     },
     {
-      icon: Clock,
-      label: "Profiles ready",
-      value: String(subjects.filter((subject) => subject.hasProfile).length),
-      note: "ready for generation",
+      icon: BookOpen,
+      label: "Subjects",
+      value: String(subjects.length),
+      note: `${subjects.filter((s) => s.hasProfile).length} ready to generate`,
     },
     {
       icon: Ruler,

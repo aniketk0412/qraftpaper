@@ -28,11 +28,12 @@ describe("planLimits", () => {
 });
 
 describe("pricing tiers", () => {
-  it("lists only the publicly purchasable tiers in display order", () => {
-    // Institution is intentionally excluded — LemonSqueezy won't approve a
-    // "Custom / Talk to sales" tier on the public page. The plan id still
-    // exists in PLANS for any future hand-arranged enterprise deal.
-    expect(PRICING_TIERS.map((t) => t.id)).toEqual(["educator", "department"]);
+  it("publicly sells a single Solo tier today", () => {
+    // Crew/department is kept in PLANS for legacy DB rows + future workspace
+    // sharing, but it isn't publicly sold — no real multi-user workspace
+    // feature exists yet, so listing it would be selling vapourware.
+    // Institution stays internal-only for the same reason.
+    expect(PRICING_TIERS.map((t) => t.id)).toEqual(["educator"]);
   });
 
   it("does not surface a non-purchasable Custom price publicly", () => {

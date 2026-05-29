@@ -19,10 +19,7 @@ import {
   RateLimitError,
   UsageLimitError,
 } from "@/lib/usage";
-import {
-  assertEmailVerified,
-  EmailNotVerifiedError,
-} from "@/lib/verification-gate";
+import { recordStudyActivity } from "@/lib/streaks";
 import type { Quiz } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -83,14 +80,11 @@ export async function POST(request: Request) {
   const plan = account?.plan ?? "unpaid";
 
   try {
-    await assertEmailVerified(session.user.id);
+    // No email-verification gate — see /api/generate/paper for rationale.
     await assertWithinRateLimit(session.user.id);
     await assertCanGenerate(session.user.id, plan);
     await assertSubjectQuizLimit(session.user.id, subjectId, plan);
   } catch (error) {
-    if (error instanceof EmailNotVerifiedError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
-    }
     if (error instanceof RateLimitError) {
       return NextResponse.json({ error: error.message }, { status: 429 });
     }
@@ -182,6 +176,7 @@ export async function POST(request: Request) {
     .returning();
 
   await incrementGenerationUsage(session.user.id);
+  await recordStudyActivity(session.user.id);
 
   if (job && created) {
     await getDb()

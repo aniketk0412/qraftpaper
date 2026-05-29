@@ -40,14 +40,15 @@ export const billingTiers: Record<BillingTier, BillingTierInfo> = {
   department: fromPlan("department"),
 };
 
-/** True only when every Lemon Squeezy secret needed at runtime is present. */
+/** True only when every Lemon Squeezy secret needed at runtime is present.
+ *  We only sell Solo (educator variant) today — Department is internal-only,
+ *  so its variant id is optional. */
 export function isBillingConfigured(): boolean {
   return Boolean(
     process.env.LEMONSQUEEZY_API_KEY &&
       process.env.LEMONSQUEEZY_STORE_ID &&
       process.env.LEMONSQUEEZY_WEBHOOK_SECRET &&
-      process.env.LEMONSQUEEZY_VARIANT_EDUCATOR &&
-      process.env.LEMONSQUEEZY_VARIANT_DEPARTMENT,
+      process.env.LEMONSQUEEZY_VARIANT_EDUCATOR,
   );
 }
 
@@ -90,7 +91,9 @@ export function tierForVariantId(variantId: string): BillingTier | null {
 }
 
 export function isBillingTier(value: unknown): value is BillingTier {
-  return value === "educator" || value === "department";
+  // Only Solo (educator) is publicly purchasable today; "department" remains
+  // a valid plan id for legacy DB rows but checkouts for it are not accepted.
+  return value === "educator";
 }
 
 export async function createBillingCheckout({
