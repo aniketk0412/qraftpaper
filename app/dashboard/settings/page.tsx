@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { Building2, CheckCircle2, CreditCard, LogOut, Mail, User } from "lucide-react";
+import { Building2, CheckCircle2, CreditCard, LogOut, Mail, Trash2, User } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -10,7 +10,7 @@ import { BackLink } from "@/components/dashboard/back-link";
 import { getDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { PLANS, type PlanId } from "@/lib/plans";
-import { updateProfileAction } from "./actions";
+import { deleteAccountAction, updateProfileAction } from "./actions";
 
 export const runtime = "nodejs";
 
@@ -143,6 +143,44 @@ export default async function SettingsPage({
               <LogOut className="h-4 w-4" />
               Sign out
             </GlowButton>
+          </form>
+        </GlassCard>
+      </Reveal>
+
+      {/* Danger zone — irreversible operations get a separate visually distinct
+          card and a typed confirmation so a stray click can never wipe a
+          paying user's account. */}
+      <Reveal>
+        <GlassCard className="mt-6 border border-gold/25 p-7">
+          <h2 className="text-lg font-semibold tracking-tight text-gold">
+            Danger zone
+          </h2>
+          <p className="mt-1 text-[0.84rem] text-fg-muted">
+            Deleting your account permanently removes every subject, paper,
+            quiz and attempt history. We do not keep a copy. There is no undo.
+          </p>
+          {error === "delete-confirm" && (
+            <p className="mt-3 rounded-xl border border-gold/30 bg-gold/[0.08] px-4 py-3 text-[0.82rem] text-fg">
+              Type the word DELETE exactly to confirm.
+            </p>
+          )}
+          <form
+            action={deleteAccountAction}
+            className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center"
+          >
+            <input
+              name="confirmation"
+              required
+              placeholder='Type "DELETE" to confirm'
+              className="h-11 flex-1 rounded-xl border border-line bg-tint/[0.03] px-3.5 text-sm text-fg placeholder:text-fg-subtle transition-all duration-200 focus:border-gold/50 focus:bg-tint/[0.05] focus:outline-none focus:ring-2 focus:ring-gold/20"
+            />
+            <button
+              type="submit"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-gold/45 bg-gold/15 px-5 text-[0.86rem] font-medium text-gold transition-colors hover:bg-gold/25"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete my account
+            </button>
           </form>
         </GlassCard>
       </Reveal>
