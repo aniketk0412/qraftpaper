@@ -29,7 +29,13 @@ export default async function DashboardLayout({
     : [];
   const streak = session?.user?.id
     ? await getStreakSummary(session.user.id)
-    : { current: 0, longest: 0, totalDays: 0, practisedToday: false };
+    : {
+        current: 0,
+        longest: 0,
+        totalDays: 0,
+        practisedToday: false,
+        daysSinceLast: null,
+      };
   const [profile] = session?.user?.id
     ? await getDb()
         .select({

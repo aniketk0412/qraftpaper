@@ -36,6 +36,9 @@ export interface StreakSummary {
   totalDays: number;
   /** True if the user has logged activity today (in UTC). */
   practisedToday: boolean;
+  /** Whole days since the user last did anything (or null if never). Drives
+   *  the soft "we miss you" banner on the dashboard at 2+ days. */
+  daysSinceLast: number | null;
 }
 
 /**
@@ -71,6 +74,7 @@ export async function getStreakSummary(userId: string): Promise<StreakSummary> {
       longest: 0,
       totalDays: total,
       practisedToday: false,
+      daysSinceLast: null,
     };
   }
 
@@ -113,5 +117,20 @@ export async function getStreakSummary(userId: string): Promise<StreakSummary> {
     prev = t;
   }
 
-  return { current, longest, totalDays: dateSet.size, practisedToday };
+  // Days since most recent activity (0 = today, 1 = yesterday, etc.)
+  const todayMs = Date.parse(`${todayKey}T00:00:00Z`);
+  const latestStr = rows[0].activityDate.toISOString().slice(0, 10);
+  const latestMs = Date.parse(`${latestStr}T00:00:00Z`);
+  const daysSinceLast = Math.max(
+    0,
+    Math.round((todayMs - latestMs) / 86_400_000),
+  );
+
+  return {
+    current,
+    longest,
+    totalDays: dateSet.size,
+    practisedToday,
+    daysSinceLast,
+  };
 }

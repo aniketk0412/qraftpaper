@@ -75,7 +75,13 @@ export default async function DashboardPage() {
   // Streak summary drives the Flame stat tile + the "Practise today" nudge.
   const streak = userId
     ? await getStreakSummary(userId)
-    : { current: 0, longest: 0, totalDays: 0, practisedToday: false };
+    : {
+        current: 0,
+        longest: 0,
+        totalDays: 0,
+        practisedToday: false,
+        daysSinceLast: null,
+      };
 
   const activity = [
     ...recentPapers.map((paper) => ({
