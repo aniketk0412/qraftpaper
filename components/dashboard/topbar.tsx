@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Flame, Plus } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GlowButton } from "@/components/ui/glow-button";
 import { CommandPalette } from "@/components/dashboard/command-palette";
@@ -26,10 +27,14 @@ export function Topbar({
   subjects,
   user,
   plan = "unpaid",
+  streak = 0,
+  practisedToday = false,
 }: {
   subjects: DashboardSubject[];
   user: DashboardUser;
   plan?: string;
+  streak?: number;
+  practisedToday?: boolean;
 }) {
   const pathname = usePathname() ?? "/dashboard";
   const title = pageTitleFor(pathname);
@@ -49,6 +54,27 @@ export function Topbar({
       </div>
 
       <div className="flex items-center gap-2.5">
+        {streak > 0 && (
+          // Persistent streak badge — visible from every dashboard page so
+          // users keep getting reminded of the streak they're maintaining.
+          // Dimmed when they haven't practised today (gentle "do something" cue).
+          <Link
+            href="/dashboard"
+            aria-label={`${streak}-day streak`}
+            className={
+              practisedToday
+                ? "hidden h-10 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/15 px-3 font-mono text-[0.78rem] font-medium text-gold transition-colors hover:bg-gold/20 sm:inline-flex"
+                : "hidden h-10 items-center gap-1.5 rounded-full border border-line bg-tint/[0.03] px-3 font-mono text-[0.78rem] font-medium text-fg-muted transition-colors hover:text-fg sm:inline-flex"
+            }
+          >
+            <Flame
+              className={
+                practisedToday ? "h-3.5 w-3.5 text-gold" : "h-3.5 w-3.5"
+              }
+            />
+            {streak}
+          </Link>
+        )}
         <CommandPalette subjects={subjects} />
         <ThemeToggle />
         <Notifications />

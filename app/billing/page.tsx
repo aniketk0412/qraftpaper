@@ -19,6 +19,7 @@ import { PLANS, type PlanId } from "@/lib/plans";
 import { getDb } from "@/lib/db";
 import { subscriptions, users } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
+import { getStreakSummary } from "@/lib/streaks";
 import { cn } from "@/lib/utils";
 import { CheckoutButton } from "./checkout-button";
 
@@ -75,6 +76,9 @@ export default async function BillingPage({
   const subjects = session?.user?.id
     ? await listUserSubjects(session.user.id)
     : [];
+  const streak = session?.user?.id
+    ? await getStreakSummary(session.user.id)
+    : { current: 0, longest: 0, totalDays: 0, practisedToday: false };
   const [subscription] = session?.user?.id
     ? await getDb()
         .select()
@@ -113,7 +117,13 @@ export default async function BillingPage({
   return (
     <div className="min-h-screen lg:pl-[260px]">
       <Sidebar plan={currentPlan} />
-      <Topbar subjects={subjects} user={user} plan={currentPlan} />
+      <Topbar
+        subjects={subjects}
+        user={user}
+        plan={currentPlan}
+        streak={streak.current}
+        practisedToday={streak.practisedToday}
+      />
       <main className="px-5 py-8 sm:px-8">
         <div className="mx-auto max-w-5xl">
           {/* HERO ----------------------------------------------------------- */}

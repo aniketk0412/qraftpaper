@@ -6,6 +6,7 @@ import { VerifyEmailBanner } from "@/components/dashboard/verify-email-banner";
 import { getDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
+import { getStreakSummary } from "@/lib/streaks";
 import { eq } from "drizzle-orm";
 
 export const runtime = "nodejs";
@@ -26,6 +27,9 @@ export default async function DashboardLayout({
   const subjects = session?.user?.id
     ? await listUserSubjects(session.user.id)
     : [];
+  const streak = session?.user?.id
+    ? await getStreakSummary(session.user.id)
+    : { current: 0, longest: 0, totalDays: 0, practisedToday: false };
   const [profile] = session?.user?.id
     ? await getDb()
         .select({
@@ -57,6 +61,8 @@ export default async function DashboardLayout({
         subjects={subjects}
         user={user}
         plan={profile?.plan ?? "unpaid"}
+        streak={streak.current}
+        practisedToday={streak.practisedToday}
       />
       <main className="px-5 py-8 sm:px-8">
         {profile && !profile.emailVerifiedAt && <VerifyEmailBanner />}
