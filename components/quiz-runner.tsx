@@ -7,6 +7,7 @@ import {
   Clock,
   Loader2,
   RotateCcw,
+  Share2,
   Sparkles,
   X,
 } from "lucide-react";
@@ -219,7 +220,14 @@ export function QuizRunner({
             </div>
           )}
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <ShareScoreButton
+            quizId={quiz.id}
+            quizTitle={quiz.title}
+            score={score}
+            total={total}
+          />
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={restart}
               className="inline-flex items-center gap-2 rounded-full glass-strong px-5 py-2.5 text-sm text-fg transition-colors hover:bg-tint/[0.08]"
@@ -365,6 +373,79 @@ export function QuizRunner({
           </motion.div>
         </AnimatePresence>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Post-quiz "Share my score" card. Uses the native Web Share API on phones
+ * (which lets you fling straight to WhatsApp / Instagram DMs), and falls
+ * back to copy-link on desktop where Share isn't supported.
+ *
+ * The shared link always points back at QraftPaper — every share is a tiny
+ * acquisition channel.
+ */
+function ShareScoreButton({
+  quizId,
+  quizTitle,
+  score,
+  total,
+}: {
+  quizId: string;
+  quizTitle: string;
+  score: number;
+  total: number;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleShare() {
+    if (typeof window === "undefined") return;
+    // Demo quiz lives at /demo/quiz; everything else is a real shared quiz
+    // at /take/<uuid>.
+    const path = quizId === "demo" ? "/demo/quiz" : `/take/${quizId}`;
+    const url = `${window.location.origin}${path}`;
+    const text = `I scored ${score}/${total} on "${quizTitle}" — try beating me on QraftPaper:`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: quizTitle, text, url });
+        return;
+      } catch {
+        /* user cancelled — fall through to copy */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
+  return (
+    <div className="mt-8 w-full max-w-sm rounded-2xl border border-violet/25 bg-violet/[0.06] p-4 text-left">
+      <p className="text-[0.86rem] font-medium">Beat your friends</p>
+      <p className="mt-1 text-[0.76rem] leading-snug text-fg-muted">
+        Send this exact quiz to your study group and compare scores.
+      </p>
+      <button
+        type="button"
+        onClick={handleShare}
+        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-4 py-2.5 text-[0.84rem] font-medium text-on-accent transition-colors hover:bg-[#247373]"
+      >
+        {copied ? (
+          <>
+            <Check className="h-3.5 w-3.5" />
+            Link copied
+          </>
+        ) : (
+          <>
+            <Share2 className="h-3.5 w-3.5" />
+            Share my score
+          </>
+        )}
+      </button>
     </div>
   );
 }

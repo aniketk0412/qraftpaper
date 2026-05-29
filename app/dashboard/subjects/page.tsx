@@ -7,6 +7,7 @@ import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
 import { DeleteButton } from "@/components/ui/delete-button";
 import { BackLink } from "@/components/dashboard/back-link";
+import { ExamDatePicker } from "@/components/dashboard/exam-date-picker";
 import { getDb } from "@/lib/db";
 import { documents, subjects } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
@@ -65,9 +66,23 @@ export default async function SubjectsPage() {
               <GlassCard hover className="flex h-full flex-col p-5">
                 <div className="flex items-start justify-between gap-3">
                   <IconTile icon={BookOpen} tone={subject.accent} />
-                  <span className="rounded-full border border-line bg-tint/[0.03] px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-fg-muted">
-                    {subject.hasProfile ? "Ready" : "Needs docs"}
-                  </span>
+                  {subject.daysToExam !== null && subject.daysToExam >= 0 ? (
+                    <span
+                      className={
+                        subject.daysToExam <= 7
+                          ? "rounded-full border border-gold/40 bg-gold/15 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-gold"
+                          : "rounded-full border border-line bg-tint/[0.03] px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-fg-muted"
+                      }
+                    >
+                      {subject.daysToExam === 0
+                        ? "Exam today"
+                        : `${subject.daysToExam}d to exam`}
+                    </span>
+                  ) : (
+                    <span className="rounded-full border border-line bg-tint/[0.03] px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-fg-muted">
+                      {subject.hasProfile ? "Ready" : "Needs docs"}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-5 font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
                   {subject.code}
@@ -80,7 +95,13 @@ export default async function SubjectsPage() {
                   <MiniStat label="Papers" value={String(subject.papers)} />
                   <MiniStat label="Profile" value={subject.hasProfile ? "Yes" : "No"} />
                 </div>
-                <div className="mt-5 flex items-center gap-2">
+                <div className="mt-4 border-t border-line pt-3">
+                  <ExamDatePicker
+                    subjectId={subject.id}
+                    currentValue={subject.examDate}
+                  />
+                </div>
+                <div className="mt-4 flex items-center gap-2">
                   <GlowButton
                     href="/dashboard"
                     variant="secondary"

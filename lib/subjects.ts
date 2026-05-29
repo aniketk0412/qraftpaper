@@ -18,6 +18,10 @@ export interface DashboardSubject {
   lastGenerated: string;
   accent: "violet" | "gold";
   hasProfile: boolean;
+  /** ISO date string for the upcoming exam, when set. */
+  examDate: string | null;
+  /** Whole days until the exam. Negative if already past. */
+  daysToExam: number | null;
 }
 
 async function fetchUserSubjects(userId: string): Promise<DashboardSubject[]> {
@@ -28,6 +32,7 @@ async function fetchUserSubjects(userId: string): Promise<DashboardSubject[]> {
       code: subjects.code,
       createdAt: subjects.createdAt,
       profileGeneratedAt: subjects.profileGeneratedAt,
+      examDate: subjects.examDate,
       paperCount: sql<number>`count(${papers.id})::int`,
     })
     .from(subjects)
@@ -39,11 +44,22 @@ async function fetchUserSubjects(userId: string): Promise<DashboardSubject[]> {
       subjects.code,
       subjects.createdAt,
       subjects.profileGeneratedAt,
+      subjects.examDate,
     )
     .orderBy(desc(subjects.createdAt));
 
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
   return rows.map((row, index): DashboardSubject => {
     const date = row.profileGeneratedAt ?? row.createdAt;
+    const examDate = row.examDate ?? null;
+    const daysToExam =
+      examDate !== null
+        ? Math.ceil(
+            (examDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+          )
+        : null;
 
     return {
       id: row.id,
@@ -53,6 +69,8 @@ async function fetchUserSubjects(userId: string): Promise<DashboardSubject[]> {
       lastGenerated: date ? formatRelativeDate(date) : "Just now",
       accent: index % 2 === 0 ? "violet" : "gold",
       hasProfile: Boolean(row.profileGeneratedAt),
+      examDate: examDate ? examDate.toISOString().slice(0, 10) : null,
+      daysToExam,
     };
   });
 }
