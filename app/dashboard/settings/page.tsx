@@ -9,6 +9,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { BackLink } from "@/components/dashboard/back-link";
 import { getDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
+import { PLANS, type PlanId } from "@/lib/plans";
 import { updateProfileAction } from "./actions";
 
 export const runtime = "nodejs";
@@ -111,8 +112,8 @@ export default async function SettingsPage({
             <h2 className="text-lg font-semibold tracking-tight">Plan</h2>
             <p className="mt-1 text-[0.84rem] text-fg-muted">
               You are on the{" "}
-              <span className="font-medium capitalize text-fg">
-                {profile?.plan ?? "unpaid"}
+              <span className="font-medium text-fg">
+                {PLANS[(profile?.plan ?? "unpaid") as PlanId]?.name ?? "Unpaid"}
               </span>{" "}
               plan.
             </p>

@@ -7,6 +7,7 @@ import { Topbar } from "@/components/dashboard/topbar";
 import { GlassCard } from "@/components/ui/glass-card";
 import { IconTile } from "@/components/ui/icon-tile";
 import { billingTiers } from "@/lib/billing/lemonsqueezy";
+import { PLANS, type PlanId } from "@/lib/plans";
 import { getDb } from "@/lib/db";
 import { subscriptions, users } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
@@ -54,6 +55,10 @@ export default async function BillingPage({
   const { checkout } = await searchParams;
   const checkoutStatus = Array.isArray(checkout) ? checkout[0] : checkout;
   const currentPlan = profile?.plan ?? session?.user?.plan ?? "unpaid";
+  // Internal plan id ("educator" / "department") differs from the public
+  // display name ("Solo" / "Crew") — resolve to the public label via PLANS.
+  const currentPlanLabel =
+    PLANS[currentPlan as PlanId]?.name ?? "Unpaid";
   const user = {
     name: profile?.name ?? session?.user?.name ?? null,
     email: profile?.email ?? session?.user?.email ?? "",
@@ -106,8 +111,8 @@ export default async function BillingPage({
               <p className="mt-5 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-fg-subtle">
                 Current plan
               </p>
-              <h2 className="mt-2 text-2xl font-semibold capitalize tracking-tight">
-                {currentPlan}
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                {currentPlanLabel}
               </h2>
               <p className="mt-2 text-[0.9rem] leading-relaxed text-fg-muted">
                 {subscription
@@ -117,8 +122,10 @@ export default async function BillingPage({
               <div className="mt-5 rounded-xl border border-line bg-tint/[0.03] p-4">
                 <p className="text-sm font-medium">Usage is plan-gated</p>
                 <p className="mt-1 text-[0.82rem] leading-relaxed text-fg-muted">
-                  Educator includes {billingTiers.educator.generationCap}.
-                  Department includes {billingTiers.department.generationCap}.
+                  {billingTiers.educator.label} includes{" "}
+                  {billingTiers.educator.generationCap}.{" "}
+                  {billingTiers.department.label} includes{" "}
+                  {billingTiers.department.generationCap}.
                 </p>
               </div>
             </GlassCard>
