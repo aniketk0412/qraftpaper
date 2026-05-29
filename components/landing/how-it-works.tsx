@@ -29,7 +29,7 @@ const steps = [
   },
 ];
 
-export function HowItWorks() {
+export function HowItWorks({ signedIn = false }: { signedIn?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -107,8 +107,11 @@ export function HowItWorks() {
 
         <Reveal delay={0.1}>
           <div className="mt-12 flex flex-col items-center gap-3">
-            <GlowButton href="/signup" size="lg">
-              Get started
+            <GlowButton
+              href={signedIn ? "/dashboard" : "/signup"}
+              size="lg"
+            >
+              {signedIn ? "Open dashboard" : "Get started"}
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
             </GlowButton>
             <p className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-fg-subtle">

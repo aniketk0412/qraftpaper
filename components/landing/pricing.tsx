@@ -7,7 +7,13 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { PRICING_TIERS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
-export function Pricing({ country }: { country?: string }) {
+export function Pricing({
+  country,
+  signedIn = false,
+}: {
+  country?: string;
+  signedIn?: boolean;
+}) {
   // Show INR for visitors from India. USD is still what LemonSqueezy charges;
   // this is a perception fix so ₹579 reads cheaper than the abstract "$7".
   const showInr = country === "IN";
@@ -84,12 +90,12 @@ export function Pricing({ country }: { country?: string }) {
 
                 <div className="relative mt-6">
                   <GlowButton
-                    href="/signup"
+                    href={signedIn ? "/billing" : "/signup"}
                     variant={tier.featured ? "primary" : "secondary"}
                     size="md"
                     className="w-full"
                   >
-                    {tier.cta}
+                    {signedIn ? "Subscribe" : tier.cta}
                     <ArrowRight className="h-4 w-4" />
                   </GlowButton>
                 </div>

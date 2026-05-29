@@ -46,7 +46,7 @@ const points = [
   },
 ];
 
-export function Quiz() {
+export function Quiz({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <section id="quiz" className="section-pad scroll-mt-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -92,8 +92,11 @@ export function Quiz() {
 
             <Reveal delay={0.5}>
               <div className="mt-8">
-                <GlowButton href="/signup" size="lg">
-                  Generate your own quiz
+                <GlowButton
+                  href={signedIn ? "/dashboard" : "/signup"}
+                  size="lg"
+                >
+                  {signedIn ? "Open dashboard" : "Generate your own quiz"}
                   <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
                 </GlowButton>
               </div>

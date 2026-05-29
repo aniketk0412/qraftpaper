@@ -80,14 +80,14 @@ export default async function Home() {
       />
       <SiteNav signedIn={signedIn} />
       <main>
-        <Hero />
-        <HowItWorks />
+        <Hero signedIn={signedIn} />
+        <HowItWorks signedIn={signedIn} />
         <Features />
         <PaperShowcase />
-        <Quiz />
-        <Pricing country={country} />
+        <Quiz signedIn={signedIn} />
+        <Pricing country={country} signedIn={signedIn} />
         <Faq />
-        <Cta />
+        <Cta signedIn={signedIn} />
       </main>
       <SiteFooter />
     </>

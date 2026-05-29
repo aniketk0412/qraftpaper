@@ -16,7 +16,7 @@ const words = [
   { t: "papers." },
 ];
 
-export function Hero() {
+export function Hero({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <section className="relative overflow-hidden pb-20 pt-36 sm:pt-44">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -82,8 +82,11 @@ export function Hero() {
               transition={{ duration: 0.7, delay: 0.74, ease: easeOut }}
               className="mt-9 flex flex-wrap items-center gap-3"
             >
-              <GlowButton href="/signup" size="lg">
-                Generate your first paper
+              <GlowButton
+                href={signedIn ? "/dashboard" : "/signup"}
+                size="lg"
+              >
+                {signedIn ? "Open dashboard" : "Generate your first paper"}
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
               </GlowButton>
               <GlowButton href="#showcase" variant="secondary" size="lg">
