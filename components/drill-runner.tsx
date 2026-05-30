@@ -223,6 +223,19 @@ export function DrillRunner({ quiz }: { quiz: Quiz }) {
                     key={option}
                     onClick={() => pick(i)}
                     disabled={answered}
+                    // Screen-reader state: the Check/X glyphs are decorative,
+                    // so without this a blind user hears only the option text
+                    // and never learns which answer was right. The label is
+                    // applied only once answered.
+                    aria-label={
+                      !answered
+                        ? undefined
+                        : state === "correct"
+                          ? `${option} — correct answer`
+                          : state === "wrong"
+                            ? `${option} — your answer, incorrect`
+                            : option
+                    }
                     className={cn(
                       "group flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all duration-200",
                       state === "idle" &&
@@ -266,6 +279,11 @@ export function DrillRunner({ quiz }: { quiz: Quiz }) {
                   className="overflow-hidden"
                 >
                   <div
+                    // Announce the result + explanation to screen readers the
+                    // moment it appears — without this the correct/incorrect
+                    // feedback is purely visual.
+                    role="status"
+                    aria-live="polite"
                     className={cn(
                       "mt-5 rounded-xl border p-4",
                       isCorrect

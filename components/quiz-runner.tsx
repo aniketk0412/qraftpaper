@@ -613,6 +613,18 @@ export function QuizRunner({
                     key={option}
                     onClick={() => pick(i)}
                     disabled={answered || grading}
+                    // Convey correct/incorrect to screen readers — the Check/X
+                    // glyphs are decorative, so without this a blind user only
+                    // hears the option text and never which one was right.
+                    aria-label={
+                      !answered
+                        ? undefined
+                        : state === "correct"
+                          ? `${option} — correct answer`
+                          : state === "wrong"
+                            ? `${option} — your answer, incorrect`
+                            : option
+                    }
                     className={cn(
                       "group flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all duration-200",
                       state === "idle" &&
@@ -656,7 +668,11 @@ export function QuizRunner({
                   transition={{ duration: 0.3, ease: easeOut }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-5 rounded-xl border border-line bg-tint/[0.02] p-4">
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="mt-5 rounded-xl border border-line bg-tint/[0.02] p-4"
+                  >
                     <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-violet-bright">
                       {picked === reveal?.correctIndex ? "Correct" : "Explanation"}
                     </p>
