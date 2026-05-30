@@ -39,7 +39,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Free preview",
     price: "$0",
     period: "",
-    tagline: "Explore a sample workspace.",
+    tagline: "Browse a sample paper and quiz — no generation until you subscribe.",
     cta: "Sign up",
     featured: false,
     generationsPerMonth: 0,

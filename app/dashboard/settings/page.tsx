@@ -46,7 +46,7 @@ export default async function SettingsPage({
             Settings
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gradient">
-            Workspace settings
+            Account settings
           </h1>
           <p className="mt-1.5 text-sm text-fg-muted">
             Manage your profile, plan and account.
@@ -58,7 +58,7 @@ export default async function SettingsPage({
         <GlassCard className="mt-8 p-7">
           <h2 className="text-lg font-semibold tracking-tight">Profile</h2>
           <p className="mt-1 text-[0.84rem] text-fg-muted">
-            This name and institution appear across your workspace.
+            This name and institution show on your dashboard and shared quizzes.
           </p>
 
           {saved === "profile" && (
