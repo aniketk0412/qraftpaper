@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { trackEvent } from "@/lib/analytics";
 import { isQuiz } from "@/lib/content-validation";
 import { generateQuizQuestions, type QuizGenerationConfig } from "@/lib/ai/generate";
+import { reconcileQuiz } from "@/lib/quiz-reconcile";
 import { normalizeQuizConfig } from "@/lib/generation-config";
 import { normalizeUuid } from "@/lib/ids";
 import { getDb } from "@/lib/db";
@@ -137,7 +138,7 @@ export async function POST(request: Request) {
 
   const quizId = randomUUID();
   const title = `${subject.name} Practice Quiz`;
-  const quiz: Quiz = {
+  const rawQuiz: Quiz = {
     id: quizId,
     subject: subject.name,
     subjectCode: subject.code,
@@ -146,7 +147,29 @@ export async function POST(request: Request) {
     questions,
   };
 
-  if (!isQuiz(quiz)) {
+  // Salvage instead of all-or-nothing: drop only the malformed questions and
+  // dedupe duplicate options (re-mapping the answer by value). A single bad
+  // question no longer wastes the user's paid generation.
+  const { quiz, report: quizReport } = reconcileQuiz(
+    rawQuiz,
+    config.questionCount,
+  );
+  if (quizReport.dropped > 0 || quizReport.optionsDeduped > 0) {
+    console.info("[generate:quiz] reconciled", quizReport);
+    try {
+      await trackEvent({
+        distinctId: session.user.id,
+        event: "quiz_reconciled",
+        properties: { ...quizReport },
+      });
+    } catch {
+      /* telemetry must never break a real generation */
+    }
+  }
+
+  // Fail only when nothing usable survived — a genuinely empty quiz is the
+  // one case worth refunding-and-retrying.
+  if (quiz.questions.length === 0 || !isQuiz(quiz)) {
     if (job) {
       await getDb()
         .update(generationJobs)
