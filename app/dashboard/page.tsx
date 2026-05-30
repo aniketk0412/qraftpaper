@@ -164,6 +164,10 @@ export default async function DashboardPage() {
     value: string;
     note: string;
     href?: string;
+    /** When set, the tile lights up in that tone — used to make the strip
+     *  react to live state (an active streak, a non-empty review queue)
+     *  rather than sitting there as four identical readouts. */
+    highlight?: "gold" | "violet";
   }[] = [
     {
       icon: Flame,
@@ -175,6 +179,7 @@ export default async function DashboardPage() {
           : streak.current >= streak.longest
             ? "Personal best — keep it going"
             : `Best: ${streak.longest} days`,
+      highlight: streak.current > 0 ? "gold" : undefined,
     },
     {
       icon: FileText,
@@ -200,6 +205,7 @@ export default async function DashboardPage() {
       value: String(dueReviewCount),
       note: dueReviewCount > 0 ? "in your drill queue" : "all caught up",
       href: "/dashboard/drill",
+      highlight: dueReviewCount > 0 ? "violet" : undefined,
     },
   ];
 
@@ -275,28 +281,27 @@ export default async function DashboardPage() {
 
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((s, i) => {
-          // First tile = streak. Highlight it with a gold ring + flame tone
-          // when the streak is active so the dashboard reads "I'm winning"
-          // rather than "I'm reading a CRM."
-          const isStreak = i === 0;
-          const streakActive = isStreak && streak.current > 0;
+          // Tiles light up in their tone when the underlying state is "live":
+          // an active streak (gold) or a non-empty review queue (violet). This
+          // is what stops the strip from reading like a static CRM readout —
+          // the dashboard visibly reacts to whether you're winning and whether
+          // there's something to do right now.
+          const lit = s.highlight;
           const card = (
             <GlassCard
               hover
               className={cn(
-                "relative h-full p-5",
-                streakActive && "ring-1 ring-gold/30",
+                "relative h-full p-5 transition-shadow",
+                lit === "gold" && "ring-1 ring-gold/30",
+                lit === "violet" && "ring-1 ring-violet/35",
               )}
             >
-              <IconTile
-                icon={s.icon}
-                tone={streakActive ? "gold" : "neutral"}
-                size="sm"
-              />
+              <IconTile icon={s.icon} tone={lit ?? "neutral"} size="sm" />
               {/* Navigable tiles get a corner arrow so the strip reads as a
-                  set of shortcuts, not just passive readouts. */}
+                  set of shortcuts, not just passive readouts. It nudges right
+                  on hover to confirm "this goes somewhere". */}
               {s.href && (
-                <ArrowRight className="absolute right-4 top-4 h-3.5 w-3.5 text-fg-subtle transition-colors group-hover:text-fg-muted" />
+                <ArrowRight className="absolute right-4 top-4 h-3.5 w-3.5 text-fg-subtle transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-fg-muted" />
               )}
               <p
                 className={cn(
@@ -306,7 +311,8 @@ export default async function DashboardPage() {
                   // utility's feel without committing to its larger
                   // clamp() ramp.
                   "mt-4 text-3xl font-semibold tracking-[-0.03em] tabular-nums",
-                  streakActive && "text-gold",
+                  lit === "gold" && "text-gold",
+                  lit === "violet" && "text-violet-bright",
                 )}
               >
                 {s.value}
@@ -419,9 +425,20 @@ export default async function DashboardPage() {
               )}
               <Reveal delay={0.1}>
                 <GlassCard className="p-5">
-                  <h2 className="text-sm font-semibold tracking-tight">
-                    Recent activity
-                  </h2>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-semibold tracking-tight">
+                      Recent activity
+                    </h2>
+                    {recentPapers.length > 0 && (
+                      <Link
+                        href="/dashboard/papers"
+                        className="flex items-center gap-1 text-[0.74rem] text-violet-bright transition-colors hover:text-violet"
+                      >
+                        View all
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    )}
+                  </div>
                   <div className="mt-4 flex flex-col gap-1">
                     {activity.map((a) => (
                       <Link
