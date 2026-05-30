@@ -50,6 +50,13 @@
       "when": 1780033997304,
       "tag": "0006_zippy_pestilence",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780118669823,
+      "tag": "0007_hot_path_indexes",
+      "breakpoints": true
     }
   ]
 }

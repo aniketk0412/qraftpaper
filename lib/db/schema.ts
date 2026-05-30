@@ -197,46 +197,72 @@ export const quizAttempts = pgTable(
   ],
 );
 
-export const documents = pgTable("documents", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  subjectId: uuid("subject_id")
-    .notNull()
-    .references(() => subjects.id, { onDelete: "cascade" }),
-  type: text("type").notNull(),
-  fileName: text("file_name").notNull(),
-  contentBase64: text("content_base64").notNull(),
-  extractedText: text("extracted_text"),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
+export const documents = pgTable(
+  "documents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    subjectId: uuid("subject_id")
+      .notNull()
+      .references(() => subjects.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    fileName: text("file_name").notNull(),
+    contentBase64: text("content_base64").notNull(),
+    extractedText: text("extracted_text"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    // Documents are looked up by their parent subject during profile build —
+    // small N per subject but every generation needs them.
+    index("documents_subject_idx").on(table.subjectId),
+  ],
+);
 
-export const papers = pgTable("papers", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  subjectId: uuid("subject_id")
-    .notNull()
-    .references(() => subjects.id, { onDelete: "cascade" }),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  config: jsonb("config"),
-  content: jsonb("content").$type<QuestionPaper>(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-});
+export const papers = pgTable(
+  "papers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    subjectId: uuid("subject_id")
+      .notNull()
+      .references(() => subjects.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    config: jsonb("config"),
+    content: jsonb("content").$type<QuestionPaper>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    // Dashboard pulls "recent papers for user, newest first" and the papers
+    // page paginates the same way — composite index covers both.
+    index("papers_user_created_idx").on(table.userId, table.createdAt),
+    // assertSubjectPaperLimit + the per-subject papers list both filter on
+    // (userId, subjectId).
+    index("papers_user_subject_idx").on(table.userId, table.subjectId),
+  ],
+);
 
-export const quizzes = pgTable("quizzes", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  subjectId: uuid("subject_id")
-    .notNull()
-    .references(() => subjects.id, { onDelete: "cascade" }),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  content: jsonb("content").$type<Quiz>(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-});
+export const quizzes = pgTable(
+  "quizzes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    subjectId: uuid("subject_id")
+      .notNull()
+      .references(() => subjects.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    content: jsonb("content").$type<Quiz>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("quizzes_user_created_idx").on(table.userId, table.createdAt),
+    index("quizzes_user_subject_idx").on(table.userId, table.subjectId),
+  ],
+);
 
 export const usage = pgTable(
   "usage",
