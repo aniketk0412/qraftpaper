@@ -20,13 +20,26 @@
   --color-fg-muted: #4a5f6f;
   --color-fg-subtle: #566779;
 
-  /* Highlight family (token names kept stable) — teal shades.
-     -bright is the text-grade teal (WCAG AA ~4.9:1 on white). */
+  /* Two-hue accent system (token names kept stable from the earlier palette).
+   *
+   *   violet-*  = the cool/teal family. Used for navigation, links, primary
+   *               surfaces — "calm progress." -bright is the text-grade teal
+   *               (WCAG AA ~4.9:1 on cream canvas).
+   *
+   *   gold-*    = the warm/amber family. Reserved for streaks, milestones,
+   *               exam-soon urgency and earned-badge moments. Splitting it
+   *               back out from teal gives the app the "fire" colour every
+   *               habit product needs — Duolingo's gold, Strava's orange.
+   *               --color-gold doubles as both text colour and bg-tint base,
+   *               so it sits at amber-700 (~4.2:1 on cream — passes AA for
+   *               large text, which is where 100% of gold copy actually
+   *               appears: streak counters, milestone headlines, urgency
+   *               chips). The -deep variant goes amber-800 for hover/active. */
   --color-violet: #36a0a0;
   --color-violet-bright: #1f7d7d;
   --color-violet-deep: #1f6b6b;
-  --color-gold: #1f7d7d;
-  --color-gold-deep: #1f6b6b;
+  --color-gold: #b45309;
+  --color-gold-deep: #92400e;
 
   /* Signature accent — teal, deepened to meet WCAG AA on white/cards */
   --color-accent: #1f7d7d;
@@ -110,8 +123,11 @@ html[data-theme="dark"] {
   --color-violet: #46b3b3;
   --color-violet-bright: #5fc4c4;
   --color-violet-deep: #2d8b8b;
-  --color-gold: #5fc4c4;
-  --color-gold-deep: #2d8b8b;
+  /* Dark-mode gold sits at amber-400/500 so streak/badge surfaces glow
+   * against the deep-navy canvas (~10:1 on #0e1620). Same warm hue as
+   * the light mode, brightened for the dark surround. */
+  --color-gold: #f59e0b;
+  --color-gold-deep: #d97706;
   --color-accent: #46b3b3;
   --color-accent-soft: #8ad8d8;
   --color-on-accent: #07131b;
