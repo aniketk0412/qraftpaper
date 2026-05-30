@@ -4,8 +4,7 @@ import { getDb } from "@/lib/db";
 import { questionReviews } from "@/lib/db/schema";
 import {
   freshSrState,
-  isGraduated,
-  scheduleNext,
+  planReviewUpdate,
   type SrState,
 } from "@/lib/spaced-repetition";
 import type { Difficulty, QuizQuestion } from "@/lib/types";
@@ -177,9 +176,14 @@ export async function applyReviewGrade(
 
   if (!row) return { graduated: false, found: false };
 
-  const next = scheduleNext(srFromRow(row), correct);
+  const { retire, next } = planReviewUpdate(
+    srFromRow(row),
+    correct,
+    Date.now(),
+    GRADUATED_DAYS,
+  );
 
-  if (correct && isGraduated(next, GRADUATED_DAYS)) {
+  if (retire) {
     await db.delete(questionReviews).where(eq(questionReviews.id, row.id));
     return { graduated: true, found: true };
   }

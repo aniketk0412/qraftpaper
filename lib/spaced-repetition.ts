@@ -75,6 +75,26 @@ export function isDue(state: SrState, now = Date.now()): boolean {
 }
 
 /**
+ * Decide what a persistence layer should do with a stored card after a drill
+ * answer: advance its schedule, or — if a correct answer pushed its interval
+ * past the graduation threshold — retire it from the backlog entirely.
+ *
+ * Pure so the DB-backed grade handler's branching (update vs delete) is
+ * unit-tested without standing up a database. `retire` carries through the
+ * `next` state even when retiring so callers that prefer to keep a tombstone
+ * row (rather than delete) still have the final schedule to write.
+ */
+export function planReviewUpdate(
+  state: SrState,
+  correct: boolean,
+  now = Date.now(),
+  thresholdDays = 21,
+): { retire: boolean; next: SrState } {
+  const next = scheduleNext(state, correct, now);
+  return { retire: correct && isGraduated(next, thresholdDays), next };
+}
+
+/**
  * Has this card been learned well enough to leave the active backlog? Once the
  * interval reaches the threshold (default 21 days), the student reliably knows
  * it — keeping it in the drill would just waste their time.

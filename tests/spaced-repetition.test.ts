@@ -4,6 +4,7 @@ import {
   freshSrState,
   isDue,
   isGraduated,
+  planReviewUpdate,
   scheduleNext,
   type SrState,
 } from "@/lib/spaced-repetition";
@@ -86,5 +87,38 @@ describe("isGraduated", () => {
     }
     expect(isGraduated(s)).toBe(true);
     expect(guard).toBeLessThan(10); // 1 -> 3 -> 8 -> ~21, a handful of reviews
+  });
+});
+
+describe("planReviewUpdate — DB-layer branching, without a DB", () => {
+  it("a fresh miss graded correct advances but does not retire", () => {
+    const plan = planReviewUpdate(freshSrState(T0), true, T0);
+    expect(plan.retire).toBe(false);
+    expect(plan.next.intervalDays).toBe(1);
+    expect(plan.next.reps).toBe(1);
+  });
+
+  it("a miss never retires, even from a long-interval card", () => {
+    // A near-graduated card answered wrong must stay in the backlog.
+    const mature: SrState = { ease: 2.5, intervalDays: 20, reps: 5, dueAt: T0 };
+    const plan = planReviewUpdate(mature, false, T0);
+    expect(plan.retire).toBe(false);
+    expect(plan.next.intervalDays).toBe(0); // lapsed back to due-now
+    expect(plan.next.dueAt).toBe(T0);
+  });
+
+  it("a correct answer that crosses the threshold retires the card", () => {
+    // intervalDays 20, ease 2.5 -> next correct = round(20 * 2.5) = 50 >= 21.
+    const mature: SrState = { ease: 2.5, intervalDays: 20, reps: 5, dueAt: T0 };
+    const plan = planReviewUpdate(mature, true, T0);
+    expect(plan.retire).toBe(true);
+    expect(plan.next.intervalDays).toBeGreaterThanOrEqual(21);
+  });
+
+  it("respects a custom graduation threshold", () => {
+    const s: SrState = { ease: 2.5, intervalDays: 2, reps: 2, dueAt: T0 };
+    // next correct interval = round(2 * 2.5) = 5.
+    expect(planReviewUpdate(s, true, T0, 21).retire).toBe(false);
+    expect(planReviewUpdate(s, true, T0, 4).retire).toBe(true);
   });
 });
