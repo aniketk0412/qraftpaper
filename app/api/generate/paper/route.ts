@@ -9,6 +9,7 @@ import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { generationJobs, papers, subjects, users } from "@/lib/db/schema";
 import { generatePaperSections, type PaperGenerationConfig } from "@/lib/ai/generate";
+import { reconcilePaper } from "@/lib/paper-reconcile";
 import { normalizePaperConfig } from "@/lib/generation-config";
 import { normalizeUuid } from "@/lib/ids";
 import {
@@ -142,7 +143,7 @@ export async function POST(request: Request) {
 
   const paperId = randomUUID();
   const title = config.examTitle ?? `${subject.name} Question Paper`;
-  const paper: QuestionPaper = {
+  const rawPaper: QuestionPaper = {
     id: paperId,
     subject: subject.name,
     subjectCode: subject.code,
@@ -152,6 +153,34 @@ export async function POST(request: Request) {
     totalMarks: config.totalMarks,
     sections,
   };
+
+  // Reconcile the AI's output against what was requested: the printed total
+  // is forced to the real sum of the questions (the model frequently misses
+  // the target), and questions are renumbered 1..N across sections. After
+  // this the paper can never contradict itself.
+  const { paper, report } = reconcilePaper(rawPaper, config.totalMarks);
+  if (report.marksAdjusted || report.renumbered) {
+    console.info("[generate:paper] reconciled", {
+      requestedMarks: report.requestedMarks,
+      actualMarks: report.actualMarks,
+      marksDelta: report.marksDelta,
+      renumbered: report.renumbered,
+    });
+    try {
+      await trackEvent({
+        distinctId: session.user.id,
+        event: "paper_reconciled",
+        properties: {
+          requestedMarks: report.requestedMarks,
+          actualMarks: report.actualMarks,
+          marksDelta: report.marksDelta,
+          renumbered: report.renumbered,
+        },
+      });
+    } catch {
+      /* telemetry must never break a real generation */
+    }
+  }
 
   if (!isQuestionPaper(paper)) {
     if (job) {
