@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Download, FileText, FilePlus2 } from "lucide-react";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, sql } from "drizzle-orm";
 
 import { auth } from "@/auth";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -9,6 +9,7 @@ import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
 import { DeleteButton } from "@/components/ui/delete-button";
 import { BackLink } from "@/components/dashboard/back-link";
+import { SearchInput } from "@/components/dashboard/search-input";
 import { getDb } from "@/lib/db";
 import { papers } from "@/lib/db/schema";
 
@@ -19,20 +20,35 @@ const PAGE_SIZE = 20;
 export default async function PapersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string | string[] }>;
+  searchParams: Promise<{ page?: string | string[]; q?: string | string[] }>;
 }) {
   const session = await auth();
   const userId = session?.user?.id;
 
   // Parse ?page=N, clamp to >=1. Anything malformed falls back to page 1.
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, q: qParam } = await searchParams;
   const rawPage = Array.isArray(pageParam) ? pageParam[0] : pageParam;
   const page = Math.max(1, Number.parseInt(rawPage ?? "1", 10) || 1);
   const offset = (page - 1) * PAGE_SIZE;
+  // Keyword search: case-insensitive substring match on the paper title.
+  // Capped at 80 chars so a runaway URL can't make Postgres burn cycles
+  // matching a 10k-char ILIKE pattern.
+  const rawQ = Array.isArray(qParam) ? qParam[0] : qParam;
+  const q = (rawQ ?? "").trim().slice(0, 80);
+  // ilike() expects the user-controlled value as a parameter — drizzle binds
+  // it, so the % wildcards we add can't be interpreted as SQL. Still, we
+  // sanitise the literal % and _ wildcards inside the term so a user typing
+  // "100%" doesn't accidentally match every paper.
+  const safeQ = q.replace(/[%_]/g, "\\$&");
+  const whereClause = userId
+    ? q
+      ? and(eq(papers.userId, userId), ilike(papers.title, `%${safeQ}%`))
+      : eq(papers.userId, userId)
+    : undefined;
 
   // Get the total count and the current page in parallel — both are cheap
-  // single-index scans on (user_id, created_at).
-  const [rows, [{ count: total = 0 } = { count: 0 }]] = userId
+  // index lookups, search just narrows the (user_id, created_at) scan.
+  const [rows, [{ count: total = 0 } = { count: 0 }]] = userId && whereClause
     ? await Promise.all([
         getDb()
           .select({
@@ -43,14 +59,14 @@ export default async function PapersPage({
             updatedAt: papers.updatedAt,
           })
           .from(papers)
-          .where(eq(papers.userId, userId))
+          .where(whereClause)
           .orderBy(desc(papers.createdAt))
           .limit(PAGE_SIZE)
           .offset(offset),
         getDb()
           .select({ count: sql<number>`count(*)::int` })
           .from(papers)
-          .where(eq(papers.userId, userId)),
+          .where(whereClause),
       ])
     : [[], [{ count: 0 }]];
 
@@ -81,6 +97,19 @@ export default async function PapersPage({
           </GlowButton>
         </div>
       </Reveal>
+
+      {/* Search input — only rendered when there are papers OR an active
+          search term. A brand-new user with zero papers shouldn't see a
+          dead search box on top of an "create your first subject" empty
+          state. */}
+      {(total > 0 || q) && (
+        <div className="mt-7">
+          <SearchInput
+            placeholder="Search papers by title or subject..."
+            className="max-w-md"
+          />
+        </div>
+      )}
 
       <div className="mt-8 grid gap-3">
         {rows.map((paper, index) => (
@@ -137,6 +166,7 @@ export default async function PapersPage({
               disabled={page <= 1}
               label="Previous"
               icon="left"
+              q={q}
             />
             <span className="font-mono text-[0.72rem] tabular-nums text-fg-muted">
               Page {page} / {totalPages}
@@ -146,6 +176,7 @@ export default async function PapersPage({
               disabled={page >= totalPages}
               label="Next"
               icon="right"
+              q={q}
             />
           </div>
         </div>
@@ -156,18 +187,30 @@ export default async function PapersPage({
           <GlassCard className="mt-8 p-7 text-center">
             <IconTile icon={FileText} size="lg" className="mx-auto" />
             <h2 className="mt-5 text-xl font-semibold tracking-tight">
-              {page > 1 ? "Nothing on this page" : "No generated papers yet"}
+              {q
+                ? `No papers match “${q}”`
+                : page > 1
+                  ? "Nothing on this page"
+                  : "No generated papers yet"}
             </h2>
             <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-fg-muted">
-              {page > 1
-                ? "Go back to page 1 to see your most recent papers."
-                : "Create a profiled subject first, then generate papers from the Overview."}
+              {q
+                ? "Try a shorter or different keyword — search matches the paper title."
+                : page > 1
+                  ? "Go back to page 1 to see your most recent papers."
+                  : "Create a profiled subject first, then generate papers from the Overview."}
             </p>
             <GlowButton
-              href={page > 1 ? "/dashboard/papers" : "/dashboard/subjects/new"}
+              href={
+                q
+                  ? "/dashboard/papers"
+                  : page > 1
+                    ? "/dashboard/papers"
+                    : "/dashboard/subjects/new"
+              }
               className="mt-6"
             >
-              {page > 1 ? "Back to page 1" : "Create subject"}{" "}
+              {q ? "Clear search" : page > 1 ? "Back to page 1" : "Create subject"}{" "}
               <ArrowRight className="h-4 w-4" />
             </GlowButton>
           </GlassCard>
@@ -182,11 +225,13 @@ function PageLink({
   disabled,
   label,
   icon,
+  q,
 }: {
   page: number;
   disabled: boolean;
   label: string;
   icon: "left" | "right";
+  q?: string;
 }) {
   if (disabled) {
     return (
@@ -200,9 +245,14 @@ function PageLink({
       </span>
     );
   }
+  // Preserve the active search term across page navigation so a user paging
+  // through filtered results doesn't lose their query when they hit Next.
+  const href = q
+    ? `/dashboard/papers?page=${page}&q=${encodeURIComponent(q)}`
+    : `/dashboard/papers?page=${page}`;
   return (
     <Link
-      href={`/dashboard/papers?page=${page}`}
+      href={href}
       className="inline-flex h-9 items-center gap-1.5 rounded-full glass px-3 text-[0.78rem] text-fg-muted transition-colors hover:text-fg"
     >
       {icon === "left" && <ChevronLeft className="h-3.5 w-3.5" />}
