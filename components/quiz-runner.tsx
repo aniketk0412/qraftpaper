@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowRight,
+  BookOpen,
   Check,
   Clock,
   Loader2,
@@ -60,6 +61,12 @@ export function QuizRunner({
   const [reveals, setReveals] = useState<Record<string, Reveal>>({});
   const [grading, setGrading] = useState(false);
   const [finished, setFinished] = useState(false);
+  // Drill-down review mode toggled from the finished state. When true the
+  // runner renders every question side-by-side with the picked answer
+  // marked, the correct answer marked, and the explanation. Big retention
+  // multiplier — students learn from the questions they got wrong, not the
+  // ones they aced, so making the wrong ones easy to revisit is the lever.
+  const [reviewing, setReviewing] = useState(false);
 
   const totalSeconds = Math.max(1, quiz.durationMins * 60);
   const [deadline, setDeadline] = useState(() => Date.now() + totalSeconds * 1000);
@@ -168,6 +175,7 @@ export function QuizRunner({
     setReveals({});
     setStep(0);
     setFinished(false);
+    setReviewing(false);
     savedRef.current = false;
     setDeadline(Date.now() + totalSeconds * 1000);
     setRemaining(totalSeconds);
@@ -276,6 +284,13 @@ export function QuizRunner({
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button
+              onClick={() => setReviewing(true)}
+              className="inline-flex items-center gap-2 rounded-full glass-strong px-5 py-2.5 text-sm text-fg transition-colors hover:bg-tint/[0.08]"
+            >
+              <BookOpen className="h-4 w-4" />
+              Review answers
+            </button>
+            <button
               onClick={restart}
               className="inline-flex items-center gap-2 rounded-full glass-strong px-5 py-2.5 text-sm text-fg transition-colors hover:bg-tint/[0.08]"
             >
@@ -286,6 +301,157 @@ export function QuizRunner({
               {backLabel}
             </GlowButton>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Review mode ----
+  // Walks the user back through every question, showing what they picked,
+  // the correct answer, and the explanation. Renders strictly after
+  // `finished` becomes true — review without first completing doesn't
+  // make sense.
+  if (reviewing) {
+    const correctCount = quiz.questions.reduce((sum, q) => {
+      const r = reveals[q.id];
+      return sum + (r && answers[q.id] === r.correctIndex ? 1 : 0);
+    }, 0);
+    return (
+      <div className="overflow-hidden rounded-2xl glass-strong">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4 sm:px-8">
+          <div className="leading-tight">
+            <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-fg-subtle">
+              Reviewing
+            </p>
+            <p className="text-sm font-medium">
+              {correctCount} / {total} correct on {quiz.subject}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setReviewing(false)}
+            className="inline-flex items-center gap-1.5 rounded-full glass px-3.5 py-1.5 text-[0.78rem] text-fg-muted transition-colors hover:text-fg"
+          >
+            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
+            Back to results
+          </button>
+        </div>
+        <div className="flex flex-col gap-3 px-4 py-5 sm:px-6">
+          {quiz.questions.map((q, qi) => {
+            const reveal = reveals[q.id];
+            const picked = answers[q.id];
+            const correctIdx = reveal?.correctIndex;
+            const wasCorrect =
+              reveal !== undefined && picked === correctIdx;
+            const unanswered = picked === undefined;
+            return (
+              <div
+                key={q.id}
+                className={cn(
+                  "rounded-xl border p-4 transition-colors sm:p-5",
+                  wasCorrect
+                    ? "border-accent/30 bg-accent/[0.04]"
+                    : unanswered
+                      ? "border-line bg-tint/[0.02]"
+                      : "border-gold/30 bg-gold/[0.06]",
+                )}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-mono text-[0.6rem] uppercase tracking-wider text-fg-subtle">
+                    Q{qi + 1} · {q.unit} · {q.difficulty}
+                  </p>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-2 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.14em] ring-1",
+                      wasCorrect &&
+                        "bg-accent/15 text-accent ring-accent/30",
+                      !wasCorrect &&
+                        !unanswered &&
+                        "bg-gold/15 text-gold ring-gold/35",
+                      unanswered &&
+                        "bg-tint/[0.04] text-fg-subtle ring-line",
+                    )}
+                  >
+                    {unanswered
+                      ? "Skipped"
+                      : wasCorrect
+                        ? "Correct"
+                        : "Missed"}
+                  </span>
+                </div>
+                <p className="mt-2 text-[0.92rem] leading-snug text-fg">
+                  {q.prompt}
+                </p>
+                <ul className="mt-3 flex flex-col gap-1.5">
+                  {q.options.map((option, oi) => {
+                    const isCorrect = oi === correctIdx;
+                    const isPicked = oi === picked;
+                    return (
+                      <li
+                        key={option}
+                        className={cn(
+                          "flex items-start gap-2 rounded-lg border px-3 py-2 text-[0.85rem]",
+                          isCorrect &&
+                            "border-accent/35 bg-accent/[0.08] text-fg",
+                          isPicked &&
+                            !isCorrect &&
+                            "border-gold/35 bg-gold/[0.08] text-fg",
+                          !isCorrect &&
+                            !isPicked &&
+                            "border-line bg-tint/[0.02] text-fg-muted",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md font-mono text-[0.66rem] font-medium",
+                            isCorrect &&
+                              "bg-accent text-on-accent",
+                            isPicked &&
+                              !isCorrect &&
+                              "bg-gold text-canvas",
+                            !isCorrect &&
+                              !isPicked &&
+                              "bg-tint/[0.04] text-fg-subtle",
+                          )}
+                        >
+                          {isCorrect ? (
+                            <Check className="h-3 w-3" strokeWidth={3} />
+                          ) : isPicked ? (
+                            <X className="h-3 w-3" strokeWidth={3} />
+                          ) : (
+                            LETTERS[oi]
+                          )}
+                        </span>
+                        <span className="leading-snug">{option}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {reveal?.explanation && (
+                  <div className="mt-3 rounded-lg border border-line bg-tint/[0.02] p-3">
+                    <p className="font-mono text-[0.6rem] uppercase tracking-wider text-violet-bright">
+                      Why
+                    </p>
+                    <p className="mt-1 text-[0.82rem] leading-relaxed text-fg-muted">
+                      {reveal.explanation}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-3 border-t border-line px-6 py-5">
+          <button
+            onClick={restart}
+            className="inline-flex items-center gap-2 rounded-full glass-strong px-5 py-2.5 text-sm text-fg transition-colors hover:bg-tint/[0.08]"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Retake quiz
+          </button>
+          <GlowButton href={backHref} size="md">
+            {backLabel}
+          </GlowButton>
         </div>
       </div>
     );
