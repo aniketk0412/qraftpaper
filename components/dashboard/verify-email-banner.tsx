@@ -3,9 +3,10 @@ import { resendVerificationAction } from "@/app/(auth)/actions";
 
 /**
  * Banner shown at the top of every dashboard page when the logged-in user
- * hasn't verified their email yet. Generation is gated server-side, so this
- * is the only visible signal of "why can't I generate yet?" until they
- * click the email link.
+ * hasn't verified their email yet. Generation is intentionally NOT gated
+ * on email verification — students need to try the product on day 1, and
+ * gating would tank activation. The banner is a soft reminder ("we need
+ * a way to reach you about billing") with a resend CTA, not a paywall.
  */
 export function VerifyEmailBanner() {
   return (
