@@ -291,34 +291,40 @@ export default async function DashboardPage() {
             <GlassCard
               hover
               className={cn(
-                "relative h-full p-5 transition-shadow",
+                "h-full p-5 transition-shadow",
                 lit === "gold" && "ring-1 ring-gold/30",
                 lit === "violet" && "ring-1 ring-violet/35",
               )}
             >
-              <IconTile icon={s.icon} tone={lit ?? "neutral"} size="sm" />
-              {/* Navigable tiles get a corner arrow so the strip reads as a
-                  set of shortcuts, not just passive readouts. It nudges right
-                  on hover to confirm "this goes somewhere". */}
-              {s.href && (
-                <ArrowRight className="absolute right-4 top-4 h-3.5 w-3.5 text-fg-subtle transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-fg-muted" />
-              )}
-              <p
-                className={cn(
-                  // tabular-nums keeps the stat width identical when the
-                  // value rolls 9 → 10 → 100 — no layout shift across the
-                  // four-up row. Tighter tracking matches the display
-                  // utility's feel without committing to its larger
-                  // clamp() ramp.
-                  "mt-4 text-3xl font-semibold tracking-[-0.03em] tabular-nums",
-                  lit === "gold" && "text-gold",
-                  lit === "violet" && "text-violet-bright",
+              {/* KPI layout: icon anchors the top-left, the value is the hero
+                  pinned top-right. The two balance across the card's full
+                  width so a wide tile reads as a deliberate metric, not a
+                  sparse box with text hugging one corner. */}
+              <div className="flex items-start justify-between gap-3">
+                <IconTile icon={s.icon} tone={lit ?? "neutral"} size="sm" />
+                <p
+                  className={cn(
+                    // tabular-nums keeps the value's width identical as it
+                    // rolls 9 → 10 → 100, so the four-up row never reflows.
+                    "text-[2.4rem] font-semibold leading-none tracking-[-0.035em] tabular-nums",
+                    lit === "gold" && "text-gold",
+                    lit === "violet" && "text-violet-bright",
+                  )}
+                >
+                  {s.value}
+                </p>
+              </div>
+              <div className="mt-5 flex items-center justify-between gap-2">
+                <p className="text-[0.84rem] font-medium text-fg-muted">
+                  {s.label}
+                </p>
+                {/* Navigable tiles get an arrow that nudges right on hover, so
+                    the strip reads as a set of shortcuts. */}
+                {s.href && (
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0 text-fg-subtle transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-fg-muted" />
                 )}
-              >
-                {s.value}
-              </p>
-              <p className="mt-0.5 text-[0.82rem] text-fg-muted">{s.label}</p>
-              <p className="mt-2 font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
+              </div>
+              <p className="mt-1.5 font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
                 {s.note}
               </p>
             </GlassCard>
