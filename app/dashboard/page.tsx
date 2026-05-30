@@ -240,7 +240,12 @@ export default async function DashboardPage() {
                 />
                 <p
                   className={cn(
-                    "mt-4 text-3xl font-semibold tracking-tight",
+                    // tabular-nums keeps the stat width identical when the
+                    // value rolls 9 → 10 → 100 — no layout shift across the
+                    // four-up row. Tighter tracking matches the display
+                    // utility's feel without committing to its larger
+                    // clamp() ramp.
+                    "mt-4 text-3xl font-semibold tracking-[-0.03em] tabular-nums",
                     streakActive && "text-gold",
                   )}
                 >
