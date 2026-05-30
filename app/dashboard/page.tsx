@@ -29,6 +29,7 @@ import {
   getWeeklyActivity,
 } from "@/lib/streaks";
 import { ExamCountdownBanner } from "@/components/dashboard/exam-countdown";
+import { NextUpCard } from "@/components/dashboard/next-up";
 import { StreakMilestone } from "@/components/dashboard/streak-milestone";
 import { WeeklyGoalCard } from "@/components/dashboard/weekly-goal";
 import { cn } from "@/lib/utils";
@@ -246,13 +247,14 @@ export default async function DashboardPage() {
         })}
       </div>
 
-      {/* Weekly goal — shown to every authenticated user, even brand-new
-          accounts (encourages day-1 practice). Hidden only when there's no
-          session at all (the dashboard already redirects in that case). */}
+      {/* Weekly goal + next-up recommendation, side by side. NextUpCard
+          self-hides when there's nothing prescriptive to say (no subjects,
+          no exam, all mastered), keeping the layout honest. */}
       {userId && (
         <Reveal>
-          <div className="mt-6">
+          <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_1fr]">
             <WeeklyGoalCard weekly={weekly} />
+            <NextUpCard subjects={subjects} />
           </div>
         </Reveal>
       )}

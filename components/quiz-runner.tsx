@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Share2,
   Sparkles,
+  Trophy,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -173,18 +174,50 @@ export function QuizRunner({
 
   if (finished) {
     const pct = Math.round((score / total) * 100);
-    const previous = (typeof window !== "undefined" ? loadQuizHistory() : [])
-      .filter((h) => h.quizId === quiz.id)
-      .slice(0, 5);
+    const allPrev = (typeof window !== "undefined" ? loadQuizHistory() : [])
+      .filter((h) => h.quizId === quiz.id);
+    const previous = allPrev.slice(0, 5);
+
+    // Personal-best detection: was this attempt strictly the best ever?
+    // We compare PERCENT (not raw score) so re-takes of a different-length
+    // version of the same quiz still surface a sensible "new best."
+    //
+    // allPrev already includes the attempt we just saved this render (the
+    // save runs in an effect above), so we exclude it when comparing.
+    const previousBest = allPrev
+      .filter((a) => a.takenAt !== allPrev[0]?.takenAt) // drop just-saved
+      .reduce(
+        (best, a) => Math.max(best, (a.score / a.total) * 100),
+        0,
+      );
+    const isPersonalBest =
+      allPrev.length >= 2 && pct > previousBest && pct > 0;
+    const isPerfect = score === total && total > 0;
+
     return (
       <div className="overflow-hidden rounded-2xl glass-strong">
         <span className="pointer-events-none absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-tint/20 to-transparent" />
         <div className="flex flex-col items-center px-6 py-12 text-center sm:px-10">
-          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-violet/15 text-violet-bright ring-1 ring-violet/25">
-            <Sparkles className="h-6 w-6" />
+          <span
+            className={cn(
+              "grid h-14 w-14 place-items-center rounded-2xl ring-1",
+              isPerfect || isPersonalBest
+                ? "bg-gold/20 text-gold ring-gold/40"
+                : "bg-violet/15 text-violet-bright ring-violet/25",
+            )}
+          >
+            {isPerfect || isPersonalBest ? (
+              <Trophy className="h-6 w-6" />
+            ) : (
+              <Sparkles className="h-6 w-6" />
+            )}
           </span>
           <p className="mt-5 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-fg-subtle">
-            Quiz complete
+            {isPerfect
+              ? "Perfect score"
+              : isPersonalBest
+                ? "New personal best"
+                : "Quiz complete"}
           </p>
           <p className="mt-3 text-6xl font-semibold tracking-tight text-gradient">
             {score}
@@ -193,6 +226,16 @@ export function QuizRunner({
           <p className="mt-2 text-sm text-fg-muted">
             You scored {pct}% on {quiz.subject}.
           </p>
+
+          {isPersonalBest && previousBest > 0 && (
+            // Small "you beat your old best of X%" subtitle — concrete proof
+            // of progress is the cheapest dopamine in habit-app design.
+            <p className="mt-1.5 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-gold">
+              +{Math.round(pct - previousBest)} from your previous best of{" "}
+              {Math.round(previousBest)}%
+            </p>
+          )}
+
           <div className="mt-6 w-full max-w-xs">
             <MeterBar pct={pct} height="h-2" />
           </div>
