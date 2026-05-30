@@ -75,4 +75,3 @@ export function hashVerificationToken(token: string) {
   return tokenHash(token);
 }
 
-export const VERIFICATION_TOKEN_TTL_HOURS = TOKEN_TTL_HOURS;

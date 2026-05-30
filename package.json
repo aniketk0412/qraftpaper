@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "analyze": "cross-env ANALYZE=true next build",
+    "knip": "knip",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
@@ -55,6 +56,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "knip": "^6.14.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.7"

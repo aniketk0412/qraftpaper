@@ -142,50 +142,6 @@ export const exampleWeightage: UnitWeight[] = [
   { unit: "Unit V", title: "Graphs & Algorithms", weight: 24 },
 ];
 
-export interface DemoSubject {
-  id: string;
-  name: string;
-  code: string;
-  papers: number;
-  lastGenerated: string;
-  accent: "violet" | "gold";
-}
-
-export const demoSubjects: DemoSubject[] = [
-  {
-    id: "cs-204",
-    name: "Data Structures & Algorithms",
-    code: "CS-204",
-    papers: 12,
-    lastGenerated: "2 hours ago",
-    accent: "violet",
-  },
-  {
-    id: "ec-211",
-    name: "Signals & Systems",
-    code: "EC-211",
-    papers: 7,
-    lastGenerated: "Yesterday",
-    accent: "gold",
-  },
-  {
-    id: "ma-103",
-    name: "Linear Algebra & Calculus",
-    code: "MA-103",
-    papers: 9,
-    lastGenerated: "3 days ago",
-    accent: "violet",
-  },
-  {
-    id: "me-208",
-    name: "Thermodynamics",
-    code: "ME-208",
-    papers: 5,
-    lastGenerated: "Last week",
-    accent: "gold",
-  },
-];
-
 /** Largest unit weight — used to scale weightage meter bars relative to the peak. */
 export const maxUnitWeight = Math.max(
   ...exampleWeightage.map((u) => u.weight),

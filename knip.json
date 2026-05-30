@@ -1,0 +1,32 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "app/**/page.tsx",
+    "app/**/layout.tsx",
+    "app/**/loading.tsx",
+    "app/**/not-found.tsx",
+    "app/**/error.tsx",
+    "app/**/route.ts",
+    "app/**/opengraph-image.tsx",
+    "app/**/twitter-image.tsx",
+    "app/**/apple-icon.tsx",
+    "app/**/manifest.ts",
+    "app/**/robots.ts",
+    "app/**/sitemap.ts",
+    "app/(auth)/actions.ts",
+    "app/dashboard/settings/actions.ts",
+    "auth.ts",
+    "tests/**/*.test.ts",
+    "scripts/**/*.{ts,mjs,js}"
+  ],
+  "project": [
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "lib/**/*.{ts,tsx}"
+  ],
+  "ignoreDependencies": [
+    "@types/*",
+    "tailwindcss"
+  ],
+  "ignoreExportsUsedInFile": true
+}
