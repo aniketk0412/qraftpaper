@@ -1,0 +1,70 @@
+# Dependabot config — automates dependency PRs so we don't fall behind
+# on security patches.
+#
+# Rationale per ecosystem:
+#   npm        Weekly, grouped (one PR per category) so we don't drown
+#              in 30 separate small PRs. Major-version bumps are excluded
+#              from groups — those need manual review.
+#   actions    Weekly. Pinning is enforced at the workflow level
+#              (uses: actions/checkout@v4 not @master); Dependabot bumps
+#              the SHA + tag.
+#
+# Auto-merge is intentionally NOT enabled — patches still pass through
+# CI (.github/workflows/ci.yml) and a human review. Security gates over
+# convenience.
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    groups:
+      # Group runtime + tooling separately so a tooling-only PR can land
+      # without touching the live app surface.
+      runtime:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+        patterns:
+          - "next"
+          - "react*"
+          - "@neondatabase/*"
+          - "drizzle-orm"
+          - "next-auth"
+          - "openai"
+          - "@lemonsqueezy/*"
+      tooling:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+        patterns:
+          - "@types/*"
+          - "typescript"
+          - "eslint*"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "vitest"
+          - "@playwright/*"
+          - "drizzle-kit"
+      vercel:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+        patterns:
+          - "@vercel/*"
+          - "@next/*"
+    ignore:
+      # Major version bumps need a human deciding "yes we are ready for
+      # Next 17 / React 20" — don't auto-PR those.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
