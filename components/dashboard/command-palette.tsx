@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import {
+  BookmarkX,
   BookOpen,
   CornerDownLeft,
   FilePlus2,
@@ -51,6 +52,14 @@ const actionItems: CommandItem[] = [
     sub: "Pick a subject from the dashboard",
     icon: ListChecks,
     href: "/dashboard",
+    group: "Actions",
+  },
+  {
+    id: "act-drill",
+    label: "Drill your mistakes",
+    sub: "Practise questions you got wrong",
+    icon: BookmarkX,
+    href: "/dashboard/drill",
     group: "Actions",
   },
   {

@@ -184,9 +184,12 @@ export function QuizRunner({
         quizId: quiz.id,
         questionId: q.id,
         prompt: q.prompt,
+        options: q.options,
         pickedIndex: picked ?? -1,
         correctIndex: reveal.correctIndex,
         unit: q.unit,
+        difficulty: q.difficulty,
+        explanation: reveal.explanation,
         subjectCode: quiz.subjectCode,
         takenAt: now,
       });

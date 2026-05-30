@@ -40,7 +40,7 @@ export function DrillMistakesCard() {
 
   return (
     <Link
-      href="/dashboard"
+      href="/dashboard/drill"
       className="group relative mb-6 flex items-center gap-4 overflow-hidden rounded-2xl border border-violet/35 bg-violet/10 p-5 transition-all duration-200 hover:bg-violet/15"
     >
       <div className="pointer-events-none absolute -bottom-12 right-12 h-32 w-32 rounded-full bg-violet/25 blur-2xl" />
@@ -52,12 +52,12 @@ export function DrillMistakesCard() {
           Drill your mistakes
         </p>
         <p className="mt-1 text-[0.95rem] font-medium leading-snug text-fg">
-          {count} questions waiting to be revisited
+          {count} questions waiting to be drilled
         </p>
         <p className="mt-0.5 text-[0.82rem] leading-snug text-fg-muted">
-          Wrong answers from your recent quizzes. Retake one of those quizzes
-          to drill them — research-mode practice beats fresh content for
-          retention.
+          A focused set built only from questions you got wrong. Get one right
+          and it leaves the backlog for good — practising your misses beats
+          fresh content for retention.
         </p>
       </div>
       <ArrowRight className="relative h-5 w-5 shrink-0 text-violet-bright transition-transform group-hover:translate-x-1" />
