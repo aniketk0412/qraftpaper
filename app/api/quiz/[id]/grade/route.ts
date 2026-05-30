@@ -5,6 +5,7 @@ import { isQuiz } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
+import { gradeQuizAnswers } from "@/lib/quiz-grading";
 import { badRequest, notFound, safeJson } from "@/lib/api-responses";
 
 export const runtime = "nodejs";
@@ -38,26 +39,5 @@ export async function POST(
     return notFound("Quiz not found");
   }
 
-  const results: Record<
-    string,
-    { correctIndex: number; explanation: string; correct: boolean }
-  > = {};
-  let score = 0;
-
-  for (const question of record.content.questions) {
-    if (!(question.id in answers)) continue;
-    const correct = answers[question.id] === question.correctIndex;
-    if (correct) score += 1;
-    results[question.id] = {
-      correctIndex: question.correctIndex,
-      explanation: question.explanation,
-      correct,
-    };
-  }
-
-  return NextResponse.json({
-    results,
-    score,
-    total: record.content.questions.length,
-  });
+  return NextResponse.json(gradeQuizAnswers(record.content, answers));
 }
