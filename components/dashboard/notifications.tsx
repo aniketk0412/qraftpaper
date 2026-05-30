@@ -119,6 +119,7 @@ export function Notifications({
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const notices = buildNotices({
     streak,
@@ -138,7 +139,10 @@ export function Notifications({
       }
     }
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
     }
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKey);
@@ -151,13 +155,18 @@ export function Notifications({
   return (
     <div className="relative" ref={rootRef}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
           "relative grid h-10 w-10 place-items-center rounded-full glass transition-colors",
           open ? "text-fg" : "text-fg-muted hover:text-fg",
         )}
-        aria-label="Notifications"
+        aria-label={
+          unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
+        }
+        aria-haspopup="menu"
+        aria-expanded={open}
       >
         <Bell className="h-[18px] w-[18px]" />
         {unread > 0 && (

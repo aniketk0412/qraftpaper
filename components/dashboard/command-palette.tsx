@@ -157,13 +157,19 @@ export function CommandPalette({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (open) {
+      // Remember what was focused before the palette took over, so we can
+      // hand focus back when it closes — a keyboard user shouldn't be dumped
+      // at the top of the document after running a command.
+      restoreFocusRef.current = document.activeElement as HTMLElement | null;
       document.body.style.overflow = "hidden";
       const t = setTimeout(() => inputRef.current?.focus(), 40);
       return () => {
         clearTimeout(t);
         document.body.style.overflow = "";
+        restoreFocusRef.current?.focus?.();
       };
     }
   }, [open]);
@@ -223,6 +229,9 @@ export function CommandPalette({
                   onClick={close}
                 />
                 <motion.div
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Command palette — search subjects, papers and actions"
                   initial={{ opacity: 0, y: 14, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.98 }}

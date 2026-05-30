@@ -35,6 +35,7 @@ export interface DashboardUser {
 export function UserMenu({ user }: { user: DashboardUser }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -44,7 +45,12 @@ export function UserMenu({ user }: { user: DashboardUser }) {
       }
     }
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        // Return focus to the trigger so a keyboard user isn't dumped at the
+        // top of the document when the menu closes.
+        triggerRef.current?.focus();
+      }
     }
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKey);
@@ -57,6 +63,7 @@ export function UserMenu({ user }: { user: DashboardUser }) {
   return (
     <div className="relative" ref={rootRef}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
@@ -64,6 +71,8 @@ export function UserMenu({ user }: { user: DashboardUser }) {
           open ? "ring-accent/40" : "ring-line hover:ring-line-strong",
         )}
         aria-label="Account menu"
+        aria-haspopup="menu"
+        aria-expanded={open}
       >
         {/* Show the user's real initials when we have them — feels like a real
             product. Falls back to the generic icon only when initials end up
