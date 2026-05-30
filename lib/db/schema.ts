@@ -206,7 +206,12 @@ export const documents = pgTable(
       .references(() => subjects.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
     fileName: text("file_name").notNull(),
-    contentBase64: text("content_base64").notNull(),
+    // Vestigial. We used to store the raw PDF as base64 here (multi-MB per
+    // row) but nothing ever reads it back — only extractedText is used, for
+    // the profile build. Now nullable and left unwritten so new uploads don't
+    // bloat the table. Can be dropped entirely in a later migration once
+    // existing rows are confirmed unneeded.
+    contentBase64: text("content_base64"),
     extractedText: text("extracted_text"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },

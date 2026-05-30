@@ -135,13 +135,22 @@ export async function POST(request: Request) {
       extractedText = extractedText.slice(0, MAX_EXTRACTED_CHARS);
     }
 
+    // Replace-on-reupload: a fresh upload of a given type supersedes the old
+    // one. Without this, re-uploading a syllabus left the previous rows
+    // orphaned (still costing storage) and the table grew unbounded across
+    // re-uploads. Per-type so uploading a new syllabus doesn't wipe the PYQ.
+    await getDb()
+      .delete(documents)
+      .where(and(eq(documents.subjectId, subjectId), eq(documents.type, type)));
+
     const [document] = await getDb()
       .insert(documents)
       .values({
         subjectId,
         type,
         fileName: file.name,
-        contentBase64: buffer.toString("base64"),
+        // contentBase64 intentionally not written — it's vestigial (never
+        // read) and stored multi-MB blobs per row. See schema note.
         extractedText,
       })
       .returning();

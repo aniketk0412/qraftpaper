@@ -1,0 +1,1 @@
+ALTER TABLE "documents" ALTER COLUMN "content_base64" DROP NOT NULL;
