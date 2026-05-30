@@ -191,17 +191,45 @@ value. The rhythm only works if it's consistent.
 
 ---
 
-## 9. What to ship next, in order
+## 9. The Drill subsystem (and its deliberate v1 limit)
+
+The "Drill your mistakes" loop (`/dashboard/drill`,
+`components/drill-runner.tsx`, the helpers in `lib/quiz-history.ts`) is
+the spaced-repetition surface that earlier notes flagged as "the single
+biggest engagement multiplier left untapped." It now exists end to end:
+a quiz captures every missed question with its full body, the drill page
+re-serves them, and answering one correctly removes it from the backlog
+for good (the loop closes — the dashboard count actually falls).
+
+**It is intentionally localStorage-only.** This is a v1 trade-off, not
+an oversight. The decision:
+
+- **Why local:** the alternative is a `quiz_question_results` table, an
+  API to write into it per answer, and auth-gated reads. That's real
+  cost, and the payoff (cross-device, survives clear-cache) only matters
+  once users routinely study from multiple devices — which we have no
+  evidence of yet.
+- **What we give up:** the backlog lives per device and dies on
+  clear-cache. Acceptable: a student tends to study from one device, and
+  a single day of quizzes rebuilds the set cheaply.
+- **The migration path is clean.** `WrongAnswer` already mirrors the
+  shape a `quiz_question_results` row would have. The pure helpers
+  (`dedupeWrongAnswers`, `buildDrillQuiz`, `weakUnits`,
+  `clearWrongAnswer`) take arrays, not storage — swap the
+  `load*`/`record*`/`clear*` wrappers from localStorage to fetch() and
+  the entire feature lifts to the server untouched. Do this the day the
+  analytics show multi-device study sessions, not before.
+
+## 10. What to ship next, in order
 
 If you have one more pass to make:
 
-1. **Per-unit mastery breakdown** — quiz attempts currently store
-   aggregate score/total only. Capture per-question outcomes so the
-   subject card can say "weak on Unit 3, solid on Units 1–2."
-2. **Spaced-repetition surface** — once per-unit data exists, surface
-   "practise these 5 questions you've gotten wrong" as the daily
-   default action. This is the single biggest engagement multiplier
-   left untapped.
+1. **Promote Drill to the server** — only when multi-device usage shows
+   up in PostHog (see §9). Until then, local is correct.
+2. **Per-unit mastery on the subject card** — the wrong-answer log
+   already aggregates by unit (`weakUnits()`); surface "weak on Unit 3"
+   on the subject card itself, not just the drill start screen, so the
+   insight is visible before the user even opens a drill.
 3. **Social proof** — at >100 users the billing-hero counter ("X+
    students practising") flips on automatically. Keep it honest; never
    pad the number.
