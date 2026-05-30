@@ -78,52 +78,77 @@ export async function getStreakSummary(userId: string): Promise<StreakSummary> {
     };
   }
 
-  const dateSet = new Set(
-    rows.map((row) => row.activityDate.toISOString().slice(0, 10)),
-  );
   const todayKey = new Date().toISOString().slice(0, 10);
+  return summariseStreak(
+    rows.map((row) => row.activityDate.toISOString().slice(0, 10)),
+    todayKey,
+  );
+}
+
+const ONE_DAY_MS = 86_400_000;
+
+/** Shift a YYYY-MM-DD key by whole days (UTC-anchored). */
+function shiftDayKey(key: string, deltaDays: number): string {
+  const ms = Date.parse(`${key}T00:00:00Z`) + deltaDays * ONE_DAY_MS;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+/**
+ * Pure streak computation over a set of YYYY-MM-DD activity-day keys, relative
+ * to `todayKey`. Extracted from getStreakSummary so the non-trivial bits — the
+ * "current streak counts from yesterday when today is missing" rule and the
+ * longest-run walk — are unit-testable without a database or Date mocking.
+ *
+ * Input order doesn't matter; duplicates collapse via the Set.
+ */
+export function summariseStreak(
+  dayKeys: string[],
+  todayKey: string,
+): StreakSummary {
+  const dateSet = new Set(dayKeys);
+  if (dateSet.size === 0) {
+    return {
+      current: 0,
+      longest: 0,
+      totalDays: 0,
+      practisedToday: false,
+      daysSinceLast: null,
+    };
+  }
+
   const practisedToday = dateSet.has(todayKey);
 
-  // Current streak: walk backwards from today (or yesterday — a missed today
-  // doesn't break a streak until midnight of the next day).
+  // Current streak: walk backwards from today, or from yesterday when today
+  // has no activity yet — a missed "today" doesn't break the streak until the
+  // calendar actually rolls past it.
   let current = 0;
-  const cursor = new Date();
-  cursor.setUTCHours(0, 0, 0, 0);
-  if (!dateSet.has(cursor.toISOString().slice(0, 10))) {
-    // Today missing — start from yesterday so the streak doesn't drop the
-    // instant the calendar rolls over before the user has opened the app.
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
-  }
-  while (dateSet.has(cursor.toISOString().slice(0, 10))) {
+  let cursor = practisedToday ? todayKey : shiftDayKey(todayKey, -1);
+  while (dateSet.has(cursor)) {
     current += 1;
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
+    cursor = shiftDayKey(cursor, -1);
   }
 
-  // Longest streak in the window: walk the sorted list and count consecutive
-  // days.
+  // Longest run of consecutive days anywhere in the set.
+  const ordered = [...dateSet].sort();
   let longest = 0;
   let run = 0;
   let prev: number | null = null;
-  // Iterate from oldest → newest so consecutive checks are forward.
-  const orderedDates = Array.from(dateSet).sort();
-  for (const dateStr of orderedDates) {
+  for (const dateStr of ordered) {
     const t = Date.parse(`${dateStr}T00:00:00Z`);
-    if (prev !== null && t - prev === 86_400_000) {
-      run += 1;
-    } else {
-      run = 1;
-    }
+    run = prev !== null && t - prev === ONE_DAY_MS ? run + 1 : 1;
     if (run > longest) longest = run;
     prev = t;
   }
 
-  // Days since most recent activity (0 = today, 1 = yesterday, etc.)
-  const todayMs = Date.parse(`${todayKey}T00:00:00Z`);
-  const latestStr = rows[0].activityDate.toISOString().slice(0, 10);
-  const latestMs = Date.parse(`${latestStr}T00:00:00Z`);
+  // Days since the most recent activity (0 = today, 1 = yesterday, ...).
+  const latest = ordered[ordered.length - 1];
   const daysSinceLast = Math.max(
     0,
-    Math.round((todayMs - latestMs) / 86_400_000),
+    Math.round(
+      (Date.parse(`${todayKey}T00:00:00Z`) -
+        Date.parse(`${latest}T00:00:00Z`)) /
+        ONE_DAY_MS,
+    ),
   );
 
   return {
