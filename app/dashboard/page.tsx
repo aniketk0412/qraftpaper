@@ -111,7 +111,11 @@ export default async function DashboardPage() {
           .where(eq(users.id, userId))
           .limit(1)
           .then((rows) => rows[0] ?? { plan: "unpaid" }),
-        getDueReviewCount(userId),
+        // Degrade to 0 rather than taking down the whole dashboard if this
+        // fails. The drill queue is an auxiliary metric — on a preview deploy
+        // (which skips migrations) the question_reviews table may not exist
+        // yet, and a transient DB hiccup shouldn't 500 the landing surface.
+        getDueReviewCount(userId).catch(() => 0),
       ])
     : [
         [],
