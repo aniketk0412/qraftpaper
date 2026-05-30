@@ -59,14 +59,17 @@ export function Topbar({
         {streak > 0 && (
           // Persistent streak badge — visible from every dashboard page so
           // users keep getting reminded of the streak they're maintaining.
-          // Dimmed when they haven't practised today (gentle "do something" cue).
+          // Dimmed when they haven't practised today (gentle "do something"
+          // cue). Visible on mobile too because habit-app research is loud
+          // about one thing: the streak counter is the highest-leverage UI
+          // pixel; hiding it on the device people actually use is malpractice.
           <Link
             href="/dashboard"
             aria-label={`${streak}-day streak`}
             className={
               practisedToday
-                ? "hidden h-10 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/15 px-3 font-mono text-[0.78rem] font-medium text-gold transition-colors hover:bg-gold/20 sm:inline-flex"
-                : "hidden h-10 items-center gap-1.5 rounded-full border border-line bg-tint/[0.03] px-3 font-mono text-[0.78rem] font-medium text-fg-muted transition-colors hover:text-fg sm:inline-flex"
+                ? "inline-flex h-10 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/15 px-3 font-mono text-[0.78rem] font-medium text-gold transition-colors hover:bg-gold/20"
+                : "inline-flex h-10 items-center gap-1.5 rounded-full border border-line bg-tint/[0.03] px-3 font-mono text-[0.78rem] font-medium text-fg-muted transition-colors hover:text-fg"
             }
           >
             <Flame
