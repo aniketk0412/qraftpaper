@@ -29,6 +29,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
     {
+      // The interactive sample quiz is the strongest "try it now" entry
+      // point — index it so SERP traffic can land directly on the demo
+      // instead of bouncing through the homepage.
+      url: `${siteUrl}/demo/quiz`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
       url: `${siteUrl}/privacy`,
       lastModified: now,
       changeFrequency: "monthly",
