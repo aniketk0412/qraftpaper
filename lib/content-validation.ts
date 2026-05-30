@@ -5,6 +5,7 @@ import type {
   QuestionPaper,
   Quiz,
   QuizQuestion,
+  SubjectProfile,
 } from "@/lib/types";
 
 const DIFFICULTIES = new Set<Difficulty>(["Easy", "Medium", "Hard"]);
@@ -121,5 +122,72 @@ export function isQuiz(value: unknown): value is Quiz {
     value.questions.length > 0 &&
     value.questions.length <= LIMITS.quizQuestions &&
     value.questions.every(isQuizQuestion)
+  );
+}
+
+const PROFILE_UNIT_TYPES = new Set(["short", "descriptive", "long", "mcq"]);
+
+function isProfileUnit(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    isString(value.unit, LIMITS.shortText) &&
+    isString(value.title, LIMITS.shortText) &&
+    Array.isArray(value.topics) &&
+    value.topics.every((t) => isString(t, LIMITS.shortText))
+  );
+}
+
+function isProfileBlueprint(value: unknown): boolean {
+  if (!isRecord(value) || !Array.isArray(value.sections)) return false;
+  return (
+    value.sections.length > 0 &&
+    value.sections.length <= LIMITS.paperSections &&
+    value.sections.every(
+      (s) =>
+        isRecord(s) &&
+        isString(s.title, LIMITS.shortText) &&
+        typeof s.instruction === "string" &&
+        isPositiveInteger(s.marksPerQuestion, 100) &&
+        isPositiveInteger(s.count, LIMITS.paperQuestions),
+    ) &&
+    isPositiveInteger(value.totalMarks, 1_000) &&
+    isPositiveInteger(value.durationMins, 600) &&
+    typeof value.instructionStyle === "string"
+  );
+}
+
+/**
+ * Validate the keystone artifact: the SubjectProfile built once from a
+ * student's documents and then used as the AUTHORITATIVE source for every
+ * paper and quiz generated for that subject. The AI returns it as JSON, so
+ * without this a malformed profile (no units, a broken blueprint) would be
+ * stored and silently poison every future generation. `units` must be
+ * non-empty — the generation prompt forbids inventing units outside it, so a
+ * profile with zero units can produce nothing usable.
+ */
+export function isSubjectProfile(value: unknown): value is SubjectProfile {
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.units) ||
+    !Array.isArray(value.questionBank)
+  ) {
+    return false;
+  }
+  return (
+    value.units.length > 0 &&
+    value.units.every(isProfileUnit) &&
+    value.questionBank.every(
+      (q) =>
+        isRecord(q) &&
+        typeof q.text === "string" &&
+        typeof q.unit === "string" &&
+        typeof q.type === "string" &&
+        PROFILE_UNIT_TYPES.has(q.type),
+    ) &&
+    isProfileBlueprint(value.formatBlueprint) &&
+    isRecord(value.difficultyMix) &&
+    typeof value.difficultyMix.Easy === "number" &&
+    typeof value.difficultyMix.Medium === "number" &&
+    typeof value.difficultyMix.Hard === "number"
   );
 }

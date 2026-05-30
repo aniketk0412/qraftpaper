@@ -2,6 +2,7 @@ import type { ChatCompletion } from "openai/resources/chat/completions";
 
 import { getOpenRouterClient, OPENROUTER_MODELS } from "./openrouter";
 import { fenceUntrusted, sanitizeInline, UNTRUSTED_CONTENT_GUARD } from "./safety";
+import { isSubjectProfile } from "@/lib/content-validation";
 import type { SubjectProfile } from "@/lib/types";
 
 const MIN_EXTRACTED_TEXT_CHARS = 400;
@@ -184,7 +185,7 @@ export async function buildSubjectProfile(input: {
   subjectName: string;
   subjectCode: string;
   documents: { type: string; fileName: string; extractedText: string }[];
-}) {
+}): Promise<SubjectProfile> {
   const sourceText = input.documents
     .map(
       (document) =>
@@ -236,7 +237,22 @@ export async function buildSubjectProfile(input: {
     throw new Error("OpenRouter did not return a subject profile tool call");
   }
 
-  return JSON.parse(args) as SubjectProfile;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(args);
+  } catch {
+    throw new Error("Subject profile was not valid JSON");
+  }
+
+  // The profile is the authoritative source for every future generation, so
+  // a malformed one must NOT be stored — reject it here and let the upload
+  // route surface a clean "couldn't build a profile, try again" instead of
+  // silently poisoning all downstream papers/quizzes.
+  if (!isSubjectProfile(parsed)) {
+    throw new Error("Subject profile failed validation");
+  }
+
+  return parsed;
 }
 
 function normalizeWhitespace(value: string) {
