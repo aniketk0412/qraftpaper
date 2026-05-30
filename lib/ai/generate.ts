@@ -225,6 +225,25 @@ async function createToolCompletion(input: {
   tools: unknown[];
   toolName: string;
 }) {
+  // Cache-control strategy (Anthropic ephemeral cache via OpenRouter pass-through).
+  //
+  // Each call has three layers, ordered longest-stable-first → varies-last so
+  // the cache prefix-matches as much as possible across repeat calls for the
+  // same subject:
+  //
+  //   1. SYSTEM   — operator instructions + UNTRUSTED_CONTENT_GUARD. Identical
+  //                 across every call (~120 tokens). Marked cache-control so
+  //                 the second call within 5 min reads it from cache (≈10×
+  //                 cheaper per token than fresh input).
+  //   2. PROFILE  — the SubjectProfile JSON. Identical for every gen of the
+  //                 same subject. Also cache-controlled.
+  //   3. TASK     — the user-specific request (config, target counts, the one
+  //                 question being regenerated). Always fresh.
+  //
+  // A user generating 5 papers from the same subject in one sitting pays full
+  // price for the system + profile tokens ONCE, then ~10% of that for the
+  // next 4 generations. On a Haiku run with ~3.5k prompt tokens dominated by
+  // the profile, that's a real $/month line.
   const response = (await getOpenRouterClient().chat.completions.create({
     model: input.model,
     temperature: input.temperature,
@@ -232,7 +251,13 @@ async function createToolCompletion(input: {
     messages: [
       {
         role: "system",
-        content: `${input.system}\n\n${UNTRUSTED_CONTENT_GUARD}`,
+        content: [
+          {
+            type: "text",
+            text: `${input.system}\n\n${UNTRUSTED_CONTENT_GUARD}`,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
       },
       {
         role: "user",
