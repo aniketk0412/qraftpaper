@@ -5,6 +5,7 @@ import { ArrowLeft, Download, FileText, Save } from "lucide-react";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { PaperEditor } from "@/components/paper-editor";
+import { PaperRegenerateButton } from "@/components/paper-regenerate-button";
 import { GlowButton } from "@/components/ui/glow-button";
 import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
@@ -74,6 +75,15 @@ export default async function PaperEditorPage({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Regenerate only when we still have the original config —
+                papers generated before config-capture (lib/generation-config
+                normalizePaperConfig returning null) can't be safely re-run. */}
+            {config && (
+              <PaperRegenerateButton
+                subjectId={paperRecord.subjectId}
+                config={config}
+              />
+            )}
             <GlowButton
               href={`/api/export/paper/${paper.id}/docx`}
               variant="secondary"
