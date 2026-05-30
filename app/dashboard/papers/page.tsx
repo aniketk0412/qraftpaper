@@ -10,8 +10,11 @@ import { Reveal } from "@/components/ui/reveal";
 import { DeleteButton } from "@/components/ui/delete-button";
 import { BackLink } from "@/components/dashboard/back-link";
 import { SearchInput } from "@/components/dashboard/search-input";
+import { SubjectFilter } from "@/components/dashboard/subject-filter";
 import { getDb } from "@/lib/db";
 import { papers } from "@/lib/db/schema";
+import { isUuid } from "@/lib/ids";
+import { listUserSubjects } from "@/lib/subjects";
 
 export const runtime = "nodejs";
 
@@ -20,13 +23,21 @@ const PAGE_SIZE = 20;
 export default async function PapersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string | string[]; q?: string | string[] }>;
+  searchParams: Promise<{
+    page?: string | string[];
+    q?: string | string[];
+    subject?: string | string[];
+  }>;
 }) {
   const session = await auth();
   const userId = session?.user?.id;
 
   // Parse ?page=N, clamp to >=1. Anything malformed falls back to page 1.
-  const { page: pageParam, q: qParam } = await searchParams;
+  const {
+    page: pageParam,
+    q: qParam,
+    subject: subjectParam,
+  } = await searchParams;
   const rawPage = Array.isArray(pageParam) ? pageParam[0] : pageParam;
   const page = Math.max(1, Number.parseInt(rawPage ?? "1", 10) || 1);
   const offset = (page - 1) * PAGE_SIZE;
@@ -40,15 +51,27 @@ export default async function PapersPage({
   // sanitise the literal % and _ wildcards inside the term so a user typing
   // "100%" doesn't accidentally match every paper.
   const safeQ = q.replace(/[%_]/g, "\\$&");
-  const whereClause = userId
-    ? q
-      ? and(eq(papers.userId, userId), ilike(papers.title, `%${safeQ}%`))
-      : eq(papers.userId, userId)
-    : undefined;
+  // Subject filter: only honour valid UUIDs, otherwise an attacker could
+  // inject anything into the where clause via the URL. Drizzle would still
+  // bind it, but it's cleaner to reject obviously-malformed input.
+  const rawSubject = Array.isArray(subjectParam)
+    ? subjectParam[0]
+    : subjectParam;
+  const subjectId = rawSubject && isUuid(rawSubject) ? rawSubject : null;
 
-  // Get the total count and the current page in parallel — both are cheap
-  // index lookups, search just narrows the (user_id, created_at) scan.
-  const [rows, [{ count: total = 0 } = { count: 0 }]] = userId && whereClause
+  const filters = userId
+    ? [
+        eq(papers.userId, userId),
+        ...(q ? [ilike(papers.title, `%${safeQ}%`)] : []),
+        ...(subjectId ? [eq(papers.subjectId, subjectId)] : []),
+      ]
+    : [];
+  const whereClause = filters.length > 0 ? and(...filters) : undefined;
+
+  // Get the page rows, the total count and the subject options in parallel.
+  // The subject list comes from listUserSubjects (already cached server-side
+  // per user) so the extra fetch is effectively free.
+  const [rows, paperCountRow, subjects] = userId && whereClause
     ? await Promise.all([
         getDb()
           .select({
@@ -66,9 +89,12 @@ export default async function PapersPage({
         getDb()
           .select({ count: sql<number>`count(*)::int` })
           .from(papers)
-          .where(whereClause),
+          .where(whereClause)
+          .then((r) => r[0] ?? { count: 0 }),
+        listUserSubjects(userId),
       ])
-    : [[], [{ count: 0 }]];
+    : [[], { count: 0 }, []];
+  const total = paperCountRow.count;
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const showingFrom = total === 0 ? 0 : offset + 1;
@@ -98,16 +124,21 @@ export default async function PapersPage({
         </div>
       </Reveal>
 
-      {/* Search input — only rendered when there are papers OR an active
-          search term. A brand-new user with zero papers shouldn't see a
-          dead search box on top of an "create your first subject" empty
-          state. */}
-      {(total > 0 || q) && (
-        <div className="mt-7">
+      {/* Search input + subject filter — only rendered when there are
+          papers OR an active filter. A brand-new user with zero papers
+          shouldn't see dead controls on top of an "create your first
+          subject" empty state. */}
+      {(total > 0 || q || subjectId) && (
+        <div className="mt-7 flex flex-col gap-3">
           <SearchInput
-            placeholder="Search papers by title or subject..."
+            placeholder="Search papers by title..."
             className="max-w-md"
           />
+          {subjects.length > 1 && (
+            <SubjectFilter
+              options={subjects.map((s) => ({ id: s.id, code: s.code }))}
+            />
+          )}
         </div>
       )}
 
@@ -167,6 +198,7 @@ export default async function PapersPage({
               label="Previous"
               icon="left"
               q={q}
+              subjectId={subjectId}
             />
             <span className="font-mono text-[0.72rem] tabular-nums text-fg-muted">
               Page {page} / {totalPages}
@@ -177,6 +209,7 @@ export default async function PapersPage({
               label="Next"
               icon="right"
               q={q}
+              subjectId={subjectId}
             />
           </div>
         </div>
@@ -226,12 +259,14 @@ function PageLink({
   label,
   icon,
   q,
+  subjectId,
 }: {
   page: number;
   disabled: boolean;
   label: string;
   icon: "left" | "right";
   q?: string;
+  subjectId?: string | null;
 }) {
   if (disabled) {
     return (
@@ -245,11 +280,13 @@ function PageLink({
       </span>
     );
   }
-  // Preserve the active search term across page navigation so a user paging
-  // through filtered results doesn't lose their query when they hit Next.
-  const href = q
-    ? `/dashboard/papers?page=${page}&q=${encodeURIComponent(q)}`
-    : `/dashboard/papers?page=${page}`;
+  // Preserve search term + subject filter across page navigation so a
+  // filtered list stays filtered when the user hits Next/Previous.
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  if (q) params.set("q", q);
+  if (subjectId) params.set("subject", subjectId);
+  const href = `/dashboard/papers?${params.toString()}`;
   return (
     <Link
       href={href}
