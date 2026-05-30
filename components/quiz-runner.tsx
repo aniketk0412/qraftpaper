@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Confetti } from "@/components/ui/confetti";
 import { GlowButton } from "@/components/ui/glow-button";
 import { MeterBar } from "@/components/ui/meter-bar";
 import { easeOut } from "@/lib/motion";
@@ -195,8 +196,11 @@ export function QuizRunner({
     const isPerfect = score === total && total > 0;
 
     return (
-      <div className="overflow-hidden rounded-2xl glass-strong">
+      <div className="relative overflow-hidden rounded-2xl glass-strong">
         <span className="pointer-events-none absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-tint/20 to-transparent" />
+        {/* Confetti only on the celebration paths — perfect score or new
+            personal best. Honours prefers-reduced-motion internally. */}
+        {(isPerfect || isPersonalBest) && <Confetti />}
         <div className="flex flex-col items-center px-6 py-12 text-center sm:px-10">
           <span
             className={cn(
