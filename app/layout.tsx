@@ -104,6 +104,16 @@ export default function RootLayout({
       className={`${sans.variable} ${mono.variable} antialiased`}
     >
       <body className="min-h-screen bg-canvas text-fg">
+        {/* Preconnect to the third-party hosts our app talks to on first
+         * paint. React 19 hoists these <link> tags into <head>. PostHog is
+         * loaded as soon as the client provider mounts, so warming the TLS
+         * + DNS path saves ~80-150 ms on the first event POST. We do NOT
+         * preconnect to LemonSqueezy because it only matters at /billing
+         * checkout click (a navigation that already inherits its own
+         * connection cost), and we don't preconnect to Google Fonts —
+         * next/font self-hosts the woff2's at build, no runtime CDN fetch. */}
+        <link rel="preconnect" href="https://us.i.posthog.com" />
+        <link rel="dns-prefetch" href="https://us-assets.i.posthog.com" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <PostHogProvider>
           <MotionConfig reducedMotion="user">

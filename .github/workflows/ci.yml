@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   check:
-    name: tsc + eslint + vitest
+    name: typecheck + lint + test
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -28,11 +28,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Mirror what a contributor runs locally before pushing — same script,
+      # same exit codes. The composite `check` script chains
+      # typecheck → lint → test so the first failure short-circuits the
+      # rest. Individual steps are still listed below for cleaner CI logs.
+
       - name: TypeScript
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: ESLint
-        run: npx eslint app components lib
+        run: npm run lint
 
       - name: Vitest
         run: npm run test
