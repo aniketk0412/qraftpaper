@@ -10,6 +10,10 @@ import { getDb } from "@/lib/db";
 import { generationJobs, papers, subjects, users } from "@/lib/db/schema";
 import { generatePaperSections, type PaperGenerationConfig } from "@/lib/ai/generate";
 import { reconcilePaper } from "@/lib/paper-reconcile";
+import {
+  paperMarksErrorRatio,
+  shouldRetryPaper,
+} from "@/lib/generation-quality";
 import { normalizePaperConfig } from "@/lib/generation-config";
 import { normalizeUuid } from "@/lib/ids";
 import {
@@ -21,7 +25,6 @@ import {
   UsageLimitError,
 } from "@/lib/usage";
 import { recordStudyActivity } from "@/lib/streaks";
-import type { QuestionPaper } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -70,6 +73,10 @@ export async function POST(request: Request) {
       { status: 409 },
     );
   }
+  // Capture the narrowed (non-null) profile in a const so the generate
+  // closure below keeps the narrowing — a closure can't rely on the
+  // narrowing of a mutable member access.
+  const profile = subject.profile;
 
   // Read the live plan from the DB — the session JWT can be stale after a
   // downgrade/cancellation, so we never trust it for entitlement checks.
@@ -113,15 +120,56 @@ export async function POST(request: Request) {
     })
     .returning();
 
-  let sections;
+  const paperId = randomUUID();
+  const title = config.examTitle ?? `${subject.name} Question Paper`;
 
-  try {
-    sections = await generatePaperSections({
+  // One generate+reconcile attempt. Reconcile forces the printed total to the
+  // real sum and renumbers 1..N, so the paper can't contradict itself.
+  const attemptOnce = async () => {
+    const sections = await generatePaperSections({
       subjectName: subject.name,
       subjectCode: subject.code,
-      profile: subject.profile,
+      profile,
       config,
     });
+    return reconcilePaper(
+      {
+        id: paperId,
+        subject: subject.name,
+        subjectCode: subject.code,
+        course: config.course ?? subject.name,
+        examTitle: title,
+        durationMins: config.durationMins,
+        totalMarks: config.totalMarks,
+        sections,
+      },
+      config.totalMarks,
+    );
+  };
+
+  let paper;
+  let report;
+  let retried = false;
+  try {
+    let best = await attemptOnce();
+    // Self-heal: if the model landed egregiously far from the requested mark
+    // total (>25%), spend one more call and keep whichever attempt is closer.
+    // Reconcile already guarantees internal consistency; this is about
+    // honouring what the student actually asked for.
+    if (shouldRetryPaper(best.report)) {
+      retried = true;
+      const second = await attemptOnce();
+      if (
+        paperMarksErrorRatio(second.report) < paperMarksErrorRatio(best.report)
+      ) {
+        best = second;
+      }
+      console.info("[generate:paper] retried for marks drift", {
+        firstDelta: best.report.marksDelta,
+      });
+    }
+    paper = best.paper;
+    report = best.report;
   } catch (error) {
     if (job) {
       await getDb()
@@ -141,25 +189,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const paperId = randomUUID();
-  const title = config.examTitle ?? `${subject.name} Question Paper`;
-  const rawPaper: QuestionPaper = {
-    id: paperId,
-    subject: subject.name,
-    subjectCode: subject.code,
-    course: config.course ?? subject.name,
-    examTitle: title,
-    durationMins: config.durationMins,
-    totalMarks: config.totalMarks,
-    sections,
-  };
-
-  // Reconcile the AI's output against what was requested: the printed total
-  // is forced to the real sum of the questions (the model frequently misses
-  // the target), and questions are renumbered 1..N across sections. After
-  // this the paper can never contradict itself.
-  const { paper, report } = reconcilePaper(rawPaper, config.totalMarks);
-  if (report.marksAdjusted || report.renumbered) {
+  if (report.marksAdjusted || report.renumbered || retried) {
     console.info("[generate:paper] reconciled", {
       requestedMarks: report.requestedMarks,
       actualMarks: report.actualMarks,
@@ -175,6 +205,7 @@ export async function POST(request: Request) {
           actualMarks: report.actualMarks,
           marksDelta: report.marksDelta,
           renumbered: report.renumbered,
+          retried,
         },
       });
     } catch {

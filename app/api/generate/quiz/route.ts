@@ -8,6 +8,7 @@ import { trackEvent } from "@/lib/analytics";
 import { isQuiz } from "@/lib/content-validation";
 import { generateQuizQuestions, type QuizGenerationConfig } from "@/lib/ai/generate";
 import { reconcileQuiz } from "@/lib/quiz-reconcile";
+import { shouldRetryQuiz } from "@/lib/generation-quality";
 import { normalizeQuizConfig } from "@/lib/generation-config";
 import { normalizeUuid } from "@/lib/ids";
 import { getDb } from "@/lib/db";
@@ -21,7 +22,6 @@ import {
   UsageLimitError,
 } from "@/lib/usage";
 import { recordStudyActivity } from "@/lib/streaks";
-import type { Quiz } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -70,6 +70,8 @@ export async function POST(request: Request) {
       { status: 409 },
     );
   }
+  // Const-capture so the generate closure below keeps the non-null narrowing.
+  const profile = subject.profile;
 
   // Read the live plan from the DB — the session JWT can be stale after a
   // downgrade/cancellation, so we never trust it for entitlement checks.
@@ -108,15 +110,51 @@ export async function POST(request: Request) {
     })
     .returning();
 
-  let questions;
+  const quizId = randomUUID();
+  const title = `${subject.name} Practice Quiz`;
 
-  try {
-    questions = await generateQuizQuestions({
+  // One generate+reconcile attempt. Reconcile drops malformed questions and
+  // dedupes duplicate options, so a single bad question never wastes the
+  // user's paid generation.
+  const attemptOnce = async () => {
+    const questions = await generateQuizQuestions({
       subjectName: subject.name,
       subjectCode: subject.code,
-      profile: subject.profile,
+      profile,
       config,
     });
+    return reconcileQuiz(
+      {
+        id: quizId,
+        subject: subject.name,
+        subjectCode: subject.code,
+        title,
+        durationMins: config.durationMins,
+        questions,
+      },
+      config.questionCount,
+    );
+  };
+
+  let quiz;
+  let quizReport;
+  let retried = false;
+  try {
+    let best = await attemptOnce();
+    // Self-heal: if fewer than 60% of the requested questions survived
+    // sanitising, the model produced a lot of junk — spend one more call and
+    // keep whichever attempt kept more usable questions.
+    if (shouldRetryQuiz(best.report, config.questionCount)) {
+      retried = true;
+      const second = await attemptOnce();
+      if (second.report.kept > best.report.kept) best = second;
+      console.info("[generate:quiz] retried for low survival", {
+        kept: best.report.kept,
+        requested: config.questionCount,
+      });
+    }
+    quiz = best.quiz;
+    quizReport = best.report;
   } catch (error) {
     if (job) {
       await getDb()
@@ -136,31 +174,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const quizId = randomUUID();
-  const title = `${subject.name} Practice Quiz`;
-  const rawQuiz: Quiz = {
-    id: quizId,
-    subject: subject.name,
-    subjectCode: subject.code,
-    title,
-    durationMins: config.durationMins,
-    questions,
-  };
-
-  // Salvage instead of all-or-nothing: drop only the malformed questions and
-  // dedupe duplicate options (re-mapping the answer by value). A single bad
-  // question no longer wastes the user's paid generation.
-  const { quiz, report: quizReport } = reconcileQuiz(
-    rawQuiz,
-    config.questionCount,
-  );
-  if (quizReport.dropped > 0 || quizReport.optionsDeduped > 0) {
+  if (quizReport.dropped > 0 || quizReport.optionsDeduped > 0 || retried) {
     console.info("[generate:quiz] reconciled", quizReport);
     try {
       await trackEvent({
         distinctId: session.user.id,
         event: "quiz_reconciled",
-        properties: { ...quizReport },
+        properties: { ...quizReport, retried },
       });
     } catch {
       /* telemetry must never break a real generation */
