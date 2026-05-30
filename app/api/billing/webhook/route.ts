@@ -1,4 +1,4 @@
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createHash } from "node:crypto";
 
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
@@ -7,6 +7,7 @@ import { trackEvent } from "@/lib/analytics";
 import { getDb } from "@/lib/db";
 import { billingEvents, subscriptions, users } from "@/lib/db/schema";
 import { tierForVariantId, type BillingTier } from "@/lib/billing/lemonsqueezy";
+import { verifyWebhookSignature } from "@/lib/billing/webhook-signature";
 import { normalizeUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!signature || !verifySignature(rawBody, signature, secret)) {
+  if (!signature || !verifyWebhookSignature(rawBody, signature, secret)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
@@ -178,19 +179,6 @@ async function handleSubscriptionEvent(payload: LemonWebhookPayload) {
       /* swallow */
     }
   }
-}
-
-function verifySignature(rawBody: string, signature: string, secret: string) {
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-
-  const expectedBuffer = Buffer.from(expected, "hex");
-  const actualBuffer = Buffer.from(signature, "hex");
-
-  if (expectedBuffer.length !== actualBuffer.length) {
-    return false;
-  }
-
-  return timingSafeEqual(expectedBuffer, actualBuffer);
 }
 
 function parseDate(value: string | null | undefined) {
