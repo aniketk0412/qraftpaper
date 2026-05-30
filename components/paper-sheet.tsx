@@ -17,6 +17,7 @@ export function PaperSheet({
 }) {
   return (
     <div
+      data-print="paper"
       className={cn(
         "bg-[#f7f6f2] text-[#1b1b20] selection:bg-violet/30",
         className,
@@ -41,8 +42,11 @@ export function PaperSheet({
 
         <div className="mt-8 flex flex-col gap-9">
           {paper.sections.map((section) => (
-            <section key={section.id}>
-              <div className="flex items-baseline justify-between gap-4">
+            <section key={section.id} data-print="section">
+              <div
+                data-print="section-heading"
+                className="flex items-baseline justify-between gap-4"
+              >
                 <h4 className="text-[0.95rem] font-semibold tracking-tight">
                   {section.title}
                 </h4>
@@ -53,7 +57,11 @@ export function PaperSheet({
 
               <ol className="mt-4 flex flex-col gap-4">
                 {section.questions.map((q) => (
-                  <li key={q.id} className="flex gap-3.5">
+                  <li
+                    key={q.id}
+                    data-print="question"
+                    className="flex gap-3.5"
+                  >
                     <span className="select-none font-mono text-[0.78rem] font-semibold text-[#52524e]">
                       {q.number}.
                     </span>
@@ -76,7 +84,10 @@ export function PaperSheet({
                         </span>
                       </div>
                     </div>
-                    <span className="shrink-0 font-mono text-[0.78rem] font-semibold text-[#1b1b20]">
+                    <span
+                      data-print="marks"
+                      className="shrink-0 font-mono text-[0.78rem] font-semibold text-[#1b1b20]"
+                    >
                       [{q.marks}]
                     </span>
                   </li>

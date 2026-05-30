@@ -273,3 +273,110 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ============================================================
+ * Print stylesheet — hit Ctrl/Cmd+P on the paper editor and get
+ * a clean printable sheet (also handy for "Save as PDF") without
+ * having to go through the export endpoint.
+ *
+ * Strategy:
+ *   1. Anything not tagged data-print="keep" disappears. Sidebars,
+ *      topbars, action buttons, glow effects, background tints —
+ *      none of them belong on a printed exam paper.
+ *   2. The page itself becomes flat white with black ink, which is
+ *      cheaper to print and stops a "low toner" warning from eating
+ *      a page on a cream-canvas tint.
+ *   3. Question text gets generous line-height and a serif fallback
+ *      family so it reads at A4 paper density rather than
+ *      laptop-screen density.
+ *   4. Page breaks are nudged so questions don't get split across a
+ *      page boundary mid-sentence whenever we can avoid it.
+ * ============================================================ */
+@media print {
+  /* Surfaces → flat white, no tint, no shadow, no backdrop blur. */
+  :root,
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  body {
+    font-family: "Times New Roman", Cambria, Georgia, serif !important;
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Hide app chrome by default; anything that should print opts in. */
+  header,
+  nav,
+  aside,
+  footer,
+  [role="navigation"],
+  [data-print="hide"] {
+    display: none !important;
+  }
+
+  /* Buttons and link affordances aren't useful on paper. */
+  button,
+  a[role="button"],
+  .glow-button {
+    display: none !important;
+  }
+
+  /* Strip our decorative glass/border treatments — let printed cards
+   * fall back to plain blocks of text. */
+  .glass,
+  .glass-strong,
+  [class*="bg-canvas"],
+  [class*="bg-panel"],
+  [class*="bg-card"],
+  [class*="bg-tint"] {
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    border-color: #00000022 !important;
+  }
+
+  /* Question text — let it breathe. */
+  [data-print="paper"] {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  [data-print="question"] {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin: 0.4rem 0;
+  }
+
+  /* Section headings get a forced break-before so each section starts
+   * on a fresh visual band, matching real exam papers. */
+  [data-print="section-heading"] {
+    page-break-before: auto;
+    break-before: auto;
+    margin-top: 1.2em !important;
+  }
+
+  /* Render the inferred answer marks (1m / 5m / 10m) inline-bold so
+   * graders can scan them at a glance. */
+  [data-print="marks"] {
+    font-weight: bold;
+    font-size: inherit !important;
+  }
+
+  /* Hyperlinks in printed material should show the URL once after the
+   * text — students printing a quiz for friends can still read it on
+   * paper. Skip for in-page anchors. */
+  a[href]:not([href^="#"]):not([href^="/"])::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #555;
+  }
+
+  /* Standard A4 margins. */
+  @page {
+    margin: 18mm 14mm;
+  }
+}
