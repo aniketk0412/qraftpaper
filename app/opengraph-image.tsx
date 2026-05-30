@@ -41,6 +41,19 @@ export default function OpengraphImage() {
                 OUTSIDE the ring and reads as a Q — the old div-rectangle
                 tail sat inside and read as a stub. */}
             <svg width="46" height="46" viewBox="0 0 24 24" fill="none">
+              <defs>
+                <linearGradient
+                  id="qmark-tail"
+                  x1="14"
+                  y1="15"
+                  x2="20"
+                  y2="20"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0" stopColor="#5fc4c4" />
+                  <stop offset="1" stopColor="#f59e0b" />
+                </linearGradient>
+              </defs>
               <circle
                 cx="10.8"
                 cy="11"
@@ -50,8 +63,8 @@ export default function OpengraphImage() {
               />
               <path
                 d="M14.8 15.2 L19.2 19.6"
-                stroke="#5fb3b3"
-                strokeWidth="3.4"
+                stroke="url(#qmark-tail)"
+                strokeWidth="3.6"
                 strokeLinecap="round"
               />
             </svg>

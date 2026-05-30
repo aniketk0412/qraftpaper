@@ -29,6 +29,24 @@ function QraftMark({ className }: { className?: string }) {
       className={className}
       aria-hidden="true"
     >
+      {/* The tail is the brand's whole personality — it runs the two-hue
+          system (teal -> gold) as a gradient, which is what makes the mark
+          read as "designed" instead of a flat cream ring with a flat stub.
+          gradientUnits="userSpaceOnUse" so the stops map to the tail's own
+          path coordinates, not the element bounding box. */}
+      <defs>
+        <linearGradient
+          id="qmark-tail"
+          x1="14"
+          y1="15"
+          x2="20"
+          y2="20"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0" stopColor="#5fc4c4" />
+          <stop offset="1" stopColor="#f59e0b" />
+        </linearGradient>
+      </defs>
       <circle
         cx="10.8"
         cy="11"
@@ -38,8 +56,8 @@ function QraftMark({ className }: { className?: string }) {
       />
       <path
         d="M14.8 15.2 19.2 19.6"
-        stroke="#5fb3b3"
-        strokeWidth="3.4"
+        stroke="url(#qmark-tail)"
+        strokeWidth="3.6"
         strokeLinecap="round"
       />
     </svg>
