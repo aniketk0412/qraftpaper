@@ -8,6 +8,7 @@ import { getDb } from "@/lib/db";
 import { billingEvents, subscriptions, users } from "@/lib/db/schema";
 import { tierForVariantId, type BillingTier } from "@/lib/billing/lemonsqueezy";
 import { verifyWebhookSignature } from "@/lib/billing/webhook-signature";
+import { resolveEntitlement } from "@/lib/billing/entitlement";
 import { normalizeUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
@@ -34,15 +35,6 @@ interface LemonWebhookPayload {
     };
   };
 }
-
-const ACTIVE_STATUSES = new Set(["active", "on_trial", "paid"]);
-const INACTIVE_STATUSES = new Set([
-  "cancelled",
-  "expired",
-  "past_due",
-  "paused",
-  "unpaid",
-]);
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -132,8 +124,7 @@ async function handleSubscriptionEvent(payload: LemonWebhookPayload) {
     return;
   }
 
-  const active = ACTIVE_STATUSES.has(status);
-  const inactive = INACTIVE_STATUSES.has(status);
+  const entitlement = resolveEntitlement(status, tier);
 
   await getDb()
     .insert(subscriptions)
@@ -160,11 +151,11 @@ async function handleSubscriptionEvent(payload: LemonWebhookPayload) {
       },
     });
 
-  if (active || inactive) {
+  if (entitlement.shouldUpdate) {
     await getDb()
       .update(users)
       .set({
-        plan: active ? tier : "unpaid",
+        plan: entitlement.plan,
         status: "active",
       })
       .where(eq(users.id, userId));
@@ -172,8 +163,10 @@ async function handleSubscriptionEvent(payload: LemonWebhookPayload) {
     try {
       await trackEvent({
         distinctId: userId,
-        event: active ? "subscription_activated" : "subscription_cancelled",
-        properties: { plan: active ? tier : "unpaid", status },
+        event: entitlement.granting
+          ? "subscription_activated"
+          : "subscription_cancelled",
+        properties: { plan: entitlement.plan, status },
       });
     } catch {
       /* swallow */
