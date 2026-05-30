@@ -40,63 +40,72 @@ export const runtime = "nodejs";
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id;
-  const subjects = userId ? await listUserSubjects(userId) : [];
   const monthStart = new Date();
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const [paperStats] = userId
-    ? await getDb()
-        .select({
-          count: sql<number>`count(${papers.id})::int`,
-        })
-        .from(papers)
-        .where(and(eq(papers.userId, userId), gte(papers.createdAt, monthStart)))
-    : [{ count: 0 }];
-  const recentPapers = userId
-    ? await getDb()
-        .select({
-          id: papers.id,
-          title: papers.title,
-          createdAt: papers.createdAt,
-          content: papers.content,
-        })
-        .from(papers)
-        .where(eq(papers.userId, userId))
-        .orderBy(desc(papers.createdAt))
-        .limit(4)
-    : [];
+  // Six independent reads — none depend on the result of any other. Run
+  // them in parallel so dashboard latency is bounded by the slowest one
+  // (the streak summary, which scans a year of study_activity), not the
+  // sum. Previously each `await` ran sequentially: ~6× DB round-trip
+  // latency.
+  const [
+    subjects,
+    paperStatsRow,
+    recentPapers,
+    recentQuizzes,
+    streak,
+    weekly,
+  ] = userId
+    ? await Promise.all([
+        listUserSubjects(userId),
+        getDb()
+          .select({ count: sql<number>`count(${papers.id})::int` })
+          .from(papers)
+          .where(
+            and(eq(papers.userId, userId), gte(papers.createdAt, monthStart)),
+          )
+          .then((rows) => rows[0] ?? { count: 0 }),
+        getDb()
+          .select({
+            id: papers.id,
+            title: papers.title,
+            createdAt: papers.createdAt,
+            content: papers.content,
+          })
+          .from(papers)
+          .where(eq(papers.userId, userId))
+          .orderBy(desc(papers.createdAt))
+          .limit(4),
+        getDb()
+          .select({
+            id: quizzes.id,
+            title: quizzes.title,
+            createdAt: quizzes.createdAt,
+          })
+          .from(quizzes)
+          .where(eq(quizzes.userId, userId))
+          .orderBy(desc(quizzes.createdAt))
+          .limit(4),
+        getStreakSummary(userId),
+        getWeeklyActivity(userId),
+      ])
+    : [
+        [],
+        { count: 0 },
+        [],
+        [],
+        {
+          current: 0,
+          longest: 0,
+          totalDays: 0,
+          practisedToday: false,
+          daysSinceLast: null,
+        },
+        { days: Array(7).fill(false), done: 0, target: 5, hit: false },
+      ];
 
-  const recentQuizzes = userId
-    ? await getDb()
-        .select({
-          id: quizzes.id,
-          title: quizzes.title,
-          createdAt: quizzes.createdAt,
-        })
-        .from(quizzes)
-        .where(eq(quizzes.userId, userId))
-        .orderBy(desc(quizzes.createdAt))
-        .limit(4)
-    : [];
-
-  // Streak summary drives the Flame stat tile + the "Practise today" nudge.
-  const streak = userId
-    ? await getStreakSummary(userId)
-    : {
-        current: 0,
-        longest: 0,
-        totalDays: 0,
-        practisedToday: false,
-        daysSinceLast: null,
-      };
-
-  // Weekly goal (5/7) — the strongest non-streak engagement loop. Even when
-  // a user misses a day they can still hit the weekly target and feel they
-  // won the week.
-  const weekly = userId
-    ? await getWeeklyActivity(userId)
-    : { days: Array(7).fill(false), done: 0, target: 5, hit: false };
+  const paperStats = paperStatsRow;
 
   const milestone = currentMilestone(streak.current);
 
