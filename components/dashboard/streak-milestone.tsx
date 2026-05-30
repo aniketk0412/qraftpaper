@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Flame, Sparkles, X } from "lucide-react";
+import { Confetti } from "@/components/ui/confetti";
 import { easeOut } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -99,6 +100,11 @@ export function StreakMilestone({ milestone }: StreakMilestoneProps) {
         >
           <div className="pointer-events-none absolute -top-12 left-12 h-32 w-32 rounded-full bg-gold/25 blur-2xl" />
           <div className="pointer-events-none absolute -top-12 right-12 h-32 w-32 rounded-full bg-violet/20 blur-2xl" />
+
+          {/* Confetti burst — runs once on mount (per milestone). Honours
+              prefers-reduced-motion via its own internal hook, so we can
+              render it unconditionally here. */}
+          <Confetti />
 
           <div className="relative flex items-start gap-4">
             <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gold/20 text-gold ring-1 ring-gold/40">
