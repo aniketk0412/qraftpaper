@@ -5,6 +5,7 @@ import {
   dedupeWrongAnswers,
   distinctWrongCount,
   parseDrillQuestionId,
+  weakUnits,
   wrongKey,
   type WrongAnswer,
 } from "@/lib/quiz-history";
@@ -110,6 +111,40 @@ describe("buildDrillQuiz", () => {
       quizId: "aaaa-bbbb",
       questionId: "q7",
     });
+  });
+});
+
+describe("weakUnits", () => {
+  it("aggregates distinct misses by unit, heaviest first", () => {
+    const list = [
+      wrong({ questionId: "q1", unit: "Unit III" }),
+      wrong({ questionId: "q2", unit: "Unit III" }),
+      wrong({ questionId: "q3", unit: "Unit I" }),
+    ];
+    expect(weakUnits(list)).toEqual([
+      { unit: "Unit III", count: 2 },
+      { unit: "Unit I", count: 1 },
+    ]);
+  });
+
+  it("does not double-count a question missed twice", () => {
+    const list = [
+      wrong({ questionId: "q1", unit: "Unit II", takenAt: 1 }),
+      wrong({ questionId: "q1", unit: "Unit II", takenAt: 2 }),
+    ];
+    expect(weakUnits(list)).toEqual([{ unit: "Unit II", count: 1 }]);
+  });
+
+  it("breaks ties alphabetically by unit name", () => {
+    const list = [
+      wrong({ questionId: "q1", unit: "Unit B" }),
+      wrong({ questionId: "q2", unit: "Unit A" }),
+    ];
+    expect(weakUnits(list).map((w) => w.unit)).toEqual(["Unit A", "Unit B"]);
+  });
+
+  it("is empty for an empty backlog", () => {
+    expect(weakUnits([])).toEqual([]);
   });
 });
 

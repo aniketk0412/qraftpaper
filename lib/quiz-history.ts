@@ -138,6 +138,28 @@ export function dedupeWrongAnswers(wrongs: WrongAnswer[]): WrongAnswer[] {
   return [...seen.values()].sort((a, b) => b.takenAt - a.takenAt);
 }
 
+export interface WeakUnit {
+  unit: string;
+  /** Distinct questions still missed in this unit. */
+  count: number;
+}
+
+/**
+ * Aggregate the wrong-answer backlog by unit, heaviest first. Drives the
+ * "you keep missing Unit III" insight on the drill start screen. Pure —
+ * dedupes by (quiz, question) first so a question missed twice doesn't
+ * double-count its unit.
+ */
+export function weakUnits(wrongs: WrongAnswer[]): WeakUnit[] {
+  const counts = new Map<string, number>();
+  for (const w of dedupeWrongAnswers(wrongs)) {
+    counts.set(w.unit, (counts.get(w.unit) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([unit, count]) => ({ unit, count }))
+    .sort((a, b) => b.count - a.count || a.unit.localeCompare(b.unit));
+}
+
 /**
  * Reconstruct a runnable Quiz from a wrong-answer list. Pure — pass the
  * array in. Returns null when there's nothing to drill.
@@ -197,6 +219,11 @@ export function unrevisitedWrongCount(): number {
 /** Build a drill quiz straight from localStorage. null when empty. */
 export function loadDrillQuiz(limit = 10): Quiz | null {
   return buildDrillQuiz(loadWrongAnswers(), limit);
+}
+
+/** Weak-unit breakdown straight from localStorage, heaviest first. */
+export function loadWeakUnits(): WeakUnit[] {
+  return weakUnits(loadWrongAnswers());
 }
 
 /**

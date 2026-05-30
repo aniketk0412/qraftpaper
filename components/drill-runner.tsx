@@ -9,7 +9,7 @@ import {
   Target,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GlowButton } from "@/components/ui/glow-button";
 import { MeterBar } from "@/components/ui/meter-bar";
 import { Confetti } from "@/components/ui/confetti";
@@ -74,6 +74,40 @@ export function DrillRunner({ quiz }: { quiz: Quiz }) {
       setPicked(null);
     }
   }
+
+  // Keyboard shortcuts: 1-4 picks an option, Enter advances once answered.
+  // Mirrors QuizRunner so the muscle memory carries over between the two
+  // surfaces. Skipped while focus is in an editable element.
+  useEffect(() => {
+    if (finished) return;
+    function onKey(e: KeyboardEvent) {
+      const t = e.target as HTMLElement | null;
+      if (
+        t?.tagName === "INPUT" ||
+        t?.tagName === "TEXTAREA" ||
+        t?.isContentEditable
+      ) {
+        return;
+      }
+      if (e.key === "Enter" && answered) {
+        e.preventDefault();
+        next();
+        return;
+      }
+      if (!answered) {
+        const n = Number(e.key);
+        if (Number.isInteger(n) && n >= 1 && n <= question.options.length) {
+          e.preventDefault();
+          pick(n - 1);
+        }
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // pick/next close over the current question/step; rebind on what changes
+    // the running question.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished, answered, step, question.id, question.options.length]);
 
   if (finished) {
     const pct = Math.round((correctCount / total) * 100);

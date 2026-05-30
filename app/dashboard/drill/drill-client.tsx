@@ -1,23 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BookmarkCheck, ListChecks } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookmarkCheck,
+  ListChecks,
+  Target,
+} from "lucide-react";
 import { useState } from "react";
 import { DrillRunner } from "@/components/drill-runner";
 import { GlowButton } from "@/components/ui/glow-button";
-import { loadDrillQuiz } from "@/lib/quiz-history";
+import { loadDrillQuiz, loadWeakUnits } from "@/lib/quiz-history";
+import type { WeakUnit } from "@/lib/quiz-history";
 import type { Quiz } from "@/lib/types";
 
 /**
  * Client shell for the drill page. The wrong-answer backlog lives in
  * localStorage, so the quiz can only be reconstructed on the client. We
- * read it once via a lazy useState initializer (returns null during SSR,
- * resolved on the first client render — the page renders a brief nothing
- * then the runner, no flash of wrong content because the whole subtree is
- * client-only).
+ * read it once via lazy useState initializers (return safe SSR defaults,
+ * resolved on the first client render — the whole subtree is client-only
+ * so there's no flash of wrong content).
+ *
+ * Flow: start screen (weak-unit breakdown) -> runner. We surface the unit
+ * breakdown BEFORE the first question because "you keep missing Unit III"
+ * is the actionable insight; dropping the user straight into Q1 buries it.
  */
 export function DrillClient() {
   const [quiz] = useState<Quiz | null>(() => loadDrillQuiz());
+  const [weak] = useState<WeakUnit[]>(() => loadWeakUnits());
+  const [started, setStarted] = useState(false);
 
   return (
     <div className="min-h-screen">
@@ -45,12 +57,87 @@ export function DrillClient() {
       </header>
 
       <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8">
-        {quiz ? (
+        {!quiz ? (
+          <EmptyDrillState />
+        ) : started ? (
           <DrillRunner quiz={quiz} />
         ) : (
-          <EmptyDrillState />
+          <DrillStartScreen
+            count={quiz.questions.length}
+            weak={weak}
+            onStart={() => setStarted(true)}
+          />
         )}
       </main>
+    </div>
+  );
+}
+
+/**
+ * Pre-drill summary. Shows the weak-unit breakdown so the user sees the
+ * pattern in their misses, then a single Start button. The unit bars are
+ * scaled to the heaviest unit so the worst offender is visually obvious.
+ */
+function DrillStartScreen({
+  count,
+  weak,
+  onStart,
+}: {
+  count: number;
+  weak: WeakUnit[];
+  onStart: () => void;
+}) {
+  const peak = Math.max(1, ...weak.map((w) => w.count));
+  return (
+    <div className="overflow-hidden rounded-2xl glass-strong">
+      <div className="flex flex-col items-center px-6 py-10 text-center sm:px-10">
+        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-violet/15 text-violet-bright ring-1 ring-violet/25">
+          <Target className="h-6 w-6" />
+        </span>
+        <p className="mt-5 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-fg-subtle">
+          Ready to drill
+        </p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+          {count} question{count === 1 ? "" : "s"} you&apos;ve missed
+        </h2>
+        <p className="mx-auto mt-2 max-w-md text-[0.9rem] leading-relaxed text-fg-muted">
+          No timer. Answer each one — get it right and it leaves your backlog
+          for good. The ones you miss again stay saved for next time.
+        </p>
+      </div>
+
+      {weak.length > 0 && (
+        <div className="border-t border-line px-6 py-6 sm:px-10">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-fg-subtle">
+            Where you&apos;re losing marks
+          </p>
+          <ul className="mt-4 flex flex-col gap-3">
+            {weak.map((w) => (
+              <li key={w.unit} className="flex items-center gap-3">
+                <span className="w-24 shrink-0 truncate font-mono text-[0.7rem] uppercase tracking-wider text-fg-muted">
+                  {w.unit}
+                </span>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-tint/[0.06]">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-violet to-gold"
+                    style={{ width: `${(w.count / peak) * 100}%` }}
+                  />
+                </div>
+                <span className="w-6 shrink-0 text-right font-mono text-[0.8rem] tabular-nums text-fg">
+                  {w.count}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="flex justify-center border-t border-line px-6 py-6">
+        <GlowButton onClick={onStart} size="md">
+          Start drilling
+          <ArrowRight className="h-4 w-4" />
+        </GlowButton>
+      </div>
     </div>
   );
 }
