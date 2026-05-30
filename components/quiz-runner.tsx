@@ -89,6 +89,54 @@ export function QuizRunner({
     0,
   );
 
+  // Keyboard shortcuts: 1-4 picks an option, Enter advances when answered.
+  // Big throughput win for repeat takers — pressing 2-Enter-1-Enter-3-Enter
+  // is twice as fast as clicking through. Skipped if the user is typing in
+  // an input/textarea/contenteditable so the runner stays compatible with
+  // future free-text question types.
+  useEffect(() => {
+    if (finished || reviewing) return;
+    function onKey(e: KeyboardEvent) {
+      const t = e.target as HTMLElement | null;
+      if (
+        t?.tagName === "INPUT" ||
+        t?.tagName === "TEXTAREA" ||
+        t?.isContentEditable
+      ) {
+        return;
+      }
+      // Enter advances when the current question is already answered. We
+      // call next() directly — same code path as the on-screen Next button.
+      if (e.key === "Enter" && answered) {
+        e.preventDefault();
+        next();
+        return;
+      }
+      // 1-4 pick the corresponding option. Ignore if already answered or
+      // currently waiting on the server-side grade.
+      if (!answered && !grading) {
+        const n = Number(e.key);
+        if (Number.isInteger(n) && n >= 1 && n <= question.options.length) {
+          e.preventDefault();
+          void pick(n - 1);
+        }
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // pick/next are stable closures over question/answers/etc. — every
+    // re-render gets a fresh handler, so we just rebind on the deps that
+    // change the actually-running question.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    finished,
+    reviewing,
+    answered,
+    grading,
+    question.id,
+    question.options.length,
+  ]);
+
   // Countdown — derived from a deadline so it survives tab throttling. Auto
   // submits when time runs out. (setState calls live in the timer callback, not
   // the effect body.)
@@ -613,7 +661,13 @@ export function QuizRunner({
                       {reveal?.explanation}
                     </p>
                   </div>
-                  <div className="mt-5 flex justify-end">
+                  <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
+                    <span className="hidden font-mono text-[0.62rem] uppercase tracking-[0.16em] text-fg-subtle sm:inline-flex sm:items-center sm:gap-1.5">
+                      Press
+                      <kbd className="rounded border border-line bg-tint/[0.04] px-1.5 py-0.5 text-[0.6rem] text-fg-muted">
+                        Enter
+                      </kbd>
+                    </span>
                     <GlowButton onClick={next} size="md">
                       {step + 1 >= total ? "See results" : "Next question"}
                       <ArrowRight className="h-4 w-4" />
