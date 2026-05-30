@@ -8,7 +8,7 @@ import {
   ListChecks,
   Target,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DrillRunner } from "@/components/drill-runner";
 import { GlowButton } from "@/components/ui/glow-button";
 import { loadDrillQuiz, loadWeakUnits } from "@/lib/quiz-history";
@@ -16,20 +16,44 @@ import type { WeakUnit } from "@/lib/quiz-history";
 import type { Quiz } from "@/lib/types";
 
 /**
- * Client shell for the drill page. The wrong-answer backlog lives in
- * localStorage, so the quiz can only be reconstructed on the client. We
- * read it once via lazy useState initializers (return safe SSR defaults,
- * resolved on the first client render — the whole subtree is client-only
- * so there's no flash of wrong content).
+ * Client shell for the drill page. Two sources feed the session, kept in sync
+ * by dual-writes from the quiz/drill runners:
+ *
+ *   1. localStorage — this device's wrong-answer backlog, read synchronously
+ *      via lazy useState so a returning user on the same device sees their
+ *      drill instantly with no spinner.
+ *   2. The server schedule (/api/reviews/due) — the cross-device source of
+ *      truth. We pull it only when this device has no local backlog (e.g. a
+ *      fresh browser or a second device), so the drill follows the user.
  *
  * Flow: start screen (weak-unit breakdown) -> runner. We surface the unit
  * breakdown BEFORE the first question because "you keep missing Unit III"
  * is the actionable insight; dropping the user straight into Q1 buries it.
  */
 export function DrillClient() {
-  const [quiz] = useState<Quiz | null>(() => loadDrillQuiz());
+  const [quiz, setQuiz] = useState<Quiz | null>(() => loadDrillQuiz());
   const [weak] = useState<WeakUnit[]>(() => loadWeakUnits());
   const [started, setStarted] = useState(false);
+
+  // Cross-device fallback: if this device's local backlog is empty, ask the
+  // server for the user's due cards. Best-effort — on failure we keep the
+  // (empty) local state and the empty-state UI shows. Skipped entirely when
+  // local already has cards, so same-device drills never wait on the network.
+  useEffect(() => {
+    if (quiz) return;
+    let cancelled = false;
+    fetch("/api/reviews/due")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { quiz: Quiz | null } | null) => {
+        if (!cancelled && data?.quiz) setQuiz(data.quiz);
+      })
+      .catch(() => {
+        /* keep local state; empty-state UI handles the no-cards case */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [quiz]);
 
   return (
     <div className="min-h-screen">

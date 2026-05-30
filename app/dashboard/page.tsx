@@ -23,6 +23,7 @@ import { getDb } from "@/lib/db";
 import { papers, quizzes, usage, users } from "@/lib/db/schema";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { currentUsageMonth } from "@/lib/usage";
+import { getDueReviewCount } from "@/lib/reviews";
 import { listUserSubjects } from "@/lib/subjects";
 import { STARTER_BLUEPRINTS } from "@/lib/blueprints";
 import {
@@ -65,6 +66,7 @@ export default async function DashboardPage() {
     weekly,
     usageRow,
     profileRow,
+    dueReviewCount,
   ] = userId
     ? await Promise.all([
         listUserSubjects(userId),
@@ -110,6 +112,7 @@ export default async function DashboardPage() {
           .where(eq(users.id, userId))
           .limit(1)
           .then((rows) => rows[0] ?? { plan: "unpaid" }),
+        getDueReviewCount(userId),
       ])
     : [
         [],
@@ -126,6 +129,7 @@ export default async function DashboardPage() {
         { days: Array(7).fill(false), done: 0, target: 5, hit: false },
         { generations: 0 },
         { plan: "unpaid" },
+        0,
       ];
 
   const paperStats = paperStatsRow;
@@ -231,7 +235,9 @@ export default async function DashboardPage() {
           reward — not a wall of three competing call-to-actions. */}
       <ExamCountdownBanner subjects={subjects} />
       {milestone !== null && <StreakMilestone milestone={milestone} />}
-      {!hasUrgentExam(subjects) && <DrillMistakesCard />}
+      {!hasUrgentExam(subjects) && (
+        <DrillMistakesCard serverCount={dueReviewCount} />
+      )}
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

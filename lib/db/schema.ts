@@ -3,6 +3,7 @@ import {
   index,
   jsonb,
   pgTable,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -194,6 +195,53 @@ export const quizAttempts = pgTable(
   (table) => [
     index("quiz_attempts_quiz_idx").on(table.quizId, table.createdAt),
     index("quiz_attempts_taker_idx").on(table.takerUserId, table.createdAt),
+  ],
+);
+
+/**
+ * Server-backed spaced repetition. One row per (user, origin question) the
+ * user has missed — carrying both a SNAPSHOT of the question (so it can be
+ * re-served even if the source quiz is deleted) and the SM-2 schedule
+ * (ease/interval/reps/dueAt). This is the cross-device promotion of the
+ * localStorage drill: study on your phone, the schedule follows you to your
+ * laptop, and the per-question miss data becomes a real product signal.
+ */
+export const questionReviews = pgTable(
+  "question_reviews",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Origin identifiers — the quiz may later be deleted; we keep the snapshot
+    // below regardless, so quizId is a plain column (no FK).
+    quizId: text("quiz_id").notNull(),
+    questionId: text("question_id").notNull(),
+    // Question snapshot — enough to re-render the question in a drill.
+    prompt: text("prompt").notNull(),
+    options: jsonb("options").$type<string[]>().notNull(),
+    correctIndex: integer("correct_index").notNull(),
+    unit: text("unit").notNull(),
+    difficulty: text("difficulty").notNull(),
+    explanation: text("explanation").notNull(),
+    subjectCode: text("subject_code").notNull(),
+    // SM-2 schedule (see lib/spaced-repetition).
+    ease: real("ease").notNull().default(2.5),
+    intervalDays: integer("interval_days").notNull().default(0),
+    reps: integer("reps").notNull().default(0),
+    dueAt: timestamp("due_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    // One review row per question per user — upserts key on this.
+    uniqueIndex("question_reviews_user_question_idx").on(
+      table.userId,
+      table.quizId,
+      table.questionId,
+    ),
+    // The hot read: "what's due for this user right now", ordered by dueAt.
+    index("question_reviews_user_due_idx").on(table.userId, table.dueAt),
   ],
 );
 

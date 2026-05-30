@@ -6,23 +6,30 @@ import { useEffect, useState } from "react";
 import { unrevisitedWrongCount } from "@/lib/quiz-history";
 
 /**
- * Tiny client-only banner that nudges the user to revisit the questions
- * they got wrong recently. Driven by per-device localStorage (set by the
- * QuizRunner on finish) so there's no DB cost.
+ * Banner that nudges the user to revisit the questions they got wrong.
  *
- * Self-hides when there are zero unrevisited wrongs OR when localStorage
- * is unavailable. Threshold of 3 — a single missed question isn't worth
- * surfacing as "you have X to revisit," but three+ is a real signal.
+ * Counts come from two stores that are kept in sync by dual-writes:
+ *   - `serverCount` — the authoritative cross-device due-count, computed on
+ *     the server (getDueReviewCount) and passed in. Survives across devices
+ *     and browsers; this is what makes the drill loop follow a signed-in user.
+ *   - localStorage (unrevisitedWrongCount) — the per-device fallback that also
+ *     covers the anonymous demo quiz (which never hits the DB).
  *
- * The CTA points back at /dashboard (no dedicated drill page yet — the
- * server-side schema for per-question results is the gating work). Until
- * then, "Revisit" sends them to the dashboard where they can retake the
- * relevant quiz from QuizLaunch.
+ * We surface the larger of the two: on the same device they agree; on a fresh
+ * device the server count carries, and for an anon taker the local count does.
+ *
+ * Self-hides below a threshold of 3 — a single missed question isn't worth
+ * surfacing as a "you have X due" banner, but three+ is a real signal.
  */
-export function DrillMistakesCard() {
-  // Read localStorage once on mount via lazy useState. Server render
-  // returns 0 so the card stays hidden until hydration — no flash.
-  const [count, setCount] = useState<number>(() =>
+export function DrillMistakesCard({
+  serverCount = 0,
+}: {
+  serverCount?: number;
+}) {
+  // Server render shows just the server count (localStorage isn't available);
+  // after hydration we blend in the per-device local count. No flash because
+  // the server count is already correct for the cross-device case.
+  const [localCount, setLocalCount] = useState<number>(() =>
     typeof window === "undefined" ? 0 : unrevisitedWrongCount(),
   );
 
@@ -30,12 +37,13 @@ export function DrillMistakesCard() {
   // in another tab the count should refresh without a hard reload.
   useEffect(() => {
     function refresh() {
-      setCount(unrevisitedWrongCount());
+      setLocalCount(unrevisitedWrongCount());
     }
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
   }, []);
 
+  const count = Math.max(serverCount, localCount);
   if (count < 3) return null;
 
   return (

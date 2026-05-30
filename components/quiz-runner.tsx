@@ -195,7 +195,29 @@ export function QuizRunner({
       });
     }
     if (wrongs.length > 0) {
+      // Local-first (works for anon demo takers + offline), and also push to
+      // the server so the spaced-repetition schedule follows a signed-in user
+      // across devices. The POST 401s for anonymous takers — harmless, swallowed.
       recordWrongAnswers(wrongs);
+      void fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questions: wrongs.map((w) => ({
+            quizId: w.quizId,
+            questionId: w.questionId,
+            prompt: w.prompt,
+            options: w.options,
+            correctIndex: w.correctIndex,
+            unit: w.unit,
+            difficulty: w.difficulty,
+            explanation: w.explanation,
+            subjectCode: w.subjectCode,
+          })),
+        }),
+      }).catch(() => {
+        /* server sync is best-effort; localStorage already has it */
+      });
     }
     const durationSeconds = totalSeconds - remaining;
     void fetch(`/api/quiz/${quiz.id}/complete`, {

@@ -61,12 +61,27 @@ export function DrillRunner({ quiz }: { quiz: Quiz }) {
     // A wrong answer collapses it back to due-now and makes it a touch harder.
     const origin = parseDrillQuestionId(question.id);
     if (origin) {
+      // Local-first so the demo / offline path keeps working with no network...
       const { graduated } = applyDrillResult(
         origin.quizId,
         origin.questionId,
         correct,
       );
       if (graduated) setClearedCount((c) => c + 1);
+      // ...and mirror the same grade to the server schedule so a signed-in
+      // user's spaced-repetition state follows them across devices. Best-effort:
+      // 401s for anon takers, swallowed.
+      void fetch("/api/reviews/grade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quizId: origin.quizId,
+          questionId: origin.questionId,
+          correct,
+        }),
+      }).catch(() => {
+        /* best-effort; localStorage is the source of truth for this session */
+      });
     }
   }
 
