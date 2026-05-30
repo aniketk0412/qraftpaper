@@ -219,7 +219,7 @@ export function QuizRunner({
                 ? "New personal best"
                 : "Quiz complete"}
           </p>
-          <p className="mt-3 text-6xl font-semibold tracking-tight text-gradient">
+          <p className="mt-3 text-display text-gradient">
             {score}
             <span className="text-fg-subtle">/{total}</span>
           </p>

@@ -362,7 +362,7 @@ export default async function BillingPage({
               </div>
 
               <div className="relative mt-7 flex items-end gap-2">
-                <span className="text-6xl font-semibold tracking-tight text-gradient sm:text-7xl">
+                <span className="text-display-xl text-gradient">
                   {tier.price}
                 </span>
                 <span className="mb-2 text-base text-fg-subtle">{tier.period}</span>

@@ -229,6 +229,31 @@ body {
   color: transparent;
 }
 
+/* Big-numeric display type. Used wherever a single number is the whole
+ * message: the $7 price on the billing card, the streak counter, the score
+ * on a finished quiz. Pulls four levers at once that are tedious to repeat
+ * inline — fluid sizing via clamp() so it works at all viewport widths,
+ * tight tracking so the digits don't drift apart, tabular-nums so adjacent
+ * digits hold a uniform column (no jiggle when a "1" replaces a "9"), and
+ * an explicit semibold weight regardless of inherited weight context. */
+@utility text-display {
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hero-scale variant — for the landing-page h1 and equivalent "this is the
+ * one thing on the screen" headlines. Larger range, same numeric tuning. */
+@utility text-display-xl {
+  font-size: clamp(3.5rem, 8vw, 6rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Subtle film-grain noise overlay */
 @utility bg-noise {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
