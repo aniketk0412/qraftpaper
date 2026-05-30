@@ -86,6 +86,39 @@ describe("reconcilePaper — marks honesty", () => {
   });
 });
 
+describe("reconcilePaper — renumber: false (manual-edit mode)", () => {
+  it("recomputes the marks total but preserves the user's numbering", () => {
+    const input = paper([
+      {
+        id: "a",
+        title: "A",
+        instruction: "",
+        // user deleted a question, leaving a numbering gap they may have meant
+        questions: [q({ number: "1", marks: 5 }), q({ number: "3", marks: 7 })],
+      },
+    ]);
+    const { paper: out, report } = reconcilePaper(input, 12, {
+      renumber: false,
+    });
+    expect(out.totalMarks).toBe(12);
+    expect(out.sections[0].questions.map((x) => x.number)).toEqual(["1", "3"]);
+    expect(report.renumbered).toBe(false);
+  });
+
+  it("still corrects a stale total after an edit changed a question's marks", () => {
+    const input = paper([
+      {
+        id: "a",
+        title: "A",
+        instruction: "",
+        questions: [q({ marks: 10 })], // user bumped 5 -> 10
+      },
+    ]);
+    const { paper: out } = reconcilePaper(input, 5, { renumber: false });
+    expect(out.totalMarks).toBe(10);
+  });
+});
+
 describe("reconcilePaper — sequential numbering", () => {
   it("renumbers 1..N across sections regardless of the model's numbering", () => {
     const input = paper([

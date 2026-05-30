@@ -37,10 +37,20 @@ export interface PaperReconcileReport {
  *
  * Pure — returns a new paper plus a report describing what it had to fix.
  */
+export interface ReconcileOptions {
+  /** Renumber questions 1..N across sections. True at generation time (the
+   *  model's numbering is untrusted); false on manual edits, where the user
+   *  controls question order/numbering and we only want to keep the marks
+   *  total honest. */
+  renumber?: boolean;
+}
+
 export function reconcilePaper(
   paper: QuestionPaper,
   requestedMarks: number,
+  options: ReconcileOptions = {},
 ): { paper: QuestionPaper; report: PaperReconcileReport } {
+  const { renumber = true } = options;
   let actualMarks = 0;
   let counter = 0;
   let renumbered = false;
@@ -49,12 +59,13 @@ export function reconcilePaper(
     ...section,
     questions: section.questions.map((q) => {
       counter += 1;
-      const number = String(counter);
-      if (q.number !== number) renumbered = true;
       // Defensive: a non-numeric / negative marks value contributes 0 rather
       // than NaN-poisoning the whole total.
       const marks = Number.isFinite(q.marks) && q.marks > 0 ? q.marks : 0;
       actualMarks += marks;
+      if (!renumber) return { ...q, marks };
+      const number = String(counter);
+      if (q.number !== number) renumbered = true;
       return { ...q, number, marks };
     }),
   }));

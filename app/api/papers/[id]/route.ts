@@ -6,6 +6,7 @@ import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { paperVersions, papers } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
+import { reconcilePaper } from "@/lib/paper-reconcile";
 import {
   badRequest,
   notFound,
@@ -33,7 +34,18 @@ export async function PATCH(
     return badRequest("Valid paper content is required");
   }
 
-  if (JSON.stringify(body.content).length > 200_000) {
+  // Server-authoritative marks total: the editor sends whatever totalMarks it
+  // loaded, but a manual edit (changed marks, deleted question) leaves that
+  // header stale. Recompute it from the questions here so a saved paper can
+  // never claim a total its questions don't add up to. We do NOT renumber on
+  // a manual save — the user controls question order/numbering.
+  const { paper: content } = reconcilePaper(
+    body.content,
+    body.content.totalMarks,
+    { renumber: false },
+  );
+
+  if (JSON.stringify(content).length > 200_000) {
     // 413 Payload Too Large — kept inline since we don't use this status
     // anywhere else and would just be adding a one-call helper to api-responses.
     return NextResponse.json(
@@ -60,8 +72,8 @@ export async function PATCH(
   const [updated] = await getDb()
     .update(papers)
     .set({
-      content: body.content,
-      title: body.content.examTitle,
+      content,
+      title: content.examTitle,
       updatedAt: new Date(),
     })
     .where(and(eq(papers.id, id), eq(papers.userId, session.user.id)))
