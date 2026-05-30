@@ -21,13 +21,19 @@ test.describe("public pages", () => {
     await expect(signupCta).toHaveAttribute("href", "/signup");
   });
 
-  test("pricing section shows both purchasable tiers", async ({ page }) => {
+  test("pricing section shows the single Solo tier and nothing else", async ({
+    page,
+  }) => {
     await page.goto("/#pricing");
     await expect(page.getByRole("heading", { name: /solo/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /crew/i })).toBeVisible();
-    // The "Custom / Institution" tier was removed; this guards against it
-    // sneaking back in.
+    // We publicly sell exactly one tier today. The Crew/department and
+    // Custom/Institution tiers were pulled (no shared-workspace feature) —
+    // guard against either sneaking back into the public pricing.
+    await expect(page.getByRole("heading", { name: /^crew$/i })).toHaveCount(0);
     await expect(page.getByText(/talk to sales/i)).toHaveCount(0);
+    // International-payment trust signal must be present (added so non-India
+    // visitors know they can pay in their own currency).
+    await expect(page.getByText(/130\+ currencies/i)).toBeVisible();
   });
 
   test("signup page loads with the form", async ({ page }) => {
