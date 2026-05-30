@@ -20,7 +20,9 @@ import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
 import { examplePaper } from "@/lib/demo-data";
 import { getDb } from "@/lib/db";
-import { papers, quizzes } from "@/lib/db/schema";
+import { papers, quizzes, usage, users } from "@/lib/db/schema";
+import { PLANS, type PlanId } from "@/lib/plans";
+import { currentUsageMonth } from "@/lib/usage";
 import { listUserSubjects } from "@/lib/subjects";
 import { STARTER_BLUEPRINTS } from "@/lib/blueprints";
 import {
@@ -45,11 +47,12 @@ export default async function DashboardPage() {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  // Six independent reads — none depend on the result of any other. Run
+  // Eight independent reads — none depend on the result of any other. Run
   // them in parallel so dashboard latency is bounded by the slowest one
   // (the streak summary, which scans a year of study_activity), not the
-  // sum. Previously each `await` ran sequentially: ~6× DB round-trip
+  // sum. Previously each `await` ran sequentially: 8× DB round-trip
   // latency.
+  const monthKey = currentUsageMonth();
   const [
     subjects,
     paperStatsRow,
@@ -57,6 +60,8 @@ export default async function DashboardPage() {
     recentQuizzes,
     streak,
     weekly,
+    usageRow,
+    profileRow,
   ] = userId
     ? await Promise.all([
         listUserSubjects(userId),
@@ -90,6 +95,18 @@ export default async function DashboardPage() {
           .limit(4),
         getStreakSummary(userId),
         getWeeklyActivity(userId),
+        getDb()
+          .select({ generations: usage.generations })
+          .from(usage)
+          .where(and(eq(usage.userId, userId), eq(usage.month, monthKey)))
+          .limit(1)
+          .then((rows) => rows[0] ?? { generations: 0 }),
+        getDb()
+          .select({ plan: users.plan })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1)
+          .then((rows) => rows[0] ?? { plan: "unpaid" }),
       ])
     : [
         [],
@@ -104,9 +121,17 @@ export default async function DashboardPage() {
           daysSinceLast: null,
         },
         { days: Array(7).fill(false), done: 0, target: 5, hit: false },
+        { generations: 0 },
+        { plan: "unpaid" },
       ];
 
   const paperStats = paperStatsRow;
+  // Monthly generation budget for the GenerationPanel + QuizLaunch hint —
+  // pulled from the single-source-of-truth PLANS table. null = unlimited
+  // (institution). 0 = unpaid (which the panel renders as a subscribe nudge).
+  const generationsUsed = usageRow.generations;
+  const generationsCap =
+    PLANS[(profileRow.plan ?? "unpaid") as PlanId]?.generationsPerMonth ?? 0;
 
   const milestone = currentMilestone(streak.current);
 
@@ -286,7 +311,11 @@ export default async function DashboardPage() {
       ) : (
         <>
           <SubjectsSection subjects={subjects} />
-          <GenerationPanel subjects={subjects} />
+          <GenerationPanel
+            subjects={subjects}
+            generationsUsed={generationsUsed}
+            generationsCap={generationsCap}
+          />
           <Reveal>
             <QuizLaunch subjects={subjects} />
           </Reveal>

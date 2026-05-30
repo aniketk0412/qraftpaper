@@ -12,7 +12,17 @@ import { SelectMenu } from "@/components/ui/select-menu";
 import { GenerationProgress } from "@/components/dashboard/generation-progress";
 import type { DashboardSubject } from "@/lib/subjects";
 
-export function GenerationPanel({ subjects }: { subjects: DashboardSubject[] }) {
+export function GenerationPanel({
+  subjects,
+  generationsUsed = 0,
+  generationsCap = null,
+}: {
+  subjects: DashboardSubject[];
+  /** How many generations the user has already burned this month. */
+  generationsUsed?: number;
+  /** Plan ceiling. null = unlimited (Institution), 0 = unpaid. */
+  generationsCap?: number | null;
+}) {
   const router = useRouter();
   const readySubjects = useMemo(
     () => subjects.filter((subject) => subject.hasProfile),
@@ -129,6 +139,25 @@ export function GenerationPanel({ subjects }: { subjects: DashboardSubject[] }) 
           <p className="mt-1 text-sm text-fg-muted">
             Choose a profiled subject, then generate a paper or MCQ quiz.
           </p>
+          {/* Budget hint — transparent about what generating costs against
+              the monthly allowance. Cap of null = unlimited (Institution),
+              0 = unpaid (rendered as the subscribe nudge). Capped users see
+              "X / Y this month" with the remaining count gold-tinted once
+              there are 3 or fewer left. */}
+          {generationsCap !== null && generationsCap > 0 && (
+            <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-line bg-tint/[0.02] px-3 py-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-muted">
+              <span
+                className={
+                  generationsCap - generationsUsed <= 3
+                    ? "text-gold"
+                    : "text-violet-bright"
+                }
+              >
+                {Math.max(0, generationsCap - generationsUsed)}
+              </span>
+              <span>of {generationsCap} generations left this cycle</span>
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
