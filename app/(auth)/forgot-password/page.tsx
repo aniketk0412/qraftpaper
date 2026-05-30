@@ -27,7 +27,7 @@ export default async function ForgotPasswordPage({
         Reset password
       </h1>
       <p className="mt-1.5 text-sm text-fg-muted">
-        Enter your work email. If an account exists, we will send a reset link
+        Enter your email. If an account exists we&apos;ll send a reset link
         that expires in 30 minutes.
       </p>
 

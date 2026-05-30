@@ -34,7 +34,7 @@ export default async function ResetPasswordPage({
         Choose a new password
       </h1>
       <p className="mt-1.5 text-sm text-fg-muted">
-        Set a new password for your QraftPaper workspace.
+        Set a new password for your QraftPaper account.
       </p>
 
       <form action={resetPasswordAction} className="mt-7 flex flex-col gap-4">

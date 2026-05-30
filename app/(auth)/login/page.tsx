@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 export const runtime = "nodejs";
 
 const errorMessages: Record<string, string> = {
-  "invalid-credentials": "Use a valid work email and password.",
-  "missing-fields": "Enter your work email and password.",
+  "invalid-credentials": "Use a valid email and password.",
+  "missing-fields": "Enter your email and password.",
   "signin-after-signup":
-    "Your account was created. Sign in once to continue to your workspace.",
+    "Your account was created. Sign in once to continue to your account.",
 };
 
 const statusMessages: Record<string, string> = {
@@ -46,7 +46,7 @@ export default async function LoginPage({
         Welcome back
       </h1>
       <p className="mt-1.5 text-sm text-fg-muted">
-        Sign back into your study workspace.
+        Sign back in to keep practising.
       </p>
 
       <form action={loginAction} className="mt-8 flex flex-col gap-4">

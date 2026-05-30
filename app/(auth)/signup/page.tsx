@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export const runtime = "nodejs";
 
 const errorMessages: Record<string, string> = {
-  "email-exists": "That work email already has access. Sign in instead.",
+  "email-exists": "That email is already registered. Sign in instead.",
   "invalid-fields":
     "Enter all details and use a password with at least 8 characters.",
   "too-many": "Too many sign-ups from your network recently. Please try again later.",
