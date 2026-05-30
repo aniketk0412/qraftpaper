@@ -1,15 +1,20 @@
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
-import { Building2, CheckCircle2, CreditCard, LogOut, Mail, Trash2, User } from "lucide-react";
+import { desc, eq, sql } from "drizzle-orm";
+import { Building2, CheckCircle2, CreditCard, LogOut, Mail, Receipt, Trash2, User } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { Reveal } from "@/components/ui/reveal";
 import { BackLink } from "@/components/dashboard/back-link";
+import {
+  BillingHistory,
+  type BillingHistoryItem,
+} from "@/components/dashboard/billing-history";
 import { getDb } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { billingEvents, subscriptions, users } from "@/lib/db/schema";
 import { PLANS, type PlanId } from "@/lib/plans";
+import { cn } from "@/lib/utils";
 import { deleteAccountAction, updateProfileAction } from "./actions";
 
 export const runtime = "nodejs";
@@ -36,6 +41,51 @@ export default async function SettingsPage({
     .from(users)
     .where(eq(users.id, session.user.id))
     .limit(1);
+
+  // The user's subscription record (system of record for state), and the raw
+  // billing-event ledger for it (proof of what Lemon Squeezy told us). The
+  // event query filters by the subscription's Lemon Squeezy id via a jsonb
+  // path; wrapped in try/catch so a query hiccup never takes down the whole
+  // settings page — billing history is informational, not load-bearing.
+  const [subscription] = await getDb()
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, session.user.id))
+    .orderBy(desc(subscriptions.createdAt))
+    .limit(1);
+
+  let history: BillingHistoryItem[] = [];
+  if (subscription) {
+    try {
+      history = await getDb()
+        .select({
+          eventName: billingEvents.eventName,
+          createdAt: billingEvents.createdAt,
+        })
+        .from(billingEvents)
+        .where(
+          sql`${billingEvents.payload} -> 'data' ->> 'id' = ${subscription.lemonSubscriptionId}`,
+        )
+        .orderBy(desc(billingEvents.createdAt))
+        .limit(20);
+    } catch {
+      history = [];
+    }
+  }
+
+  const planId = (profile?.plan ?? "unpaid") as PlanId;
+  const planName = PLANS[planId]?.name ?? "Unpaid";
+  const hasActivePlan = planId !== "unpaid";
+  const renewsAt = subscription?.renewsAt ?? null;
+  const endsAt = subscription?.endsAt ?? null;
+  const dateFmt = (d: Date | null) =>
+    d
+      ? new Intl.DateTimeFormat("en", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }).format(d)
+      : null;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -107,21 +157,78 @@ export default async function SettingsPage({
       </Reveal>
 
       <Reveal>
-        <GlassCard className="mt-3 flex flex-col gap-4 p-7 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Plan</h2>
-            <p className="mt-1 text-[0.84rem] text-fg-muted">
-              You are on the{" "}
-              <span className="font-medium text-fg">
-                {PLANS[(profile?.plan ?? "unpaid") as PlanId]?.name ?? "Unpaid"}
-              </span>{" "}
-              plan.
-            </p>
+        <GlassCard
+          className={cn(
+            "relative mt-3 overflow-hidden p-7",
+            hasActivePlan && "ring-1 ring-accent/30",
+          )}
+        >
+          {hasActivePlan && (
+            <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-accent/15 blur-3xl" />
+          )}
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Plan &amp; billing
+                </h2>
+                {/* The headline answer: active or not, with a live pulse dot
+                    when it's active so it reads as "on" at a glance. */}
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] ring-1",
+                    hasActivePlan
+                      ? "bg-accent/15 text-accent ring-accent/35"
+                      : "bg-tint/[0.04] text-fg-subtle ring-line",
+                  )}
+                >
+                  {hasActivePlan ? (
+                    <span className="relative grid h-1.5 w-1.5 place-items-center">
+                      <span className="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-full bg-accent/60" />
+                      <span className="inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+                    </span>
+                  ) : null}
+                  {hasActivePlan ? "Active" : "No active plan"}
+                </span>
+              </div>
+              <p className="mt-2 text-[0.86rem] text-fg-muted">
+                {hasActivePlan ? (
+                  <>
+                    You&apos;re on the{" "}
+                    <span className="font-medium text-fg">{planName}</span>{" "}
+                    plan
+                    {subscription?.status === "cancelled" && endsAt
+                      ? ` — cancelled, access until ${dateFmt(endsAt)}`
+                      : renewsAt
+                        ? ` — renews ${dateFmt(renewsAt)}`
+                        : "."}
+                  </>
+                ) : (
+                  "You don't have an active subscription. Subscribe to unlock generation."
+                )}
+              </p>
+            </div>
+            <GlowButton
+              href="/billing"
+              variant={hasActivePlan ? "secondary" : "primary"}
+              size="md"
+              className="shrink-0"
+            >
+              <CreditCard className="h-4 w-4" />
+              {hasActivePlan ? "Manage billing" : "Subscribe"}
+            </GlowButton>
           </div>
-          <GlowButton href="/billing" variant="secondary" size="md">
-            <CreditCard className="h-4 w-4" />
-            Manage billing
-          </GlowButton>
+
+          {/* Billing history — the receipt/event ledger. */}
+          <div className="relative mt-7 border-t border-line pt-6">
+            <p className="flex items-center gap-2 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-fg-subtle">
+              <Receipt className="h-3.5 w-3.5" />
+              Billing history
+            </p>
+            <div className="mt-4">
+              <BillingHistory items={history} />
+            </div>
+          </div>
         </GlassCard>
       </Reveal>
 
