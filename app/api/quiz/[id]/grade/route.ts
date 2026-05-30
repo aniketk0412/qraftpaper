@@ -5,6 +5,7 @@ import { isQuiz } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
+import { badRequest, notFound, safeJson } from "@/lib/api-responses";
 
 export const runtime = "nodejs";
 
@@ -20,16 +21,10 @@ export async function POST(
 
   // Reject non-UUID ids up front — otherwise the Postgres uuid cast throws and
   // leaks a 500/stack for what is really a "not found".
-  if (!isUuid(id)) {
-    return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
-  }
+  if (!isUuid(id)) return notFound("Quiz not found");
 
-  let body: { answers?: Record<string, number> };
-  try {
-    body = (await request.json()) as { answers?: Record<string, number> };
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const body = await safeJson<{ answers?: Record<string, number> }>(request);
+  if (!body) return badRequest();
   const answers =
     body.answers && typeof body.answers === "object" ? body.answers : {};
 
@@ -40,7 +35,7 @@ export async function POST(
     .limit(1);
 
   if (!record?.content || !isQuiz(record.content)) {
-    return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+    return notFound("Quiz not found");
   }
 
   const results: Record<

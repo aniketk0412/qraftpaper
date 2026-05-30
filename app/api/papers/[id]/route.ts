@@ -6,6 +6,12 @@ import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { paperVersions, papers } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
+import {
+  badRequest,
+  notFound,
+  safeJson,
+  unauthorized,
+} from "@/lib/api-responses";
 import type { QuestionPaper } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -15,31 +21,21 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!session?.user?.id) return unauthorized();
 
   const { id } = await params;
-  if (!isUuid(id)) {
-    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
-  }
+  if (!isUuid(id)) return notFound("Paper not found");
 
-  let body: { content?: QuestionPaper };
-  try {
-    body = (await request.json()) as { content?: QuestionPaper };
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
+  const body = await safeJson<{ content?: QuestionPaper }>(request);
+  if (!body) return badRequest();
 
   if (!isQuestionPaper(body.content) || body.content.id !== id) {
-    return NextResponse.json(
-      { error: "Valid paper content is required" },
-      { status: 400 },
-    );
+    return badRequest("Valid paper content is required");
   }
 
   if (JSON.stringify(body.content).length > 200_000) {
+    // 413 Payload Too Large — kept inline since we don't use this status
+    // anywhere else and would just be adding a one-call helper to api-responses.
     return NextResponse.json(
       { error: "Paper content is too large to save." },
       { status: 413 },
@@ -52,9 +48,7 @@ export async function PATCH(
     .where(and(eq(papers.id, id), eq(papers.userId, session.user.id)))
     .limit(1);
 
-  if (!existing?.content) {
-    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
-  }
+  if (!existing?.content) return notFound("Paper not found");
 
   await getDb().insert(paperVersions).values({
     paperId: existing.id,
@@ -82,23 +76,17 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!session?.user?.id) return unauthorized();
 
   const { id } = await params;
-  if (!isUuid(id)) {
-    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
-  }
+  if (!isUuid(id)) return notFound("Paper not found");
 
   const deleted = await getDb()
     .delete(papers)
     .where(and(eq(papers.id, id), eq(papers.userId, session.user.id)))
     .returning({ id: papers.id });
 
-  if (deleted.length === 0) {
-    return NextResponse.json({ error: "Paper not found" }, { status: 404 });
-  }
+  if (deleted.length === 0) return notFound("Paper not found");
 
   return NextResponse.json({ ok: true });
 }
