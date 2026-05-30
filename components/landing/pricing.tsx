@@ -100,11 +100,16 @@ export function Pricing({
                       </span>
                     )}
                   </div>
-                  {showInr && tier.priceInr && (
-                    <p className="mt-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-subtle">
-                      Billed as {tier.price}{tier.period}
-                    </p>
-                  )}
+                  {/* Currency context under the price. India sees the USD
+                      anchor (since we display an approximate ₹); everyone
+                      else gets told they can pay in their own currency — the
+                      reassurance international visitors were missing when all
+                      they saw was an abstract "$7". */}
+                  <p className="mt-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-subtle">
+                    {showInr && tier.priceInr
+                      ? `Billed as ${tier.price}${tier.period} · local currency at checkout`
+                      : "Pay in your local currency at checkout"}
+                  </p>
                 </div>
 
                 <div className="relative mt-6">
@@ -142,9 +147,24 @@ export function Pricing({
         </div>
 
         <Reveal delay={0.1}>
-          <p className="mt-8 text-center font-mono text-[0.7rem] uppercase tracking-[0.16em] text-fg-subtle">
-            Billed monthly - Cancel anytime - All purchases final
-          </p>
+          <div className="mt-8 flex flex-col items-center gap-3">
+            {/* International-payments trust row — the signal a global product
+                needs and was missing. Lemon Squeezy (Merchant of Record)
+                handles all of this; we just surface it so a visitor outside
+                the US/India knows they can actually pay. */}
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-subtle">
+              <span>130+ currencies</span>
+              <span aria-hidden>·</span>
+              <span>All major cards</span>
+              <span aria-hidden>·</span>
+              <span>Taxes &amp; VAT included</span>
+              <span aria-hidden>·</span>
+              <span>Cancel anytime</span>
+            </div>
+            <p className="text-center font-mono text-[0.62rem] uppercase tracking-[0.16em] text-fg-subtle/80">
+              Secure checkout via Lemon Squeezy — pay in your local currency
+            </p>
+          </div>
         </Reveal>
       </div>
     </section>

@@ -153,7 +153,7 @@ const TRUST_BADGES = [
   { icon: ShieldCheck, label: "Lemon Squeezy MoR" },
   { icon: Lock, label: "Card never touches QraftPaper" },
   { icon: RotateCcw, label: "Cancel in one click" },
-  { icon: Banknote, label: "USD billed, INR displayed" },
+  { icon: Banknote, label: "130+ currencies, your local one" },
 ];
 
 const FAQ_ITEMS = [
@@ -542,7 +542,7 @@ export default async function BillingPage({
                 </CheckoutButton>
               </div>
               <p className="mt-4 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-subtle">
-                Lemon Squeezy · INR & USD · cancel anytime
+                Lemon Squeezy · pay in your local currency · cancel anytime
               </p>
             </section>
           )}
