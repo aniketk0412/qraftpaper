@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  applyDrillResultTo,
   buildDrillQuiz,
   dedupeWrongAnswers,
   distinctWrongCount,
+  dueDrillCount,
+  dueWrongAnswers,
   parseDrillQuestionId,
+  srOf,
   weakUnits,
   wrongKey,
   type WrongAnswer,
 } from "@/lib/quiz-history";
+import { freshSrState } from "@/lib/spaced-repetition";
 
 function wrong(overrides: Partial<WrongAnswer> = {}): WrongAnswer {
   return {
@@ -26,6 +31,77 @@ function wrong(overrides: Partial<WrongAnswer> = {}): WrongAnswer {
     ...overrides,
   };
 }
+
+const NOW = Date.parse("2026-05-30T00:00:00Z");
+const DAY = 86_400_000;
+
+describe("spaced repetition over the wrong-answer store", () => {
+  it("a freshly-missed question is due and appears in the drill", () => {
+    const list = [wrong({ takenAt: NOW })];
+    expect(dueDrillCount(list, NOW)).toBe(1);
+    expect(buildDrillQuiz(list, 10, NOW)).not.toBeNull();
+  });
+
+  it("a correct drill answer schedules the card out and hides it from the drill", () => {
+    const list = [wrong({ takenAt: NOW })];
+    const { wrongs, graduated } = applyDrillResultTo(
+      list,
+      list[0].quizId,
+      list[0].questionId,
+      true,
+      NOW,
+    );
+    expect(graduated).toBe(false); // one correct doesn't master it
+    // Now scheduled 1 day out -> not due today -> not in the drill.
+    expect(dueDrillCount(wrongs, NOW)).toBe(0);
+    expect(buildDrillQuiz(wrongs, 10, NOW)).toBeNull();
+    // ...but due again tomorrow.
+    expect(dueDrillCount(wrongs, NOW + 1 * DAY)).toBe(1);
+  });
+
+  it("a wrong drill answer keeps the card due now", () => {
+    const list = [wrong({ takenAt: NOW })];
+    const { wrongs } = applyDrillResultTo(
+      list,
+      list[0].quizId,
+      list[0].questionId,
+      false,
+      NOW,
+    );
+    expect(dueDrillCount(wrongs, NOW)).toBe(1);
+    expect(srOf(wrongs[0]).ease).toBeLessThan(2.5); // got harder
+  });
+
+  it("a card reliably recalled eventually graduates and leaves the backlog", () => {
+    let list = [wrong({ takenAt: NOW })];
+    let now = NOW;
+    let graduatedEver = false;
+    for (let i = 0; i < 12 && !graduatedEver; i++) {
+      const r = applyDrillResultTo(
+        list,
+        "11111111-1111-1111-1111-111111111111",
+        "q1",
+        true,
+        now,
+      );
+      list = r.wrongs;
+      graduatedEver = r.graduated;
+      if (list[0]) now = srOf(list[0]).dueAt; // advance to next due date
+    }
+    expect(graduatedEver).toBe(true);
+    expect(list).toHaveLength(0); // removed from the backlog
+  });
+
+  it("dueWrongAnswers orders the most-overdue card first", () => {
+    const a = wrong({ questionId: "a", takenAt: NOW });
+    const b = wrong({ questionId: "b", takenAt: NOW });
+    // a scheduled to NOW-2d (very overdue), b to NOW-1d.
+    a.sr = { ...freshSrState(NOW), dueAt: NOW - 2 * DAY };
+    b.sr = { ...freshSrState(NOW), dueAt: NOW - 1 * DAY };
+    const order = dueWrongAnswers([b, a], NOW).map((w) => w.questionId);
+    expect(order).toEqual(["a", "b"]);
+  });
+});
 
 describe("wrongKey", () => {
   it("combines quizId and questionId", () => {

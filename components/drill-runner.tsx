@@ -15,7 +15,7 @@ import { MeterBar } from "@/components/ui/meter-bar";
 import { Confetti } from "@/components/ui/confetti";
 import { easeOut } from "@/lib/motion";
 import { difficultyDarkChip } from "@/lib/difficulty";
-import { clearWrongAnswer, parseDrillQuestionId } from "@/lib/quiz-history";
+import { applyDrillResult, parseDrillQuestionId } from "@/lib/quiz-history";
 import type { Quiz } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -52,18 +52,22 @@ export function DrillRunner({ quiz }: { quiz: Quiz }) {
   function pick(index: number) {
     if (answered) return;
     setPicked(index);
-    if (index === question.correctIndex) {
-      setCorrectCount((c) => c + 1);
-      // Close the loop — this question is mastered, drop it from the
-      // backlog so it doesn't resurface and the dashboard count falls.
-      const origin = parseDrillQuestionId(question.id);
-      if (origin) {
-        clearWrongAnswer(origin.quizId, origin.questionId);
-        setClearedCount((c) => c + 1);
-      }
+    const correct = index === question.correctIndex;
+    if (correct) setCorrectCount((c) => c + 1);
+
+    // Feed the answer into the spaced-repetition schedule. A correct answer
+    // pushes the card's next review further out (and, once it's reliably
+    // known, graduates it out of the backlog entirely — counted as cleared).
+    // A wrong answer collapses it back to due-now and makes it a touch harder.
+    const origin = parseDrillQuestionId(question.id);
+    if (origin) {
+      const { graduated } = applyDrillResult(
+        origin.quizId,
+        origin.questionId,
+        correct,
+      );
+      if (graduated) setClearedCount((c) => c + 1);
     }
-    // Wrong answers stay in the backlog — the user sees them again next
-    // drill until they get them right.
   }
 
   function next() {
@@ -111,20 +115,20 @@ export function DrillRunner({ quiz }: { quiz: Quiz }) {
 
   if (finished) {
     const pct = Math.round((correctCount / total) * 100);
-    const allCleared = clearedCount === total;
+    const aced = correctCount === total;
     return (
       <div className="relative overflow-hidden rounded-2xl glass-strong">
-        {allCleared && <Confetti />}
+        {aced && <Confetti />}
         <div className="flex flex-col items-center px-6 py-12 text-center sm:px-10">
           <span
             className={cn(
               "grid h-14 w-14 place-items-center rounded-2xl ring-1",
-              allCleared
+              aced
                 ? "bg-accent/20 text-accent ring-accent/40"
                 : "bg-violet/15 text-violet-bright ring-violet/25",
             )}
           >
-            {allCleared ? (
+            {aced ? (
               <BookmarkCheck className="h-6 w-6" />
             ) : (
               <Sparkles className="h-6 w-6" />
@@ -139,16 +143,16 @@ export function DrillRunner({ quiz }: { quiz: Quiz }) {
           </p>
           <p className="mt-2 text-sm text-fg-muted">
             {clearedCount > 0
-              ? `${clearedCount} question${clearedCount === 1 ? "" : "s"} cleared from your backlog.`
-              : "None cleared this round — try them again."}
+              ? `${clearedCount} mastered and retired from your backlog.`
+              : `${correctCount} recalled — spaced out for later review.`}
           </p>
           <div className="mt-6 w-full max-w-xs">
             <MeterBar pct={pct} height="h-2" />
           </div>
           <p className="mt-6 max-w-sm text-[0.82rem] leading-relaxed text-fg-muted">
-            {allCleared
-              ? "Backlog cleared. The ones you missed before are now the ones you know. That's the whole game."
-              : "The questions you missed again are still saved. Come back and drill them until they stick."}
+            {aced
+              ? "Every one recalled. The ones you got right move further out; keep recalling them and they retire for good."
+              : "Spaced repetition: the ones you recalled come back later, the ones you missed are due again now. Come back when the next batch is due."}
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <GlowButton href="/dashboard" size="md">

@@ -48,7 +48,7 @@ export function DrillClient() {
               <p className="text-sm font-medium">Drill your mistakes</p>
               <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
                 {quiz
-                  ? `${quiz.questions.length} question${quiz.questions.length === 1 ? "" : "s"} you missed before`
+                  ? `${quiz.questions.length} question${quiz.questions.length === 1 ? "" : "s"} due for review`
                   : "Focused practice on questions you got wrong"}
               </p>
             </div>
@@ -98,11 +98,12 @@ function DrillStartScreen({
           Ready to drill
         </p>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-          {count} question{count === 1 ? "" : "s"} you&apos;ve missed
+          {count} question{count === 1 ? "" : "s"} due for review
         </h2>
         <p className="mx-auto mt-2 max-w-md text-[0.9rem] leading-relaxed text-fg-muted">
-          No timer. Answer each one — get it right and it leaves your backlog
-          for good. The ones you miss again stay saved for next time.
+          Spaced repetition. No timer. Recall each one — the ones you get right
+          come back later, spaced further out each time, until they retire. The
+          ones you miss are due again right away.
         </p>
       </div>
 

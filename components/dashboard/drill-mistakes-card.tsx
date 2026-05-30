@@ -52,12 +52,12 @@ export function DrillMistakesCard() {
           Drill your mistakes
         </p>
         <p className="mt-1 text-[0.95rem] font-medium leading-snug text-fg">
-          {count} questions waiting to be drilled
+          {count} question{count === 1 ? "" : "s"} due for review
         </p>
         <p className="mt-0.5 text-[0.82rem] leading-snug text-fg-muted">
-          A focused set built only from questions you got wrong. Get one right
-          and it leaves the backlog for good — practising your misses beats
-          fresh content for retention.
+          Spaced repetition over the questions you got wrong — it resurfaces
+          each one right before you&apos;d forget it. The most effective way to
+          make it stick.
         </p>
       </div>
       <ArrowRight className="relative h-5 w-5 shrink-0 text-violet-bright transition-transform group-hover:translate-x-1" />

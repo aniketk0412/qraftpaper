@@ -1,4 +1,11 @@
 import type { Difficulty, Quiz, QuizQuestion } from "@/lib/types";
+import {
+  freshSrState,
+  isDue,
+  isGraduated,
+  scheduleNext,
+  type SrState,
+} from "@/lib/spaced-repetition";
 
 // Local, per-device record of quiz attempts (no DB / migration needed).
 export interface QuizAttempt {
@@ -63,6 +70,14 @@ export interface WrongAnswer {
   explanation: string;
   subjectCode: string;
   takenAt: number;
+  /** Spaced-repetition schedule. Optional for backward compat — records from
+   *  before SR existed get a fresh (due-now) state on load. */
+  sr?: SrState;
+}
+
+/** The card's SR state, defaulting a legacy record to "due now". */
+export function srOf(w: WrongAnswer): SrState {
+  return w.sr ?? freshSrState(w.takenAt);
 }
 
 const WRONG_KEY = "qp-wrong-answers";
@@ -96,13 +111,53 @@ export function loadWrongAnswers(): WrongAnswer[] {
  */
 export function recordWrongAnswers(wrongs: WrongAnswer[]): WrongAnswer[] {
   if (wrongs.length === 0) return loadWrongAnswers();
-  const next = [...wrongs, ...loadWrongAnswers()].slice(0, MAX_WRONG);
+  // Stamp a fresh (due-now) SR state on each newly-missed question so it
+  // enters the spaced-repetition schedule immediately.
+  const stamped = wrongs.map((w) => ({
+    ...w,
+    sr: w.sr ?? freshSrState(w.takenAt),
+  }));
+  const next = [...stamped, ...loadWrongAnswers()].slice(0, MAX_WRONG);
   try {
     window.localStorage.setItem(WRONG_KEY, JSON.stringify(next));
   } catch {
     /* storage unavailable */
   }
   return next;
+}
+
+/**
+ * Apply a drill answer to a question's spaced-repetition schedule (pure form).
+ * Returns the new record list plus whether the card graduated out of the
+ * backlog. Correct + graduated → the card is dropped; otherwise its schedule
+ * advances (correct) or collapses to due-now (incorrect).
+ */
+export function applyDrillResultTo(
+  wrongs: WrongAnswer[],
+  quizId: string,
+  questionId: string,
+  correct: boolean,
+  now = Date.now(),
+): { wrongs: WrongAnswer[]; graduated: boolean } {
+  const key = `${quizId}::${questionId}`;
+  const target = wrongs.find((w) => wrongKey(w) === key);
+  if (!target) return { wrongs, graduated: false };
+
+  const nextSr = scheduleNext(srOf(target), correct, now);
+  const graduated = correct && isGraduated(nextSr);
+
+  if (graduated) {
+    // Mastered — remove every record for this question.
+    return { wrongs: wrongs.filter((w) => wrongKey(w) !== key), graduated: true };
+  }
+  // Re-schedule: stamp the new SR onto every record for this question so the
+  // most-recent (the one dedupe keeps) carries the updated schedule.
+  return {
+    wrongs: wrongs.map((w) =>
+      wrongKey(w) === key ? { ...w, sr: nextSr } : w,
+    ),
+    graduated: false,
+  };
 }
 
 /* ------------------------------------------------------------------ *
@@ -168,11 +223,35 @@ export function weakUnits(wrongs: WrongAnswer[]): WeakUnit[] {
  * 80-question slog — 10 at a time is the right session size for a focused
  * drill (matches the default quiz length).
  */
+/** Distinct questions that are DUE for review right now (spaced-repetition).
+ *  This is what the dashboard nudge and drill build operate on — a card
+ *  scheduled days out is deliberately not counted until it comes due. */
+export function dueWrongAnswers(
+  wrongs: WrongAnswer[],
+  now = Date.now(),
+): WrongAnswer[] {
+  return dedupeWrongAnswers(wrongs)
+    .filter((w) => {
+      const sr = srOf(w);
+      return isDue(sr, now) && !isGraduated(sr);
+    })
+    .sort((a, b) => srOf(a).dueAt - srOf(b).dueAt); // most overdue first
+}
+
+/** Count of distinct questions due for review now. */
+export function dueDrillCount(wrongs: WrongAnswer[], now = Date.now()): number {
+  return dueWrongAnswers(wrongs, now).length;
+}
+
 export function buildDrillQuiz(
   wrongs: WrongAnswer[],
   limit = 10,
+  now = Date.now(),
 ): Quiz | null {
-  const deduped = dedupeWrongAnswers(wrongs).slice(0, limit);
+  // Only serve cards that are DUE — the spaced-repetition schedule decides
+  // what the student is about to forget; everything else is hidden until it
+  // comes due. Most-overdue first.
+  const deduped = dueWrongAnswers(wrongs, now).slice(0, limit);
   if (deduped.length === 0) return null;
 
   const questions: QuizQuestion[] = deduped.map((w) => ({
@@ -210,10 +289,34 @@ export function buildDrillQuiz(
  *  localStorage wrappers around the pure helpers.
  * ------------------------------------------------------------------ */
 
-/** Count of distinct questions the user has gotten wrong but not yet
- *  retried correctly. Used by the dashboard nudge. */
+/** Count of distinct questions DUE for review now (spaced-repetition).
+ *  Used by the dashboard nudge — a card scheduled into the future isn't
+ *  "waiting", so it doesn't nag the student to drill it early. */
 export function unrevisitedWrongCount(): number {
-  return distinctWrongCount(loadWrongAnswers());
+  return dueDrillCount(loadWrongAnswers());
+}
+
+/**
+ * Record a drill answer against the spaced-repetition schedule in
+ * localStorage. Returns whether the card graduated (was mastered and removed).
+ */
+export function applyDrillResult(
+  quizId: string,
+  questionId: string,
+  correct: boolean,
+): { graduated: boolean } {
+  const { wrongs, graduated } = applyDrillResultTo(
+    loadWrongAnswers(),
+    quizId,
+    questionId,
+    correct,
+  );
+  try {
+    window.localStorage.setItem(WRONG_KEY, JSON.stringify(wrongs));
+  } catch {
+    /* storage unavailable */
+  }
+  return { graduated };
 }
 
 /** Build a drill quiz straight from localStorage. null when empty. */
@@ -221,29 +324,12 @@ export function loadDrillQuiz(limit = 10): Quiz | null {
   return buildDrillQuiz(loadWrongAnswers(), limit);
 }
 
-/** Weak-unit breakdown straight from localStorage, heaviest first. */
+/** Weak-unit breakdown of the cards DUE now, heaviest first — matches what
+ *  the drill will actually serve. */
 export function loadWeakUnits(): WeakUnit[] {
-  return weakUnits(loadWrongAnswers());
+  return weakUnits(dueWrongAnswers(loadWrongAnswers()));
 }
 
-/**
- * Remove every record for one (quiz, question) — called when the user
- * finally answers that question correctly in a drill, closing the loop so
- * the dashboard count goes down. Returns the surviving records.
- */
-export function clearWrongAnswer(
-  quizId: string,
-  questionId: string,
-): WrongAnswer[] {
-  const key = `${quizId}::${questionId}`;
-  const next = loadWrongAnswers().filter((w) => wrongKey(w) !== key);
-  try {
-    window.localStorage.setItem(WRONG_KEY, JSON.stringify(next));
-  } catch {
-    /* storage unavailable */
-  }
-  return next;
-}
 
 /**
  * Reverse the `drill::<quizId>::<questionId>` id encoding applied in
