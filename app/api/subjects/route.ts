@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
+import { trackEvent } from "@/lib/analytics";
 import { getDb } from "@/lib/db";
 import { subjects, users } from "@/lib/db/schema";
 import { listUserSubjects, subjectsTagFor } from "@/lib/subjects";
@@ -99,6 +100,19 @@ export async function POST(request: Request) {
   // Bust the per-user subjects cache so the dashboard reflects the new row
   // on the next render without waiting out the 60 s revalidate window.
   updateTag(subjectsTagFor(session.user.id));
+
+  // Activation event — creating a subject is the first real "I'm using this"
+  // step in the funnel (signup -> subject_created -> generation). The single
+  // most important number to watch for a pre-PMF product.
+  try {
+    await trackEvent({
+      distinctId: session.user.id,
+      event: "subject_created",
+      properties: { code },
+    });
+  } catch {
+    /* analytics must never block subject creation */
+  }
 
   return NextResponse.json({ subject: ownedSubject }, { status: 201 });
 }

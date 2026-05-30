@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
+import { trackEvent } from "@/lib/analytics";
 import { getDb } from "@/lib/db";
 import { quizAttempts } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
@@ -75,6 +76,25 @@ export async function POST(
 
     if (takerUserId) {
       await recordStudyActivity(takerUserId);
+      // Funnel: quiz_completed is the "felt the value" step between
+      // generation and subscribe. Only fired for signed-in takers —
+      // anonymous shared-link takers have no stable distinctId and aren't
+      // part of the activation funnel. Score as a percent so funnels can
+      // segment by performance without leaking raw counts.
+      try {
+        await trackEvent({
+          distinctId: takerUserId,
+          event: "quiz_completed",
+          properties: {
+            score,
+            total,
+            pct: total > 0 ? Math.round((score / total) * 100) : 0,
+            durationSeconds,
+          },
+        });
+      } catch {
+        /* analytics must never break the user's experience */
+      }
     }
   } catch (error) {
     // Logging failed analytics shouldn't break the user's experience.

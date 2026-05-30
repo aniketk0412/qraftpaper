@@ -8,6 +8,34 @@ import { PostHog } from "posthog-node";
  *
  * Client-side pageviews + UI events live in components/providers/posthog-provider.tsx.
  */
+
+/**
+ * The canonical analytics taxonomy — every server-side event the product
+ * fires, as a closed union so a typo can't quietly create a phantom event
+ * that splits a funnel. The ordering below IS the activation/retention funnel
+ * documented in docs/analytics.md:
+ *
+ *   signup_completed -> subject_created -> (paper_generated | quiz_generated)
+ *     -> quiz_completed -> subscription_activated
+ *
+ * Keep this list and docs/analytics.md in lockstep. Adding an event means
+ * adding it here first; the compiler then points you at every call site.
+ */
+export type AnalyticsEvent =
+  // Acquisition -> activation
+  | "signup_completed"
+  | "subject_created"
+  // Core value delivered
+  | "paper_generated"
+  | "quiz_generated"
+  | "quiz_completed"
+  // Generation quality (internal health, not funnel)
+  | "paper_reconciled"
+  | "quiz_reconciled"
+  // Monetization
+  | "subscription_activated"
+  | "subscription_cancelled";
+
 let client: PostHog | undefined;
 
 function getClient(): PostHog | null {
@@ -26,7 +54,7 @@ function getClient(): PostHog | null {
 export async function trackEvent(input: {
   /** Stable user id (uuid) if known, otherwise a per-request anonymous id. */
   distinctId: string;
-  event: string;
+  event: AnalyticsEvent;
   properties?: Record<string, string | number | boolean | null | undefined>;
 }): Promise<void> {
   const ph = getClient();
