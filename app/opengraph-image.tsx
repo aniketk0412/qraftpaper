@@ -35,26 +35,26 @@ export default function OpengraphImage() {
               border: "1px solid rgba(255,255,255,0.12)",
             }}
           >
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                border: "6px solid #f1faee",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                right: "16px",
-                bottom: "16px",
-                width: "22px",
-                height: "7px",
-                borderRadius: "4px",
-                background: "#5fb3b3",
-                transform: "rotate(45deg)",
-              }}
-            />
+            {/* Same Q geometry as components/logo.tsx + app/icon.svg +
+                app/apple-icon.tsx (ring cx10.8/cy11/r7, tail crossing the
+                lower-right perimeter). A real SVG path so the tail extends
+                OUTSIDE the ring and reads as a Q — the old div-rectangle
+                tail sat inside and read as a stub. */}
+            <svg width="46" height="46" viewBox="0 0 24 24" fill="none">
+              <circle
+                cx="10.8"
+                cy="11"
+                r="7"
+                stroke="#f1faee"
+                strokeWidth="2.8"
+              />
+              <path
+                d="M14.8 15.2 L19.2 19.6"
+                stroke="#5fb3b3"
+                strokeWidth="3.4"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
           <div style={{ display: "flex", fontSize: "40px", fontWeight: 700, color: "#ffffff" }}>
             Qraft<span style={{ color: "#9db0bb" }}>Paper</span>
