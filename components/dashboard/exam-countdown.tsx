@@ -3,6 +3,32 @@ import { ArrowRight, CalendarClock } from "lucide-react";
 import type { DashboardSubject } from "@/lib/subjects";
 import { cn } from "@/lib/utils";
 
+/** Window (in days) within which an exam is considered "urgent" — drives both
+ *  the banner and the dashboard's banner-priority logic. Single source of
+ *  truth so the page can ask "is an urgent exam showing?" without re-deriving
+ *  the threshold and drifting from the banner. */
+export const URGENT_EXAM_DAYS = 4;
+
+/** Subjects with an exam inside the urgent window, nearest first. */
+function urgentExams(subjects: DashboardSubject[]): DashboardSubject[] {
+  return subjects
+    .filter(
+      (s) =>
+        s.daysToExam !== null &&
+        s.daysToExam >= 0 &&
+        s.daysToExam <= URGENT_EXAM_DAYS,
+    )
+    .sort((a, b) => (a.daysToExam ?? 99) - (b.daysToExam ?? 99));
+}
+
+/** True when at least one subject has an exam in the urgent window. The
+ *  dashboard uses this to suppress lower-priority nudges (the drill card)
+ *  so a cramming student isn't pulled toward old mistakes instead of the
+ *  exam in front of them. */
+export function hasUrgentExam(subjects: DashboardSubject[]): boolean {
+  return urgentExams(subjects).length > 0;
+}
+
 /**
  * Renders the most urgent exam reminder at the top of the dashboard whenever
  * any subject has an exam in 4 days or fewer. Picks the nearest by daysToExam.
@@ -17,9 +43,7 @@ export function ExamCountdownBanner({
 }: {
   subjects: DashboardSubject[];
 }) {
-  const upcoming = subjects
-    .filter((s) => s.daysToExam !== null && s.daysToExam >= 0 && s.daysToExam <= 4)
-    .sort((a, b) => (a.daysToExam ?? 99) - (b.daysToExam ?? 99));
+  const upcoming = urgentExams(subjects);
 
   if (upcoming.length === 0) return null;
   const target = upcoming[0];

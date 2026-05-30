@@ -31,7 +31,10 @@ import {
   getWeeklyActivity,
 } from "@/lib/streaks";
 import { DrillMistakesCard } from "@/components/dashboard/drill-mistakes-card";
-import { ExamCountdownBanner } from "@/components/dashboard/exam-countdown";
+import {
+  ExamCountdownBanner,
+  hasUrgentExam,
+} from "@/components/dashboard/exam-countdown";
 import { NextUpCard } from "@/components/dashboard/next-up";
 import { StreakMilestone } from "@/components/dashboard/streak-milestone";
 import { WeeklyGoalCard } from "@/components/dashboard/weekly-goal";
@@ -216,14 +219,19 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      {/* Exam countdown lives above EVERYTHING else (even the milestone
-          celebration) because day-of urgency outranks habit feedback. */}
+      {/* Pre-welcome banner priority — at most two strips, never three.
+          The rule that keeps this from becoming notification fatigue:
+            1. Exam countdown (rare, time-critical) always shows.
+            2. Streak milestone (rare, dismissable celebration) coexists —
+               it's emotionally distinct from a task nudge.
+            3. Drill card (common, evergreen) YIELDS to an urgent exam: a
+               student cramming for a paper in 3 days should be in that
+               subject, not pulled toward old mistakes from other ones.
+          Worst case is therefore {exam + milestone} — one task, one
+          reward — not a wall of three competing call-to-actions. */}
       <ExamCountdownBanner subjects={subjects} />
       {milestone !== null && <StreakMilestone milestone={milestone} />}
-      {/* Drill-mistakes card sits below the urgent exam strip but above
-          the welcome — concrete reps beat generic encouragement. Self-
-          hides under 3 wrongs so a brand-new account doesn't see it. */}
-      <DrillMistakesCard />
+      {!hasUrgentExam(subjects) && <DrillMistakesCard />}
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
