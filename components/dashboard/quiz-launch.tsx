@@ -107,7 +107,7 @@ export function QuizLaunch({ subjects }: { subjects: DashboardSubject[] }) {
         kind="quiz"
         open={pending}
       />
-    <GlassCard className="mt-10 p-5 sm:p-6">
+    <GlassCard className="p-5 sm:p-6">
       <div className="flex items-center gap-2.5">
         <IconTile icon={ListChecks} size="sm" tone="neutral" />
         <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-violet-bright">

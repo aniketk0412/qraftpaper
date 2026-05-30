@@ -2,10 +2,10 @@ import Link from "next/link";
 import {
   ArrowRight,
   BookOpen,
+  Brain,
   FileText,
   Flame,
   Lock,
-  Ruler,
   Sparkles,
 } from "lucide-react";
 import { auth } from "@/auth";
@@ -25,7 +25,6 @@ import { PLANS, type PlanId } from "@/lib/plans";
 import { currentUsageMonth } from "@/lib/usage";
 import { getDueReviewCount } from "@/lib/reviews";
 import { listUserSubjects } from "@/lib/subjects";
-import { STARTER_BLUEPRINTS } from "@/lib/blueprints";
 import {
   currentMilestone,
   getStreakSummary,
@@ -159,10 +158,16 @@ export default async function DashboardPage() {
     })),
   ].slice(0, 4);
 
-  const stats = [
+  const stats: {
+    icon: typeof Flame;
+    label: string;
+    value: string;
+    note: string;
+    href?: string;
+  }[] = [
     {
       icon: Flame,
-      label: streak.current === 1 ? "Day streak" : "Day streak",
+      label: "Day streak",
       value: String(streak.current),
       note:
         streak.current === 0
@@ -176,18 +181,25 @@ export default async function DashboardPage() {
       label: "Papers this month",
       value: String(paperStats?.count ?? 0),
       note: "this billing month",
+      href: "/dashboard/papers",
     },
     {
       icon: BookOpen,
       label: "Subjects",
       value: String(subjects.length),
       note: `${subjects.filter((s) => s.hasProfile).length} ready to generate`,
+      href: "/dashboard/subjects",
     },
     {
-      icon: Ruler,
-      label: "Blueprints",
-      value: String(STARTER_BLUEPRINTS.length),
-      note: "starter formats + your own",
+      // Replaces the old static "Blueprints: 3" tile (which was navigation
+      // dressed as a metric) with a live, actionable number: how many
+      // spaced-repetition cards are due right now. Links straight into the
+      // drill so the most useful next action is one tap from the strip.
+      icon: Brain,
+      label: "Due for review",
+      value: String(dueReviewCount),
+      note: dueReviewCount > 0 ? "in your drill queue" : "all caught up",
+      href: "/dashboard/drill",
     },
   ];
 
@@ -268,210 +280,249 @@ export default async function DashboardPage() {
           // rather than "I'm reading a CRM."
           const isStreak = i === 0;
           const streakActive = isStreak && streak.current > 0;
-          return (
-            <Reveal key={s.label} delay={i * 0.06}>
-              <GlassCard
-                hover
+          const card = (
+            <GlassCard
+              hover
+              className={cn(
+                "relative h-full p-5",
+                streakActive && "ring-1 ring-gold/30",
+              )}
+            >
+              <IconTile
+                icon={s.icon}
+                tone={streakActive ? "gold" : "neutral"}
+                size="sm"
+              />
+              {/* Navigable tiles get a corner arrow so the strip reads as a
+                  set of shortcuts, not just passive readouts. */}
+              {s.href && (
+                <ArrowRight className="absolute right-4 top-4 h-3.5 w-3.5 text-fg-subtle transition-colors group-hover:text-fg-muted" />
+              )}
+              <p
                 className={cn(
-                  "h-full p-5",
-                  streakActive && "ring-1 ring-gold/30",
+                  // tabular-nums keeps the stat width identical when the
+                  // value rolls 9 → 10 → 100 — no layout shift across the
+                  // four-up row. Tighter tracking matches the display
+                  // utility's feel without committing to its larger
+                  // clamp() ramp.
+                  "mt-4 text-3xl font-semibold tracking-[-0.03em] tabular-nums",
+                  streakActive && "text-gold",
                 )}
               >
-                <IconTile
-                  icon={s.icon}
-                  tone={streakActive ? "gold" : "neutral"}
-                  size="sm"
-                />
-                <p
-                  className={cn(
-                    // tabular-nums keeps the stat width identical when the
-                    // value rolls 9 → 10 → 100 — no layout shift across the
-                    // four-up row. Tighter tracking matches the display
-                    // utility's feel without committing to its larger
-                    // clamp() ramp.
-                    "mt-4 text-3xl font-semibold tracking-[-0.03em] tabular-nums",
-                    streakActive && "text-gold",
-                  )}
+                {s.value}
+              </p>
+              <p className="mt-0.5 text-[0.82rem] text-fg-muted">{s.label}</p>
+              <p className="mt-2 font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
+                {s.note}
+              </p>
+            </GlassCard>
+          );
+          return (
+            <Reveal key={s.label} delay={i * 0.06}>
+              {s.href ? (
+                <Link
+                  href={s.href}
+                  className="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet/40"
                 >
-                  {s.value}
-                </p>
-                <p className="mt-0.5 text-[0.82rem] text-fg-muted">{s.label}</p>
-                <p className="mt-2 font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
-                  {s.note}
-                </p>
-              </GlassCard>
+                  {card}
+                </Link>
+              ) : (
+                card
+              )}
             </Reveal>
           );
         })}
       </div>
 
-      {/* Weekly goal + next-up recommendation, side by side. NextUpCard
-          self-hides when there's nothing prescriptive to say (no subjects,
-          no exam, all mastered), keeping the layout honest. */}
-      {userId && (
-        <Reveal>
-          <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_1fr]">
-            <WeeklyGoalCard weekly={weekly} />
-            <NextUpCard subjects={subjects} />
-          </div>
-        </Reveal>
-      )}
-
       {subjects.length === 0 ? (
-        // Brand-new account — instead of three empty "configure your blueprint"
-        // panels, show one warm onboarding card with a clear "create subject"
-        // CTA and a "try the sample quiz now" escape hatch.
-        <FirstRunEmptyState />
+        // Brand-new account — one warm onboarding card (clear "create subject"
+        // CTA + a "try the sample quiz" escape hatch), then the sample paper so
+        // a not-yet-paying visitor can see and feel the output before deciding.
+        <>
+          <FirstRunEmptyState />
+          <div className="mt-6">
+            <SamplePaperTeaser />
+          </div>
+        </>
       ) : (
         <>
+          {/* Two-zone cockpit. LEFT = "do it now" (generate + practice),
+              promoted up so the core job isn't three scrolls down. RIGHT =
+              the context rail (habit + glance): weekly goal, the one
+              prescriptive next step, your latest paper, recent activity. On
+              mobile the rail stacks under the actions, so the action is still
+              what you see first. */}
+          <div className="mt-8 grid items-start gap-3 lg:grid-cols-[1.5fr_1fr]">
+            <div className="flex flex-col gap-3">
+              {/* GenerationPanel is deliberately NOT wrapped in Reveal: it
+                  renders a fixed-position progress overlay, which would
+                  mis-anchor inside a transformed (animating) ancestor. */}
+              <GenerationPanel
+                subjects={subjects}
+                generationsUsed={generationsUsed}
+                generationsCap={generationsCap}
+              />
+              <Reveal delay={0.05}>
+                <QuizLaunch subjects={subjects} />
+              </Reveal>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {userId && (
+                <Reveal>
+                  <WeeklyGoalCard weekly={weekly} />
+                </Reveal>
+              )}
+              {/* NextUpCard self-hides (returns null) when there's nothing
+                  prescriptive — left unwrapped so it leaves no empty gap. */}
+              <NextUpCard subjects={subjects} />
+              {recentPapers.length > 0 && (
+                <Reveal delay={0.05}>
+                  <GlassCard className="flex flex-col p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <FileText className="h-4 w-4 text-violet-bright" />
+                        <div className="leading-tight">
+                          <p className="text-sm font-medium">Latest paper</p>
+                          <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
+                            {recentPapers[0].content?.subjectCode ?? "Paper"} ·{" "}
+                            {recentPapers[0].content?.totalMarks ?? 0} marks
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        href="/dashboard/papers"
+                        className="flex items-center gap-1 text-[0.74rem] text-violet-bright transition-colors hover:text-violet"
+                      >
+                        View all
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                    <h3 className="mt-4 text-lg font-semibold tracking-tight">
+                      {recentPapers[0].title}
+                    </h3>
+                    <p className="mt-1 text-[0.82rem] text-fg-muted">
+                      {recentPapers[0].content?.subject ?? "Generated paper"}
+                    </p>
+                    <div className="mt-4">
+                      <GlowButton
+                        href={`/papers/${recentPapers[0].id}`}
+                        size="md"
+                        className="w-full"
+                      >
+                        Open editor
+                        <ArrowRight className="h-4 w-4" />
+                      </GlowButton>
+                    </div>
+                  </GlassCard>
+                </Reveal>
+              )}
+              <Reveal delay={0.1}>
+                <GlassCard className="p-5">
+                  <h2 className="text-sm font-semibold tracking-tight">
+                    Recent activity
+                  </h2>
+                  <div className="mt-4 flex flex-col gap-1">
+                    {activity.map((a) => (
+                      <Link
+                        key={a.id}
+                        href={a.href}
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-tint/[0.03]"
+                      >
+                        <IconTile icon={FileText} tone="neutral" size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[0.84rem] font-medium">
+                            {a.title}
+                          </p>
+                          <p className="font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
+                            {a.time} · {a.meta}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                    {activity.length === 0 && (
+                      <p className="px-3 py-8 text-center text-sm text-fg-subtle">
+                        Generated papers and quizzes will appear here.
+                      </p>
+                    )}
+                  </div>
+                </GlassCard>
+              </Reveal>
+            </div>
+          </div>
+
+          {/* Subjects span the full width below the cockpit — they're a grid
+              that wants the room, not a rail item. */}
           <SubjectsSection subjects={subjects} />
-          <GenerationPanel
-            subjects={subjects}
-            generationsUsed={generationsUsed}
-            generationsCap={generationsCap}
-          />
-          <Reveal>
-            <QuizLaunch subjects={subjects} />
-          </Reveal>
+
+          {/* Conversion: only users who've never generated a paper see the
+              sample. Paid users with papers don't need to be sold the output
+              they already produce. */}
+          {recentPapers.length === 0 && (
+            <div className="mt-6">
+              <SamplePaperTeaser />
+            </div>
+          )}
         </>
       )}
-
-      <div className="mt-10 grid gap-3 lg:grid-cols-[1.5fr_1fr]">
-        {recentPapers.length === 0 ? (
-          // Only show the sample-paper teaser to users who have never generated
-          // their own paper — otherwise it's just clutter telling paid customers
-          // to "subscribe to unlock generation".
-          <Reveal>
-            <div className="overflow-hidden rounded-2xl glass-strong">
-              <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
-                <div className="flex items-center gap-2.5">
-                  <FileText className="h-4 w-4 text-violet-bright" />
-                  <div className="leading-tight">
-                    <p className="text-sm font-medium">Sample generated paper</p>
-                    <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
-                      {examplePaper.subjectCode} · {examplePaper.totalMarks} marks
-                    </p>
-                  </div>
-                </div>
-                <span className="flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-gold">
-                  <Lock className="h-3 w-3" />
-                  Sample
-                </span>
-              </div>
-
-              <div className="relative">
-                <div className="max-h-[26rem] overflow-hidden">
-                  <PaperSheet paper={examplePaper} />
-                </div>
-                {/* gradient fade masks the cut-off sheet. We lead with the
-                    free demo quiz CTA (zero-friction, real product feel)
-                    and put Subscribe second instead of jumping straight to
-                    a paywall before the user has felt any value. */}
-                <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-canvas via-canvas/95 to-transparent px-6 pb-6 pt-24 text-center">
-                  <p className="max-w-sm text-sm text-fg-muted">
-                    This is what we&apos;d generate from your syllabus. Take a
-                    sample MCQ quiz to feel it for yourself — it&apos;s free
-                    and uses no credits.
-                  </p>
-                  <div className="flex flex-wrap items-center justify-center gap-2.5">
-                    <GlowButton href="/dashboard/demo-quiz" size="md">
-                      Try a sample quiz
-                      <ArrowRight className="h-4 w-4" />
-                    </GlowButton>
-                    <GlowButton
-                      href="/billing"
-                      variant="secondary"
-                      size="md"
-                    >
-                      Subscribe to generate
-                    </GlowButton>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        ) : (
-          // Show the most recent real paper instead of the sample mock.
-          <Reveal>
-            <GlassCard className="flex h-full flex-col p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <FileText className="h-4 w-4 text-violet-bright" />
-                  <div className="leading-tight">
-                    <p className="text-sm font-medium">Latest paper</p>
-                    <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
-                      {recentPapers[0].content?.subjectCode ?? "Paper"} ·{" "}
-                      {recentPapers[0].content?.totalMarks ?? 0} marks
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href="/dashboard/papers"
-                  className="flex items-center gap-1 text-[0.74rem] text-violet-bright transition-colors hover:text-violet"
-                >
-                  View all
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-              <h3 className="mt-4 text-lg font-semibold tracking-tight">
-                {recentPapers[0].title}
-              </h3>
-              <p className="mt-1 text-[0.82rem] text-fg-muted">
-                {recentPapers[0].content?.subject ?? "Generated paper"}
-              </p>
-              <div className="mt-auto pt-4">
-                <GlowButton
-                  href={`/papers/${recentPapers[0].id}`}
-                  size="md"
-                  className="w-full"
-                >
-                  Open editor
-                  <ArrowRight className="h-4 w-4" />
-                </GlowButton>
-              </div>
-            </GlassCard>
-          </Reveal>
-        )}
-
-        <Reveal delay={0.1}>
-          <GlassCard className="h-full p-5">
-            <h2 className="text-sm font-semibold tracking-tight">
-              Recent activity
-            </h2>
-            <div className="mt-4 flex flex-col gap-1">
-              {activity.map((a) => (
-                <Link
-                  key={a.id}
-                  href={a.href}
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-tint/[0.03]"
-                >
-                  <IconTile icon={FileText} tone="neutral" size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[0.84rem] font-medium">
-                      {a.title}
-                    </p>
-                    <p className="font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
-                      {a.time} · {a.meta}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-              {activity.length === 0 && (
-                <p className="px-3 py-8 text-center text-sm text-fg-subtle">
-                  Generated papers and quizzes will appear here.
-                </p>
-              )}
-            </div>
-            <Link
-              href="/dashboard/subjects/new"
-              className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-line py-2.5 text-[0.8rem] text-fg-muted transition-colors hover:border-line-strong hover:text-fg"
-            >
-              Create a subject <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </GlassCard>
-        </Reveal>
-      </div>
     </div>
+  );
+}
+
+/**
+ * The locked sample paper + zero-friction CTAs. Shown to users who haven't
+ * generated their own paper yet (new accounts and not-yet-subscribed users)
+ * so they can see the real output and feel the product via the free demo quiz
+ * before hitting any paywall. Extracted because it appears in two branches of
+ * the dashboard (no-subjects onboarding and subjects-but-no-papers).
+ */
+function SamplePaperTeaser() {
+  return (
+    <Reveal>
+      <div className="overflow-hidden rounded-2xl glass-strong">
+        <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <FileText className="h-4 w-4 text-violet-bright" />
+            <div className="leading-tight">
+              <p className="text-sm font-medium">Sample generated paper</p>
+              <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
+                {examplePaper.subjectCode} · {examplePaper.totalMarks} marks
+              </p>
+            </div>
+          </div>
+          <span className="flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-gold">
+            <Lock className="h-3 w-3" />
+            Sample
+          </span>
+        </div>
+
+        <div className="relative">
+          <div className="max-h-[26rem] overflow-hidden">
+            <PaperSheet paper={examplePaper} />
+          </div>
+          {/* gradient fade masks the cut-off sheet. We lead with the free demo
+              quiz CTA (zero-friction, real product feel) and put Subscribe
+              second instead of jumping straight to a paywall before the user
+              has felt any value. */}
+          <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-canvas via-canvas/95 to-transparent px-6 pb-6 pt-24 text-center">
+            <p className="max-w-sm text-sm text-fg-muted">
+              This is what we&apos;d generate from your syllabus. Take a sample
+              MCQ quiz to feel it for yourself — it&apos;s free and uses no
+              credits.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
+              <GlowButton href="/dashboard/demo-quiz" size="md">
+                Try a sample quiz
+                <ArrowRight className="h-4 w-4" />
+              </GlowButton>
+              <GlowButton href="/billing" variant="secondary" size="md">
+                Subscribe to generate
+              </GlowButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Reveal>
   );
 }
 

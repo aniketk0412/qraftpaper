@@ -127,7 +127,7 @@ export function GenerationPanel({
         kind={pending ?? "paper"}
         open={pending !== null}
       />
-    <GlassCard className="mt-10 p-5">
+    <GlassCard className="p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-violet-bright">
