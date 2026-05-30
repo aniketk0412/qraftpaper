@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowUpRight, BookOpen } from "lucide-react";
+import { ArrowUpRight, BookOpen, CalendarClock, Target } from "lucide-react";
 import { useMemo, useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { IconTile } from "@/components/ui/icon-tile";
@@ -97,6 +97,41 @@ export function SubjectsSection({
                 <h3 className="mt-1 text-[0.95rem] font-medium leading-snug tracking-tight">
                   {subject.name}
                 </h3>
+
+                {/* Mastery + exam countdown chips. Hidden when there is no
+                    data so empty-state subjects don't show "—%" placeholders. */}
+                {(subject.masteryPct !== null ||
+                  (subject.daysToExam !== null && subject.daysToExam >= 0)) && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {subject.masteryPct !== null && (
+                      <SubjectChip
+                        icon={Target}
+                        tone={
+                          subject.masteryPct >= 80
+                            ? "accent"
+                            : subject.masteryPct >= 55
+                              ? "violet"
+                              : "gold"
+                        }
+                        label={`${subject.masteryPct}% mastery`}
+                      />
+                    )}
+                    {subject.daysToExam !== null && subject.daysToExam >= 0 && (
+                      <SubjectChip
+                        icon={CalendarClock}
+                        tone={subject.daysToExam <= 3 ? "gold" : "neutral"}
+                        label={
+                          subject.daysToExam === 0
+                            ? "Exam today"
+                            : subject.daysToExam === 1
+                              ? "1 day to exam"
+                              : `${subject.daysToExam} days to exam`
+                        }
+                      />
+                    )}
+                  </div>
+                )}
+
                 <div className="mt-4 flex items-center justify-between border-t border-line pt-3 text-[0.72rem] text-fg-muted">
                   <span>{subject.papers} papers</span>
                   <span className="text-fg-subtle">
@@ -109,5 +144,30 @@ export function SubjectsSection({
         ))}
       </div>
     </div>
+  );
+}
+
+function SubjectChip({
+  icon: Icon,
+  tone,
+  label,
+}: {
+  icon: typeof BookOpen;
+  tone: "accent" | "violet" | "gold" | "neutral";
+  label: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.14em] ring-1",
+        tone === "accent" && "bg-accent/15 text-accent ring-accent/30",
+        tone === "violet" && "bg-violet/15 text-violet-bright ring-violet/30",
+        tone === "gold" && "bg-gold/15 text-gold ring-gold/30",
+        tone === "neutral" && "bg-tint/[0.04] text-fg-muted ring-line",
+      )}
+    >
+      <Icon className="h-2.5 w-2.5" />
+      {label}
+    </span>
   );
 }

@@ -28,6 +28,7 @@ import {
   getStreakSummary,
   getWeeklyActivity,
 } from "@/lib/streaks";
+import { ExamCountdownBanner } from "@/components/dashboard/exam-countdown";
 import { StreakMilestone } from "@/components/dashboard/streak-milestone";
 import { WeeklyGoalCard } from "@/components/dashboard/weekly-goal";
 import { cn } from "@/lib/utils";
@@ -179,6 +180,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
+      {/* Exam countdown lives above EVERYTHING else (even the milestone
+          celebration) because day-of urgency outranks habit feedback. */}
+      <ExamCountdownBanner subjects={subjects} />
       {milestone !== null && <StreakMilestone milestone={milestone} />}
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
