@@ -16,9 +16,11 @@ import { easeOut } from "@/lib/motion";
 import { supportEmail } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
+// One row per destination — no duplicate "Profile" + "Workspace settings"
+// that both went to /dashboard/settings. Account first, then billing, then
+// support.
 const menu: { icon: LucideIcon; label: string; href: string }[] = [
-  { icon: UserRound, label: "Profile", href: "/dashboard/settings" },
-  { icon: Settings, label: "Workspace settings", href: "/dashboard/settings" },
+  { icon: Settings, label: "Account & profile", href: "/dashboard/settings" },
   { icon: CreditCard, label: "Billing & plan", href: "/billing" },
   { icon: LifeBuoy, label: "Help & support", href: `mailto:${supportEmail}` },
 ];
@@ -58,12 +60,19 @@ export function UserMenu({ user }: { user: DashboardUser }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "grid h-10 w-10 place-items-center rounded-full bg-card-hi font-mono text-xs font-medium text-fg ring-1 transition-colors",
+          "grid h-10 w-10 place-items-center rounded-full bg-card-hi font-mono text-[0.78rem] font-semibold tracking-wide text-fg ring-1 transition-colors",
           open ? "ring-accent/40" : "ring-line hover:ring-line-strong",
         )}
         aria-label="Account menu"
       >
-        <UserRound className="h-5 w-5" />
+        {/* Show the user's real initials when we have them — feels like a real
+            product. Falls back to the generic icon only when initials end up
+            empty (shouldn't happen — deriveInitials always returns something). */}
+        {user.initials ? (
+          <span aria-hidden>{user.initials}</span>
+        ) : (
+          <UserRound className="h-5 w-5" />
+        )}
       </button>
 
       <AnimatePresence>
