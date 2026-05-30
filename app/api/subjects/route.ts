@@ -8,15 +8,20 @@ import { subjects, users } from "@/lib/db/schema";
 import { listUserSubjects, subjectsTagFor } from "@/lib/subjects";
 import { assertCanCreateSubject, UsageLimitError } from "@/lib/usage";
 import { sanitizeInline } from "@/lib/ai/safety";
+import {
+  badRequest,
+  conflict,
+  paymentRequired,
+  safeJson,
+  serverError,
+  unauthorized,
+} from "@/lib/api-responses";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   const session = await auth();
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!session?.user?.id) return unauthorized();
 
   return NextResponse.json({
     subjects: await listUserSubjects(session.user.id),
@@ -25,17 +30,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const session = await auth();
+  if (!session?.user?.id) return unauthorized();
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const body = await safeJson<{ name?: string; code?: string }>(request);
+  if (!body) return badRequest();
 
-  let body: { name?: string; code?: string };
-  try {
-    body = (await request.json()) as { name?: string; code?: string };
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
   const name = body.name ? sanitizeInline(body.name, 120) : "";
   // Code is optional in the UI; auto-generate a short identifier when blank
   // so the DB constraint (notNull + unique-per-user) can still be satisfied.
@@ -43,12 +42,7 @@ export async function POST(request: Request) {
     ? sanitizeInline(body.code, 40)
     : `SUBJ-${randomCode(5)}`;
 
-  if (!name) {
-    return NextResponse.json(
-      { error: "Subject name is required" },
-      { status: 400 },
-    );
-  }
+  if (!name) return badRequest("Subject name is required");
 
   const [account] = await getDb()
     .select({ plan: users.plan })
@@ -59,9 +53,7 @@ export async function POST(request: Request) {
   try {
     await assertCanCreateSubject(session.user.id, account?.plan ?? "unpaid");
   } catch (error) {
-    if (error instanceof UsageLimitError) {
-      return NextResponse.json({ error: error.message }, { status: 402 });
-    }
+    if (error instanceof UsageLimitError) return paymentRequired(error.message);
     throw error;
   }
 
@@ -76,12 +68,7 @@ export async function POST(request: Request) {
     )
     .limit(1);
 
-  if (duplicate) {
-    return NextResponse.json(
-      { error: "A subject with this code already exists" },
-      { status: 409 },
-    );
-  }
+  if (duplicate) return conflict("A subject with this code already exists");
 
   const [subject] = await getDb()
     .insert(subjects)
@@ -92,12 +79,7 @@ export async function POST(request: Request) {
     })
     .returning();
 
-  if (!subject) {
-    return NextResponse.json(
-      { error: "Unable to create subject" },
-      { status: 500 },
-    );
-  }
+  if (!subject) return serverError("Unable to create subject");
 
   const [ownedSubject] = await getDb()
     .select()
