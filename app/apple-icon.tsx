@@ -3,9 +3,25 @@ import { ImageResponse } from "next/og";
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
-// Home-screen icon for installed PWAs (iOS / Android / desktop) — the
-// QraftPaper "Q" mark (cream ring + teal tail) on deep navy.
+/**
+ * Home-screen icon for installed PWAs (iOS / Android / desktop). The
+ * QraftPaper Q on deep navy.
+ *
+ * Geometry mirrors components/logo.tsx (cx 10.8, cy 11, r 7 in a 24-unit
+ * box, tail from 14.8/15.2 to 19.2/19.6). At the 180 px iOS size each
+ * SVG unit scales to 7.5 px after the 24→144 mapping below — the tail
+ * pulled mostly outside the ring reads as "Q" even on a 60 px desktop
+ * favicon, where the previous stub-tail design read as "circle with a
+ * mark."
+ */
 export default function AppleIcon() {
+  // Cream + accent so the mark sits comfortably on deep navy without the
+  // teal disappearing into the background. Same palette as the favicon
+  // and components/logo.tsx.
+  const ringColor = "#f1faee";
+  const tailColor = "#5fb3b3";
+  const bg = "#1a2332";
+
   return new ImageResponse(
     (
       <div
@@ -15,38 +31,30 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#1a2332",
+          background: bg,
         }}
       >
-        <div
-          style={{
-            position: "relative",
-            display: "flex",
-            width: "108px",
-            height: "108px",
-          }}
+        <svg
+          width="144"
+          height="144"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <div
-            style={{
-              width: "96px",
-              height: "96px",
-              borderRadius: "50%",
-              border: "13px solid #f1faee",
-            }}
+          <circle
+            cx="10.8"
+            cy="11"
+            r="7"
+            stroke={ringColor}
+            strokeWidth="2.8"
           />
-          <div
-            style={{
-              position: "absolute",
-              right: "0px",
-              bottom: "0px",
-              width: "48px",
-              height: "14px",
-              borderRadius: "7px",
-              background: "#5fb3b3",
-              transform: "rotate(45deg)",
-            }}
+          <path
+            d="M14.8 15.2 L19.2 19.6"
+            stroke={tailColor}
+            strokeWidth="3.4"
+            strokeLinecap="round"
           />
-        </div>
+        </svg>
       </div>
     ),
     { ...size },
