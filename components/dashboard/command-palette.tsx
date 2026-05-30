@@ -40,7 +40,7 @@ const actionItems: CommandItem[] = [
   {
     id: "act-paper",
     label: "Generate a question paper",
-    sub: "Open the paper workspace",
+    sub: "Open the paper editor",
     icon: FilePlus2,
     href: "/dashboard/papers",
     group: "Actions",

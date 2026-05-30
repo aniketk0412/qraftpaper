@@ -161,7 +161,7 @@ export default async function PapersPage({
             <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-fg-muted">
               {page > 1
                 ? "Go back to page 1 to see your most recent papers."
-                : "Create a profiled subject first, then generate papers from the Overview workspace."}
+                : "Create a profiled subject first, then generate papers from the Overview."}
             </p>
             <GlowButton
               href={page > 1 ? "/dashboard/papers" : "/dashboard/subjects/new"}

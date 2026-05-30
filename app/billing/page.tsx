@@ -59,7 +59,7 @@ const BENEFITS = [
   {
     icon: Layers,
     title: "Up to 5 subjects",
-    body: "One workspace per paper this semester — each keeps its own syllabus, blueprint and PYQ pattern.",
+    body: "One slot per paper this semester — each keeps its own syllabus, blueprint and PYQ pattern.",
   },
   {
     icon: Flame,
