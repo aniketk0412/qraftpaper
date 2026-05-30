@@ -56,7 +56,7 @@ const actionItems: CommandItem[] = [
   {
     id: "act-overview",
     label: "Go to overview",
-    sub: "Workspace dashboard",
+    sub: "Your study dashboard",
     icon: LayoutDashboard,
     href: "/dashboard",
     group: "Actions",
@@ -123,9 +123,25 @@ export function CommandPalette({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+K — universal "open search" shortcut (Linear, Slack, GitHub).
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setOpen((v) => !v);
+        return;
+      }
+      // "/" — GitHub-style focus-search shortcut. Common enough that users
+      // try it reflexively; we silently swallow it if focus is in an input,
+      // textarea or contentEditable so users typing a "/" in their content
+      // don't trigger the palette.
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const t = e.target as HTMLElement | null;
+        const inEditable =
+          t?.tagName === "INPUT" ||
+          t?.tagName === "TEXTAREA" ||
+          t?.isContentEditable;
+        if (inEditable) return;
+        e.preventDefault();
+        setOpen(true);
       }
     };
     window.addEventListener("keydown", onKey);
