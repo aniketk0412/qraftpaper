@@ -28,6 +28,7 @@ import {
   getStreakSummary,
   getWeeklyActivity,
 } from "@/lib/streaks";
+import { DrillMistakesCard } from "@/components/dashboard/drill-mistakes-card";
 import { ExamCountdownBanner } from "@/components/dashboard/exam-countdown";
 import { NextUpCard } from "@/components/dashboard/next-up";
 import { StreakMilestone } from "@/components/dashboard/streak-milestone";
@@ -194,6 +195,10 @@ export default async function DashboardPage() {
           celebration) because day-of urgency outranks habit feedback. */}
       <ExamCountdownBanner subjects={subjects} />
       {milestone !== null && <StreakMilestone milestone={milestone} />}
+      {/* Drill-mistakes card sits below the urgent exam strip but above
+          the welcome — concrete reps beat generic encouragement. Self-
+          hides under 3 wrongs so a brand-new account doesn't see it. */}
+      <DrillMistakesCard />
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

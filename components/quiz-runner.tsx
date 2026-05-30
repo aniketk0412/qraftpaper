@@ -19,7 +19,12 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { MeterBar } from "@/components/ui/meter-bar";
 import { easeOut } from "@/lib/motion";
 import { difficultyDarkChip } from "@/lib/difficulty";
-import { loadQuizHistory, saveQuizAttempt } from "@/lib/quiz-history";
+import {
+  loadQuizHistory,
+  recordWrongAnswers,
+  saveQuizAttempt,
+  type WrongAnswer,
+} from "@/lib/quiz-history";
 import type { Quiz, QuizQuestion } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
@@ -104,14 +109,43 @@ export function QuizRunner({
   useEffect(() => {
     if (!finished || savedRef.current) return;
     savedRef.current = true;
+    const now = Date.now();
     saveQuizAttempt({
       quizId: quiz.id,
       title: quiz.title,
       subjectCode: quiz.subjectCode,
       score,
       total,
-      takenAt: Date.now(),
+      takenAt: now,
     });
+    // Capture per-question wrong answers for the future drill loop. We
+    // walk the questions and record any where the picked index is missing
+    // (timed out) OR diverges from the reveal's correctIndex. Stored in
+    // localStorage so unrevisitedWrongCount() on the dashboard can prompt
+    // "you have N questions to revisit."
+    const wrongs: WrongAnswer[] = [];
+    for (const q of quiz.questions) {
+      const reveal = reveals[q.id];
+      const picked = answers[q.id];
+      // Without a reveal we never confirmed the correct index — skip.
+      // (Happens if grading is server-side and a network call dropped.)
+      if (!reveal) continue;
+      const got = picked === reveal.correctIndex;
+      if (got) continue;
+      wrongs.push({
+        quizId: quiz.id,
+        questionId: q.id,
+        prompt: q.prompt,
+        pickedIndex: picked ?? -1,
+        correctIndex: reveal.correctIndex,
+        unit: q.unit,
+        subjectCode: quiz.subjectCode,
+        takenAt: now,
+      });
+    }
+    if (wrongs.length > 0) {
+      recordWrongAnswers(wrongs);
+    }
     const durationSeconds = totalSeconds - remaining;
     void fetch(`/api/quiz/${quiz.id}/complete`, {
       method: "POST",
@@ -120,6 +154,11 @@ export function QuizRunner({
     }).catch(() => {
       /* analytics failures must never disrupt the user */
     });
+    // savedRef.current guards against re-runs inside this same effect,
+    // so the missing answers/reveals deps from exhaustive-deps would
+    // only matter on the first finish — at which point both are at
+    // their final values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, score, total, quiz, totalSeconds, remaining]);
 
   async function pick(index: number) {
