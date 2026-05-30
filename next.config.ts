@@ -1,4 +1,13 @@
+import bundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
+
+// ANALYZE=true npm run build → opens a treemap of every chunk in the
+// bundle. Use it before adding heavy dependencies and after big refactors
+// so the route bundles don't quietly creep into multi-megabyte territory.
+// In normal builds this is a no-op (enabled flag is false).
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 // Content-Security-Policy tuned to exactly what the app loads:
 //  - self-hosted Geist fonts (next/font bundles them at build, no Google CDN)
@@ -72,4 +81,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
