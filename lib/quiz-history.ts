@@ -210,6 +210,28 @@ export function weakUnits(wrongs: WrongAnswer[]): WeakUnit[] {
   for (const w of dedupeWrongAnswers(wrongs)) {
     counts.set(w.unit, (counts.get(w.unit) ?? 0) + 1);
   }
+  return tallyUnits(counts);
+}
+
+/**
+ * Weak-unit breakdown derived straight from a (drill) quiz's questions, rather
+ * than the local wrong-answer log. Used when the local backlog is empty but the
+ * session was built from the server schedule — e.g. on a fresh device — so the
+ * start screen still shows where the misses cluster. The questions are already
+ * deduped (one row per due card), so a plain per-unit tally is correct.
+ */
+export function weakUnitsFromQuestions(
+  questions: { unit: string }[],
+): WeakUnit[] {
+  const counts = new Map<string, number>();
+  for (const q of questions) {
+    counts.set(q.unit, (counts.get(q.unit) ?? 0) + 1);
+  }
+  return tallyUnits(counts);
+}
+
+/** Shared: turn a unit→count map into a heaviest-first, tie-broken list. */
+function tallyUnits(counts: Map<string, number>): WeakUnit[] {
   return [...counts.entries()]
     .map(([unit, count]) => ({ unit, count }))
     .sort((a, b) => b.count - a.count || a.unit.localeCompare(b.unit));

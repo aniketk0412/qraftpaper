@@ -11,7 +11,11 @@ import {
 import { useEffect, useState } from "react";
 import { DrillRunner } from "@/components/drill-runner";
 import { GlowButton } from "@/components/ui/glow-button";
-import { loadDrillQuiz, loadWeakUnits } from "@/lib/quiz-history";
+import {
+  loadDrillQuiz,
+  loadWeakUnits,
+  weakUnitsFromQuestions,
+} from "@/lib/quiz-history";
 import type { WeakUnit } from "@/lib/quiz-history";
 import type { Quiz } from "@/lib/types";
 
@@ -55,6 +59,17 @@ export function DrillClient() {
     };
   }, [quiz]);
 
+  // The weak-unit breakdown normally comes from this device's local backlog.
+  // On a fresh device that loaded its session from the server, the local log
+  // is empty — so fall back to tallying the units of the drill quiz itself,
+  // keeping the "where you're losing marks" insight on the start screen.
+  const effectiveWeak =
+    weak.length > 0
+      ? weak
+      : quiz
+        ? weakUnitsFromQuestions(quiz.questions)
+        : [];
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur-md">
@@ -88,7 +103,7 @@ export function DrillClient() {
         ) : (
           <DrillStartScreen
             count={quiz.questions.length}
-            weak={weak}
+            weak={effectiveWeak}
             onStart={() => setStarted(true)}
           />
         )}

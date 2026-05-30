@@ -10,6 +10,7 @@ import {
   parseDrillQuestionId,
   srOf,
   weakUnits,
+  weakUnitsFromQuestions,
   wrongKey,
   type WrongAnswer,
 } from "@/lib/quiz-history";
@@ -221,6 +222,32 @@ describe("weakUnits", () => {
 
   it("is empty for an empty backlog", () => {
     expect(weakUnits([])).toEqual([]);
+  });
+});
+
+describe("weakUnitsFromQuestions", () => {
+  it("tallies a server-built drill quiz's questions by unit, heaviest first", () => {
+    const questions = [
+      { unit: "Unit III" },
+      { unit: "Unit III" },
+      { unit: "Unit I" },
+    ];
+    expect(weakUnitsFromQuestions(questions)).toEqual([
+      { unit: "Unit III", count: 2 },
+      { unit: "Unit I", count: 1 },
+    ]);
+  });
+
+  it("breaks ties alphabetically", () => {
+    const questions = [{ unit: "Unit B" }, { unit: "Unit A" }];
+    expect(weakUnitsFromQuestions(questions).map((w) => w.unit)).toEqual([
+      "Unit A",
+      "Unit B",
+    ]);
+  });
+
+  it("is empty for no questions", () => {
+    expect(weakUnitsFromQuestions([])).toEqual([]);
   });
 });
 
