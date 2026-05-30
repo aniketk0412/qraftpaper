@@ -11,7 +11,20 @@ import { ExamDatePicker } from "@/components/dashboard/exam-date-picker";
 import { getDb } from "@/lib/db";
 import { documents, subjects } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
+import { cn } from "@/lib/utils";
 import { eq, sql } from "drizzle-orm";
+
+// Translate a 0-100 mastery percent into the same colour band used on the
+// dashboard subject cards (green ≥80, violet ≥55, gold below) so the two
+// surfaces tell the same visual story.
+function masteryTone(
+  pct: number | null,
+): "accent" | "violet" | "gold" | "neutral" {
+  if (pct === null) return "neutral";
+  if (pct >= 80) return "accent";
+  if (pct >= 55) return "violet";
+  return "gold";
+}
 
 export const runtime = "nodejs";
 
@@ -100,6 +113,7 @@ export default async function SubjectsPage() {
                         ? `${subject.masteryPct}%`
                         : "—"
                     }
+                    tone={masteryTone(subject.masteryPct)}
                   />
                 </div>
                 <div className="mt-4 border-t border-line pt-3">
@@ -153,10 +167,36 @@ export default async function SubjectsPage() {
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string }) {
+function MiniStat({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  tone?: "accent" | "violet" | "gold" | "neutral";
+}) {
   return (
-    <div className="rounded-xl border border-line bg-tint/[0.02] px-2 py-2">
-      <p className="text-sm font-semibold text-fg">{value}</p>
+    <div
+      className={cn(
+        "rounded-xl border px-2 py-2 transition-colors",
+        tone === "neutral" && "border-line bg-tint/[0.02]",
+        tone === "accent" && "border-accent/30 bg-accent/[0.08]",
+        tone === "violet" && "border-violet/30 bg-violet/[0.08]",
+        tone === "gold" && "border-gold/30 bg-gold/[0.08]",
+      )}
+    >
+      <p
+        className={cn(
+          "text-sm font-semibold",
+          tone === "neutral" && "text-fg",
+          tone === "accent" && "text-accent",
+          tone === "violet" && "text-violet-bright",
+          tone === "gold" && "text-gold",
+        )}
+      >
+        {value}
+      </p>
       <p className="mt-0.5 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-fg-subtle">
         {label}
       </p>
