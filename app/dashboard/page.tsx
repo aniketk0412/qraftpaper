@@ -23,7 +23,13 @@ import { getDb } from "@/lib/db";
 import { papers, quizzes } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
 import { STARTER_BLUEPRINTS } from "@/lib/blueprints";
-import { getStreakSummary } from "@/lib/streaks";
+import {
+  currentMilestone,
+  getStreakSummary,
+  getWeeklyActivity,
+} from "@/lib/streaks";
+import { StreakMilestone } from "@/components/dashboard/streak-milestone";
+import { WeeklyGoalCard } from "@/components/dashboard/weekly-goal";
 import { cn } from "@/lib/utils";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 
@@ -82,6 +88,15 @@ export default async function DashboardPage() {
         practisedToday: false,
         daysSinceLast: null,
       };
+
+  // Weekly goal (5/7) — the strongest non-streak engagement loop. Even when
+  // a user misses a day they can still hit the weekly target and feel they
+  // won the week.
+  const weekly = userId
+    ? await getWeeklyActivity(userId)
+    : { days: Array(7).fill(false), done: 0, target: 5, hit: false };
+
+  const milestone = currentMilestone(streak.current);
 
   const activity = [
     ...recentPapers.map((paper) => ({
@@ -164,6 +179,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
+      {milestone !== null && <StreakMilestone milestone={milestone} />}
       <Reveal>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -225,6 +241,17 @@ export default async function DashboardPage() {
           );
         })}
       </div>
+
+      {/* Weekly goal — shown to every authenticated user, even brand-new
+          accounts (encourages day-1 practice). Hidden only when there's no
+          session at all (the dashboard already redirects in that case). */}
+      {userId && (
+        <Reveal>
+          <div className="mt-6">
+            <WeeklyGoalCard weekly={weekly} />
+          </div>
+        </Reveal>
+      )}
 
       {subjects.length === 0 ? (
         // Brand-new account — instead of three empty "configure your blueprint"

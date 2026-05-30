@@ -29,12 +29,14 @@ export function Topbar({
   plan = "unpaid",
   streak = 0,
   practisedToday = false,
+  daysSinceLast = null,
 }: {
   subjects: DashboardSubject[];
   user: DashboardUser;
   plan?: string;
   streak?: number;
   practisedToday?: boolean;
+  daysSinceLast?: number | null;
 }) {
   const pathname = usePathname() ?? "/dashboard";
   const title = pageTitleFor(pathname);
@@ -77,7 +79,12 @@ export function Topbar({
         )}
         <CommandPalette subjects={subjects} />
         <ThemeToggle />
-        <Notifications />
+        <Notifications
+          subjects={subjects}
+          streak={streak}
+          practisedToday={practisedToday}
+          daysSinceLast={daysSinceLast}
+        />
         <GlowButton
           href="/dashboard/subjects/new"
           size="md"

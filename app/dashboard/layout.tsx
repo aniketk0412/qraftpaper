@@ -69,6 +69,7 @@ export default async function DashboardLayout({
         plan={profile?.plan ?? "unpaid"}
         streak={streak.current}
         practisedToday={streak.practisedToday}
+        daysSinceLast={streak.daysSinceLast}
       />
       <main className="px-5 py-8 sm:px-8">
         {profile && !profile.emailVerifiedAt && <VerifyEmailBanner />}

@@ -134,3 +134,74 @@ export async function getStreakSummary(userId: string): Promise<StreakSummary> {
     daysSinceLast,
   };
 }
+
+export interface WeeklyActivity {
+  /** Boolean array, oldest first → today last (length 7). True = practised. */
+  days: boolean[];
+  /** Number of days in the last 7 with activity. */
+  done: number;
+  /** Configurable target — default 5 of 7 (Duolingo's "weekly goal" model). */
+  target: number;
+  /** True once `done >= target` for the current rolling week. */
+  hit: boolean;
+}
+
+/**
+ * Returns a 7-day boolean array representing whether the user practised on
+ * each of the last seven UTC days (today inclusive). Drives the dashboard
+ * weekly-goal ring — the strongest non-streak engagement loop because users
+ * who miss a day can still hit the weekly goal and feel rewarded.
+ */
+export async function getWeeklyActivity(
+  userId: string,
+  target = 5,
+): Promise<WeeklyActivity> {
+  const db = getDb();
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setUTCHours(0, 0, 0, 0);
+  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 6);
+
+  const rows = await db
+    .select({ activityDate: studyActivity.activityDate })
+    .from(studyActivity)
+    .where(
+      and(
+        eq(studyActivity.userId, userId),
+        gte(studyActivity.activityDate, sevenDaysAgo),
+      ),
+    );
+
+  const set = new Set(
+    rows.map((r) => r.activityDate.toISOString().slice(0, 10)),
+  );
+
+  const days: boolean[] = [];
+  const cursor = new Date(sevenDaysAgo);
+  for (let i = 0; i < 7; i++) {
+    days.push(set.has(cursor.toISOString().slice(0, 10)));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  const done = days.filter(Boolean).length;
+  return { days, done, target, hit: done >= target };
+}
+
+/**
+ * Which milestone (if any) the user is currently sitting on. Returns null
+ * when nothing to celebrate. Tiers chosen to match what habit research
+ * suggests works:
+ *   3  — formed
+ *   7  — first week
+ *   14 — sticky
+ *   30 — default behaviour
+ *   50, 100 — badge of pride
+ */
+export const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100] as const;
+export type StreakMilestone = (typeof STREAK_MILESTONES)[number];
+
+export function currentMilestone(streak: number): StreakMilestone | null {
+  if (!streak) return null;
+  for (let i = STREAK_MILESTONES.length - 1; i >= 0; i--) {
+    if (streak === STREAK_MILESTONES[i]) return STREAK_MILESTONES[i];
+  }
+  return null;
+}
