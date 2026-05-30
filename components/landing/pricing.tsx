@@ -1,11 +1,17 @@
 "use client";
 
 import { ArrowRight, Check } from "lucide-react";
+import { useSyncExternalStore } from "react";
 import { GlowButton } from "@/components/ui/glow-button";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { detectIndiaClient } from "@/lib/locale";
 import { PRICING_TIERS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
+
+// The INR flag never changes after mount (timezone/language don't shift live),
+// so the external "store" has a no-op subscribe.
+const noopSubscribe = () => () => {};
 
 export function Pricing({
   country,
@@ -16,7 +22,20 @@ export function Pricing({
 }) {
   // Show INR for visitors from India. USD is still what LemonSqueezy charges;
   // this is a perception fix so ₹579 reads cheaper than the abstract "$7".
-  const showInr = country === "IN";
+  //
+  // useSyncExternalStore is React's hydration-safe primitive for a value that
+  // legitimately differs between server and client:
+  //   - server snapshot: the Vercel geo header (correct + instant on prod).
+  //   - client snapshot: header OR the browser's own timezone/language, which
+  //     is the ONLY signal that works in local dev, on previews, and
+  //     off-Vercel. React renders the server snapshot during SSR + the first
+  //     hydration pass, then swaps to the client snapshot — no mismatch
+  //     warning, and no setState-in-effect.
+  const showInr = useSyncExternalStore(
+    noopSubscribe,
+    () => country === "IN" || detectIndiaClient(),
+    () => country === "IN",
+  );
   return (
     <section id="pricing" className="section-pad scroll-mt-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
