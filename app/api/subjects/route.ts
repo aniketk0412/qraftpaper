@@ -1,6 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { updateTag } from "next/cache";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
@@ -11,11 +12,19 @@ import { sanitizeInline } from "@/lib/ai/safety";
 import {
   badRequest,
   conflict,
+  parseJson,
   paymentRequired,
-  safeJson,
   serverError,
   unauthorized,
 } from "@/lib/api-responses";
+
+// Optional name/code at the schema level — we apply sanitizeInline below to
+// strip any control chars / fence markers a user could paste, and to clamp
+// the length. Zod handles the obvious "is it a string of any sort" check.
+const createSubjectSchema = z.object({
+  name: z.string().optional(),
+  code: z.string().optional(),
+});
 
 export const runtime = "nodejs";
 
@@ -32,14 +41,14 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return unauthorized();
 
-  const body = await safeJson<{ name?: string; code?: string }>(request);
-  if (!body) return badRequest();
+  const parsed = await parseJson(request, createSubjectSchema);
+  if (!parsed.ok) return parsed.response;
 
-  const name = body.name ? sanitizeInline(body.name, 120) : "";
+  const name = parsed.data.name ? sanitizeInline(parsed.data.name, 120) : "";
   // Code is optional in the UI; auto-generate a short identifier when blank
   // so the DB constraint (notNull + unique-per-user) can still be satisfied.
-  const code = body.code
-    ? sanitizeInline(body.code, 40)
+  const code = parsed.data.code
+    ? sanitizeInline(parsed.data.code, 40)
     : `SUBJ-${randomCode(5)}`;
 
   if (!name) return badRequest("Subject name is required");

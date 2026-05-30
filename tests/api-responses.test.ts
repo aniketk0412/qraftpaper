@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
 import {
   badRequest,
   conflict,
   forbidden,
   notFound,
+  parseJson,
   paymentRequired,
   safeJson,
   serverError,
@@ -61,6 +63,70 @@ describe("api-responses", () => {
   it("serverError() returns 500", async () => {
     const r = serverError();
     expect(r.status).toBe(500);
+  });
+});
+
+describe("parseJson", () => {
+  const schema = z.object({
+    name: z.string().min(1),
+    age: z.number().int().min(0).max(120),
+  });
+
+  it("returns ok: true with typed data on valid input", async () => {
+    const req = new Request("https://example.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Anita", age: 21 }),
+    });
+    const result = await parseJson(req, schema);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data).toEqual({ name: "Anita", age: 21 });
+    }
+  });
+
+  it("returns ok: false with a 400 response on invalid JSON", async () => {
+    const req = new Request("https://example.com", {
+      method: "POST",
+      body: "not json",
+    });
+    const result = await parseJson(req, schema);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.response.status).toBe(400);
+    }
+  });
+
+  it("returns ok: false with field path on schema mismatch", async () => {
+    const req = new Request("https://example.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Anita", age: -5 }),
+    });
+    const result = await parseJson(req, schema);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.response.status).toBe(400);
+      const body = (await result.response.json()) as { error: string };
+      expect(body.error).toMatch(/^age:/);
+    }
+  });
+
+  it("does not echo the user's value in the error message", async () => {
+    // Reflected-XSS guard: even if Zod would print the offending value,
+    // our helper must not surface it.
+    const req = new Request("https://example.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "<script>", age: 1000 }),
+    });
+    const result = await parseJson(req, schema);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const body = (await result.response.json()) as { error: string };
+      expect(body.error).not.toContain("<script>");
+      expect(body.error).not.toContain("1000");
+    }
   });
 });
 

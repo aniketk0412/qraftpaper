@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { ZodType } from "zod";
 
 /**
  * Small response helpers so every route returns the same shape and status
@@ -64,4 +65,45 @@ export async function safeJson<T>(request: Request): Promise<T | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Parse a request body against a Zod schema. Returns a discriminated union so
+ * the caller can branch flat:
+ *
+ *   const parsed = await parseJson(request, MySchema);
+ *   if (!parsed.ok) return parsed.response;
+ *   const { ... } = parsed.data;
+ *
+ * On JSON-decode failure we surface a generic 400 ("Invalid request body").
+ * On schema failure we surface a 400 with the first issue's path + message,
+ * which is enough for client-side debugging without leaking internals or
+ * Zod's full error tree. We deliberately don't echo the user's input back
+ * (which Zod does by default) — that's how reflected XSS sneaks into error
+ * messages.
+ */
+export async function parseJson<T>(
+  request: Request,
+  schema: ZodType<T>,
+): Promise<
+  { ok: true; data: T } | { ok: false; response: NextResponse<ErrorBody> }
+> {
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return { ok: false, response: badRequest() };
+  }
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const path = issue?.path.join(".");
+    const message =
+      issue?.message ?? "Invalid request body";
+    return {
+      ok: false,
+      response: badRequest(path ? `${path}: ${message}` : message),
+    };
+  }
+  return { ok: true, data: parsed.data };
 }
