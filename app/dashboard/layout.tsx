@@ -62,7 +62,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen lg:pl-[260px]">
-      <Sidebar plan={profile?.plan ?? "unpaid"} />
+      <Sidebar plan={profile?.plan ?? "unpaid"} subjectCount={subjects.length} />
       <Topbar
         subjects={subjects}
         user={user}
