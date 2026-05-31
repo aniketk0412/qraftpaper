@@ -95,6 +95,8 @@ export default async function DashboardLayout({
         streak={streak.current}
         practisedToday={streak.practisedToday}
         daysSinceLast={streak.daysSinceLast}
+        generationsUsed={generationsUsed}
+        generationsCap={generationsCap}
       />
       <main className="px-5 py-8 sm:px-8">
         {profile && !profile.emailVerifiedAt && <VerifyEmailBanner />}

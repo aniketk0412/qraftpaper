@@ -9,6 +9,7 @@ import { Logo } from "@/components/logo";
 import { Confetti } from "@/components/ui/confetti";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
+import { describeGenerationUsage } from "@/lib/generation-usage";
 import { easeOut } from "@/lib/motion";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { cn } from "@/lib/utils";
@@ -75,11 +76,8 @@ function UsageCard({
   cap: number | null;
 }) {
   const planName = PLANS[plan as PlanId]?.name ?? "Your plan";
-  const unlimited = cap === null;
-  const pct =
-    !unlimited && cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
-  const remaining = unlimited ? null : Math.max(0, cap - used);
-  const nearLimit = remaining !== null && cap !== null && cap > 0 && remaining <= 1;
+  const u = describeGenerationUsage(used, cap);
+  const warn = u.level === "low" || u.level === "exhausted";
 
   return (
     <div className="relative overflow-hidden rounded-2xl glass-strong p-4">
@@ -96,31 +94,43 @@ function UsageCard({
         Generations this month
       </p>
       <p className="relative mt-1 text-2xl font-semibold tracking-tight tabular-nums">
-        {used}
+        {u.used}
         <span className="text-base font-medium text-fg-subtle">
-          {unlimited ? " used" : `/${cap}`}
+          {u.cap === null ? " used" : `/${u.cap}`}
         </span>
       </p>
 
-      {!unlimited && (
+      {u.cap !== null && (
         <div className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full bg-tint/[0.06]">
           <div
             className={cn(
               "h-full rounded-full transition-all duration-500",
-              nearLimit ? "bg-gold" : "bg-gradient-to-r from-violet to-accent",
+              warn ? "bg-gold" : "bg-gradient-to-r from-violet to-accent",
             )}
-            style={{ width: `${Math.max(pct, used > 0 ? 6 : 0)}%` }}
+            style={{ width: `${Math.max(u.pct, u.used > 0 ? 6 : 0)}%` }}
           />
         </div>
       )}
 
       <p className="relative mt-2 text-[0.72rem] leading-snug text-fg-muted">
-        {unlimited
+        {u.cap === null
           ? "Unlimited generations on your plan."
-          : remaining === 0
+          : u.remaining === 0
             ? "You've used this month's allowance — it resets next month."
-            : `${remaining} left this month.`}
+            : `${u.remaining} left this month.`}
       </p>
+
+      {/* Upgrade nudge — only when genuinely low or out (decided by
+          describeGenerationUsage, never for unlimited or comfortable plans). */}
+      {warn && (
+        <Link
+          href="/billing"
+          className="relative mt-2.5 inline-flex items-center gap-1 text-[0.72rem] font-medium text-gold underline-offset-2 hover:underline"
+        >
+          {u.level === "exhausted" ? "Upgrade for more" : "Running low — upgrade"}
+          <ArrowRight className="h-3 w-3" />
+        </Link>
+      )}
 
       <GlowButton href="/dashboard#generate" size="sm" className="relative mt-3.5 w-full">
         Generate

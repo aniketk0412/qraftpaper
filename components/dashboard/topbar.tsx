@@ -1,6 +1,6 @@
 "use client";
 
-import { Flame, Plus } from "lucide-react";
+import { Flame, Plus, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -9,6 +9,7 @@ import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { Notifications } from "@/components/dashboard/notifications";
 import { UserMenu, type DashboardUser } from "@/components/dashboard/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { describeGenerationUsage } from "@/lib/generation-usage";
 import type { DashboardSubject } from "@/lib/subjects";
 
 // Map the current pathname to a short page label so the topbar reflects which
@@ -30,6 +31,8 @@ export function Topbar({
   streak = 0,
   practisedToday = false,
   daysSinceLast = null,
+  generationsUsed = 0,
+  generationsCap = null,
 }: {
   subjects: DashboardSubject[];
   user: DashboardUser;
@@ -37,9 +40,17 @@ export function Topbar({
   streak?: number;
   practisedToday?: boolean;
   daysSinceLast?: number | null;
+  generationsUsed?: number;
+  generationsCap?: number | null;
 }) {
   const pathname = usePathname() ?? "/dashboard";
   const title = pageTitleFor(pathname);
+
+  // Usage nudge — only for paid plans that are genuinely low/out (the timing is
+  // owned by describeGenerationUsage, which never nudges unlimited or
+  // comfortable plans). Unpaid users are handled by the sidebar onboarding card.
+  const usage = describeGenerationUsage(generationsUsed, generationsCap);
+  const showUsageNudge = plan !== "unpaid" && usage.nudge;
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-canvas/85 px-5 backdrop-blur-md sm:px-8">
@@ -56,6 +67,24 @@ export function Topbar({
       </div>
 
       <div className="flex items-center gap-2.5">
+        {showUsageNudge && (
+          // Subtle, accurate upgrade nudge: gold pill linking to billing, shown
+          // only when the user is actually low on / out of generations.
+          <Link
+            href="/billing"
+            aria-label={
+              usage.level === "exhausted"
+                ? "Monthly generation limit reached — upgrade"
+                : `${usage.remaining} generations left this month — upgrade`
+            }
+            className="hidden h-10 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/15 px-3 font-mono text-[0.72rem] font-medium text-gold transition-colors hover:bg-gold/25 sm:inline-flex"
+          >
+            <Zap className="h-3.5 w-3.5" />
+            {usage.level === "exhausted"
+              ? "Limit reached"
+              : `${usage.remaining} left`}
+          </Link>
+        )}
         {streak > 0 && (
           // Persistent streak badge — visible from every dashboard page so
           // users keep getting reminded of the streak they're maintaining.
