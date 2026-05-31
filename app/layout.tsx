@@ -8,6 +8,7 @@ import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { SiteBackground } from "@/components/effects/site-background";
 import { CursorGlow } from "@/components/effects/cursor-glow";
+import { UpdatePrompt } from "@/components/update-prompt";
 import { siteConfig, siteUrl } from "@/lib/site";
 
 // Self-hosted via next/font — Inter for the SaaS-modern body/headline feel
@@ -124,6 +125,7 @@ export default function RootLayout({
             </SmoothScroll>
           </MotionConfig>
         </PostHogProvider>
+        <UpdatePrompt />
         <Analytics />
         <SpeedInsights />
       </body>

@@ -52,6 +52,17 @@ const nextConfig: NextConfig = {
     root: process.cwd(),
   },
   serverExternalPackages: ["pdf-parse"],
+  // A stable id for THIS build, inlined into both client and server bundles.
+  // Each deploy gets a new value (git SHA on Vercel, else a build timestamp);
+  // the update prompt compares the running app against /api/version to detect
+  // that a newer version has shipped — the PWA "update available" signal
+  // without a service worker.
+  env: {
+    NEXT_PUBLIC_BUILD_ID:
+      process.env.VERCEL_GIT_COMMIT_SHA ??
+      process.env.NEXT_PUBLIC_BUILD_ID ??
+      `build-${Date.now()}`,
+  },
   async headers() {
     // Keep authenticated/private surfaces out of search indexes — these hold
     // user papers, billing and account data, not marketing pages. Recovery
