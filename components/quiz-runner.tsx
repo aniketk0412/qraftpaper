@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowRight,
@@ -55,6 +56,7 @@ export function QuizRunner({
   backLabel = "Back to dashboard",
   gradeUrl,
   ephemeral = false,
+  upsellHref,
 }: {
   quiz: RunnerQuiz;
   backHref?: string;
@@ -66,6 +68,9 @@ export function QuizRunner({
    *  spaced-repetition drill free of demo content (e.g. a college student
    *  shouldn't get "Class 5 Maths" cards from trying the school sample). */
   ephemeral?: boolean;
+  /** When set (demo only), the finished screen shows a score-aware upsell card
+   *  pointing here. Real quizzes leave this off so paying takers aren't sold to. */
+  upsellHref?: string;
 }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -372,6 +377,50 @@ export function QuizRunner({
           <div className="mt-6 w-full max-w-xs">
             <MeterBar pct={pct} height="h-2" />
           </div>
+
+          {/* Conversion card — demo only (upsellHref set). Score-aware loss-
+              aversion framing: the sample is easy, the real exam isn't, and
+              practising your *own* syllabus is the fix. Honest persuasion, no
+              fake scarcity. */}
+          {upsellHref && (
+            <div className="relative mt-8 w-full max-w-sm overflow-hidden rounded-2xl border border-violet/35 bg-gradient-to-br from-violet/[0.14] via-canvas to-gold/[0.07] p-5 text-center">
+              <span className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-violet/20 blur-2xl" />
+              <p className="relative font-mono text-[0.6rem] uppercase tracking-[0.2em] text-violet-bright">
+                {score === total
+                  ? "Too easy? Raise the stakes"
+                  : "Your real exam won't be a sample"}
+              </p>
+              <p className="relative mt-2 text-[1.02rem] font-semibold leading-snug">
+                {score === total
+                  ? "You aced the sample — now train on your actual syllabus."
+                  : total - score === 1
+                    ? "1 slipped past you here. On the real exam, there's no retake."
+                    : `${total - score} slipped past you here — and the real exam has no retake.`}
+              </p>
+              <p className="relative mt-1.5 text-[0.84rem] leading-relaxed text-fg-muted">
+                QraftPaper turns your own syllabus and past papers into unlimited
+                mock papers and timed quizzes — so nothing on exam day is a
+                surprise. Students who practise full mocks walk in calmer and
+                score higher.
+              </p>
+              <div className="relative mt-4 flex justify-center">
+                <GlowButton href={upsellHref} size="md">
+                  <Sparkles className="h-4 w-4" />
+                  Build your own quiz
+                  <ArrowRight className="h-4 w-4" />
+                </GlowButton>
+              </div>
+              <p className="relative mt-2.5 text-[0.72rem] text-fg-subtle">
+                Free to set up · no card needed ·{" "}
+                <Link
+                  href="/#pricing"
+                  className="text-fg-muted underline-offset-2 hover:text-fg hover:underline"
+                >
+                  see plans
+                </Link>
+              </p>
+            </div>
+          )}
 
           {previous.length > 0 && (
             <div className="mt-8 w-full max-w-xs text-left">

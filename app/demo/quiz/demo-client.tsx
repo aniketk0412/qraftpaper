@@ -612,6 +612,7 @@ function QuizView({
         backHref={cta.exitHref}
         backLabel={cta.exitLabel}
         ephemeral
+        upsellHref={cta.buildHref}
       />
 
       <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl glass p-6 text-center">
