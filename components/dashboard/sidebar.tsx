@@ -3,27 +3,34 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { ArrowRight, Check, Rocket } from "lucide-react";
+import { ArrowRight, Check, Rocket, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/logo";
+import { Confetti } from "@/components/ui/confetti";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { easeOut } from "@/lib/motion";
+import { PLANS, type PlanId } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 import { accountNav, type NavItem, workspaceNav } from "@/lib/dashboard-nav";
 
 export function Sidebar({
   plan,
   subjectCount = 0,
+  generationsUsed = 0,
+  generationsCap = null,
 }: {
   plan: string;
   /** How many subjects the user has — drives the getting-started tracker so the
    *  card celebrates progress instead of nagging "Subscribe" mid-upload. */
   subjectCount?: number;
+  /** Generations used this month (paid plans) for the live usage card. */
+  generationsUsed?: number;
+  /** Monthly cap; null = unlimited. */
+  generationsCap?: number | null;
 }) {
   const pathname = usePathname();
-  // Only nudge users who haven't subscribed; paid Educator/Department users
-  // shouldn't see an onboarding card on every page.
-  const showOnboarding = plan === "unpaid";
+  const isPaid = plan !== "unpaid";
 
   return (
     <motion.aside
@@ -41,12 +48,85 @@ export function Sidebar({
         <NavGroup label="Account" items={accountNav} pathname={pathname} />
       </nav>
 
-      {showOnboarding && (
-        <div className="px-4 pb-6">
+      <div className="px-4 pb-6">
+        {isPaid ? (
+          <UsageCard plan={plan} used={generationsUsed} cap={generationsCap} />
+        ) : (
           <GettingStartedCard hasSubjects={subjectCount > 0} />
+        )}
+      </div>
+    </motion.aside>
+  );
+}
+
+/**
+ * Live monthly-usage card for paid users — replaces the onboarding tracker once
+ * someone is on a plan. Shows their plan, generations used vs. their cap (or
+ * "Unlimited"), and a "Generate" button that deep-links into the dashboard's
+ * generation panel.
+ */
+function UsageCard({
+  plan,
+  used,
+  cap,
+}: {
+  plan: string;
+  used: number;
+  cap: number | null;
+}) {
+  const planName = PLANS[plan as PlanId]?.name ?? "Your plan";
+  const unlimited = cap === null;
+  const pct =
+    !unlimited && cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
+  const remaining = unlimited ? null : Math.max(0, cap - used);
+  const nearLimit = remaining !== null && cap !== null && cap > 0 && remaining <= 1;
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl glass-strong p-4">
+      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/15 blur-2xl" />
+
+      <div className="relative flex items-center justify-between">
+        <IconTile icon={Sparkles} size="sm" tone="violet" />
+        <span className="rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 font-mono text-[0.56rem] uppercase tracking-wider text-gold">
+          {planName}
+        </span>
+      </div>
+
+      <p className="relative mt-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-fg-subtle">
+        Generations this month
+      </p>
+      <p className="relative mt-1 text-2xl font-semibold tracking-tight tabular-nums">
+        {used}
+        <span className="text-base font-medium text-fg-subtle">
+          {unlimited ? " used" : `/${cap}`}
+        </span>
+      </p>
+
+      {!unlimited && (
+        <div className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full bg-tint/[0.06]">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-500",
+              nearLimit ? "bg-gold" : "bg-gradient-to-r from-violet to-accent",
+            )}
+            style={{ width: `${Math.max(pct, used > 0 ? 6 : 0)}%` }}
+          />
         </div>
       )}
-    </motion.aside>
+
+      <p className="relative mt-2 text-[0.72rem] leading-snug text-fg-muted">
+        {unlimited
+          ? "Unlimited generations on your plan."
+          : remaining === 0
+            ? "You've used this month's allowance — it resets next month."
+            : `${remaining} left this month.`}
+      </p>
+
+      <GlowButton href="/dashboard#generate" size="sm" className="relative mt-3.5 w-full">
+        Generate
+        <ArrowRight className="h-3.5 w-3.5" />
+      </GlowButton>
+    </div>
   );
 }
 
@@ -58,6 +138,22 @@ export function Sidebar({
  * paywall.
  */
 function GettingStartedCard({ hasSubjects }: { hasSubjects: boolean }) {
+  // Fire a small one-time confetti the first time step 1 is complete (a subject
+  // exists). localStorage-guarded so it celebrates the milestone exactly once,
+  // never on every dashboard visit.
+  const [celebrate, setCelebrate] = useState(false);
+  useEffect(() => {
+    if (!hasSubjects || typeof window === "undefined") return;
+    const KEY = "qp_first_subject_celebrated";
+    if (localStorage.getItem(KEY)) return;
+    localStorage.setItem(KEY, "1");
+    // Intentional: a one-time celebration fired after hydration from a
+    // client-only localStorage check (doing it in render would cause an SSR
+    // mismatch). Runs at most once per browser.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCelebrate(true);
+  }, [hasSubjects]);
+
   const steps = [
     { label: "Add your first subject", done: hasSubjects, free: true },
     { label: "Subscribe to generate", done: false, free: false },
@@ -80,6 +176,7 @@ function GettingStartedCard({ hasSubjects }: { hasSubjects: boolean }) {
 
   return (
     <div className="relative overflow-hidden rounded-2xl glass-strong p-4">
+      {celebrate && <Confetti particleCount={18} durationMs={1800} />}
       <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet/18 blur-2xl" />
 
       <div className="relative flex items-center justify-between">

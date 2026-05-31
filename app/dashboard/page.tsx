@@ -372,12 +372,16 @@ export default async function DashboardPage() {
             <div className="flex flex-col gap-3">
               {/* GenerationPanel is deliberately NOT wrapped in Reveal: it
                   renders a fixed-position progress overlay, which would
-                  mis-anchor inside a transformed (animating) ancestor. */}
-              <GenerationPanel
-                subjects={subjects}
-                generationsUsed={generationsUsed}
-                generationsCap={generationsCap}
-              />
+                  mis-anchor inside a transformed (animating) ancestor.
+                  id="generate" is the deep-link target for the sidebar's
+                  "Generate" CTA; scroll-mt clears the sticky topbar. */}
+              <div id="generate" className="scroll-mt-24">
+                <GenerationPanel
+                  subjects={subjects}
+                  generationsUsed={generationsUsed}
+                  generationsCap={generationsCap}
+                />
+              </div>
               <Reveal delay={0.05}>
                 <QuizLaunch subjects={subjects} />
               </Reveal>

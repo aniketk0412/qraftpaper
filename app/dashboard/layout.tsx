@@ -4,10 +4,12 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
 import { VerifyEmailBanner } from "@/components/dashboard/verify-email-banner";
 import { getDb } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { usage, users } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
 import { getStreakSummary } from "@/lib/streaks";
-import { eq } from "drizzle-orm";
+import { currentUsageMonth } from "@/lib/usage";
+import { PLANS, type PlanId } from "@/lib/plans";
+import { and, eq } from "drizzle-orm";
 
 export const runtime = "nodejs";
 
@@ -36,19 +38,37 @@ export default async function DashboardLayout({
         practisedToday: false,
         daysSinceLast: null,
       };
-  const [profile] = session?.user?.id
-    ? await getDb()
-        .select({
-          name: users.name,
-          email: users.email,
-          institution: users.institution,
-          plan: users.plan,
-          emailVerifiedAt: users.emailVerifiedAt,
-        })
-        .from(users)
-        .where(eq(users.id, session.user.id))
-        .limit(1)
-    : [];
+  const userId = session?.user?.id;
+  // Profile + this month's generation usage in parallel — both keyed only on
+  // userId. The usage count drives the paid-plan status card in the sidebar.
+  const [[profile], [usageRow]] = userId
+    ? await Promise.all([
+        getDb()
+          .select({
+            name: users.name,
+            email: users.email,
+            institution: users.institution,
+            plan: users.plan,
+            emailVerifiedAt: users.emailVerifiedAt,
+          })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1),
+        getDb()
+          .select({ generations: usage.generations })
+          .from(usage)
+          .where(
+            and(eq(usage.userId, userId), eq(usage.month, currentUsageMonth())),
+          )
+          .limit(1),
+      ])
+    : [[], []];
+
+  const plan = profile?.plan ?? "unpaid";
+  const generationsUsed = usageRow?.generations ?? 0;
+  // Cap from the single-source-of-truth PLANS table: a number, or null =
+  // unlimited (institution). unpaid is 0.
+  const generationsCap = PLANS[plan as PlanId]?.generationsPerMonth ?? null;
 
   const user = {
     name: profile?.name ?? session?.user?.name ?? null,
@@ -62,11 +82,16 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen lg:pl-[260px]">
-      <Sidebar plan={profile?.plan ?? "unpaid"} subjectCount={subjects.length} />
+      <Sidebar
+        plan={plan}
+        subjectCount={subjects.length}
+        generationsUsed={generationsUsed}
+        generationsCap={generationsCap}
+      />
       <Topbar
         subjects={subjects}
         user={user}
-        plan={profile?.plan ?? "unpaid"}
+        plan={plan}
         streak={streak.current}
         practisedToday={streak.practisedToday}
         daysSinceLast={streak.daysSinceLast}
