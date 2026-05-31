@@ -25,6 +25,8 @@ export type DemoTrack = "school" | "college";
 export interface DemoSubject {
   subject: string;
   blurb: string;
+  /** Optional stream label (Class 11–12), e.g. "Science" / "Commerce". */
+  stream?: string;
   quiz: Quiz;
 }
 
@@ -45,7 +47,7 @@ export interface CollegeDept {
 }
 
 /** Every school class the picker offers. */
-export const SCHOOL_GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+export const SCHOOL_GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 function quiz(
   meta: {
@@ -176,6 +178,107 @@ const secondaryEnglish = quiz(
   ],
 );
 
+// ---- Senior Secondary (Classes 11–12), grouped by stream -----------------
+
+const srPhysics = quiz(
+  { subject: "Physics", subjectCode: "PHY-12", title: "Class 11–12 Physics Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The SI unit of work is the…", options: ["Newton", "Joule", "Watt", "Pascal"], correctIndex: 1, unit: "Mechanics", difficulty: "Easy", explanation: "Work and energy are measured in joules (J)." },
+    { id: "q2", prompt: "Which of these is a scalar quantity?", options: ["Force", "Velocity", "Speed", "Acceleration"], correctIndex: 2, unit: "Mechanics", difficulty: "Medium", explanation: "Speed has only magnitude; the others are vectors." },
+    { id: "q3", prompt: "The acceleration of a freely falling body near Earth is about…", options: ["9.8 m/s²", "0", "19.6 m/s²", "4.9 m/s²"], correctIndex: 0, unit: "Gravitation", difficulty: "Easy", explanation: "g ≈ 9.8 m/s² downward for a freely falling body." },
+    { id: "q4", prompt: "Newton's first law of motion is also called the law of…", options: ["gravitation", "inertia", "action–reaction", "conservation"], correctIndex: 1, unit: "Laws of Motion", difficulty: "Easy", explanation: "It describes inertia — bodies resist changes to their motion." },
+    { id: "q5", prompt: "The SI unit of electric charge is the…", options: ["ampere", "coulomb", "volt", "ohm"], correctIndex: 1, unit: "Electricity", difficulty: "Medium", explanation: "Charge is measured in coulombs (C)." },
+  ],
+);
+
+const srChemistry = quiz(
+  { subject: "Chemistry", subjectCode: "CHE-12", title: "Class 11–12 Chemistry Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The atomic number of carbon is…", options: ["6", "12", "8", "14"], correctIndex: 0, unit: "Atomic Structure", difficulty: "Easy", explanation: "Carbon has 6 protons, so its atomic number is 6." },
+    { id: "q2", prompt: "Which gas is most abundant in Earth's atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"], correctIndex: 1, unit: "Environmental Chemistry", difficulty: "Easy", explanation: "Nitrogen makes up about 78% of the atmosphere." },
+    { id: "q3", prompt: "The pH of a strongly acidic solution is closest to…", options: ["1", "7", "10", "14"], correctIndex: 0, unit: "Acids & Bases", difficulty: "Easy", explanation: "Strong acids have a low pH, close to 1." },
+    { id: "q4", prompt: "The chemical symbol for sodium is…", options: ["S", "So", "Na", "Sd"], correctIndex: 2, unit: "Periodic Table", difficulty: "Easy", explanation: "Sodium's symbol Na comes from the Latin 'natrium'." },
+    { id: "q5", prompt: "An atom that has lost an electron becomes a…", options: ["neutron", "cation", "anion", "molecule"], correctIndex: 1, unit: "Bonding", difficulty: "Medium", explanation: "Losing an electron leaves a net positive charge — a cation." },
+  ],
+);
+
+const srBiology = quiz(
+  { subject: "Biology", subjectCode: "BIO-12", title: "Class 11–12 Biology Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The basic structural and functional unit of life is the…", options: ["tissue", "cell", "organ", "atom"], correctIndex: 1, unit: "Cell Biology", difficulty: "Easy", explanation: "All living things are made of cells." },
+    { id: "q2", prompt: "Which blood cells help fight infection?", options: ["red blood cells", "white blood cells", "platelets", "plasma"], correctIndex: 1, unit: "Human Physiology", difficulty: "Easy", explanation: "White blood cells (leucocytes) defend the body against pathogens." },
+    { id: "q3", prompt: "Photosynthesis mainly occurs in which part of a plant cell?", options: ["mitochondria", "chloroplast", "nucleus", "ribosome"], correctIndex: 1, unit: "Plant Physiology", difficulty: "Easy", explanation: "Chloroplasts contain chlorophyll and carry out photosynthesis." },
+    { id: "q4", prompt: "Humans normally have how many pairs of chromosomes?", options: ["21", "23", "46", "24"], correctIndex: 1, unit: "Genetics", difficulty: "Medium", explanation: "Humans have 23 pairs (46 chromosomes in total)." },
+    { id: "q5", prompt: "The process by which organisms produce offspring is called…", options: ["respiration", "reproduction", "digestion", "excretion"], correctIndex: 1, unit: "Reproduction", difficulty: "Easy", explanation: "Reproduction is how organisms produce new individuals." },
+  ],
+);
+
+const srMaths = quiz(
+  { subject: "Mathematics", subjectCode: "MATH-12", title: "Class 11–12 Mathematics Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The derivative of x² with respect to x is…", options: ["x", "2x", "x²/2", "2"], correctIndex: 1, unit: "Calculus", difficulty: "Medium", explanation: "By the power rule, d/dx(x²) = 2x." },
+    { id: "q2", prompt: "What is sin 90°?", options: ["0", "1", "−1", "1/2"], correctIndex: 1, unit: "Trigonometry", difficulty: "Easy", explanation: "sin 90° = 1." },
+    { id: "q3", prompt: "The value of log₁₀(1000) is…", options: ["2", "3", "10", "100"], correctIndex: 1, unit: "Logarithms", difficulty: "Medium", explanation: "10³ = 1000, so log₁₀(1000) = 3." },
+    { id: "q4", prompt: "If f(x) = x², then f(3) equals…", options: ["6", "9", "3", "27"], correctIndex: 1, unit: "Functions", difficulty: "Easy", explanation: "f(3) = 3² = 9." },
+    { id: "q5", prompt: "In how many ways can 3 distinct books be arranged in a row?", options: ["3", "6", "9", "27"], correctIndex: 1, unit: "Permutations", difficulty: "Medium", explanation: "3! = 3 × 2 × 1 = 6." },
+  ],
+);
+
+const srAccountancy = quiz(
+  { subject: "Accountancy", subjectCode: "ACC-12", title: "Class 11–12 Accountancy Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The accounting equation is: Assets = Liabilities + …", options: ["Expenses", "Capital", "Revenue", "Drawings"], correctIndex: 1, unit: "Fundamentals", difficulty: "Medium", explanation: "Assets = Liabilities + Capital (owner's equity)." },
+    { id: "q2", prompt: "The book in which a transaction is first recorded is the…", options: ["Ledger", "Journal", "Balance Sheet", "Trial Balance"], correctIndex: 1, unit: "Recording", difficulty: "Medium", explanation: "Transactions are first entered in the journal (book of original entry)." },
+    { id: "q3", prompt: "Goodwill is an example of a/an…", options: ["current asset", "intangible asset", "liability", "expense"], correctIndex: 1, unit: "Assets", difficulty: "Medium", explanation: "Goodwill has no physical form, so it is an intangible asset." },
+    { id: "q4", prompt: "Which statement shows a firm's profit or loss?", options: ["Balance Sheet", "Income Statement", "Cash Flow", "Trial Balance"], correctIndex: 1, unit: "Final Accounts", difficulty: "Easy", explanation: "The income (profit & loss) statement reports profit or loss." },
+    { id: "q5", prompt: "Double-entry bookkeeping records each transaction in at least how many accounts?", options: ["1", "2", "3", "4"], correctIndex: 1, unit: "Fundamentals", difficulty: "Easy", explanation: "Every transaction affects at least two accounts (debit and credit)." },
+  ],
+);
+
+const srEconomics = quiz(
+  { subject: "Economics", subjectCode: "ECO-12", title: "Class 11–12 Economics Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The law of demand states that, other things equal, when price rises, quantity demanded…", options: ["rises", "falls", "stays the same", "doubles"], correctIndex: 1, unit: "Microeconomics", difficulty: "Easy", explanation: "Higher price generally means lower quantity demanded." },
+    { id: "q2", prompt: "GDP stands for…", options: ["Gross Domestic Product", "General Domestic Price", "Gross Demand Product", "Government Domestic Policy"], correctIndex: 0, unit: "Macroeconomics", difficulty: "Easy", explanation: "GDP = Gross Domestic Product." },
+    { id: "q3", prompt: "A market with a single seller is called a…", options: ["monopoly", "oligopoly", "perfect competition", "duopoly"], correctIndex: 0, unit: "Market Structure", difficulty: "Medium", explanation: "A monopoly has one seller dominating the market." },
+    { id: "q4", prompt: "Inflation refers to a sustained general rise in…", options: ["employment", "prices", "exports", "savings"], correctIndex: 1, unit: "Macroeconomics", difficulty: "Easy", explanation: "Inflation is a general increase in the price level." },
+    { id: "q5", prompt: "Which of these is a factor of production?", options: ["money", "labour", "profit", "demand"], correctIndex: 1, unit: "Fundamentals", difficulty: "Medium", explanation: "Land, labour, capital and enterprise are the factors of production." },
+  ],
+);
+
+const srBusiness = quiz(
+  { subject: "Business Studies", subjectCode: "BST-12", title: "Class 11–12 Business Studies Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The first function of management is usually…", options: ["controlling", "planning", "staffing", "directing"], correctIndex: 1, unit: "Management", difficulty: "Easy", explanation: "Management begins with planning, then organizing, staffing, directing and controlling." },
+    { id: "q2", prompt: "A company owned by shareholders with limited liability is a…", options: ["sole proprietorship", "partnership", "joint stock company", "cooperative"], correctIndex: 2, unit: "Forms of Business", difficulty: "Medium", explanation: "A joint stock company is owned by shareholders with limited liability." },
+    { id: "q3", prompt: "Marketing's '4 Ps' include Product, Price, Place and…", options: ["Profit", "Promotion", "People", "Process"], correctIndex: 1, unit: "Marketing", difficulty: "Easy", explanation: "The classic marketing mix is Product, Price, Place, Promotion." },
+    { id: "q4", prompt: "The person who bears the risk of a business is the…", options: ["employee", "entrepreneur", "customer", "supplier"], correctIndex: 1, unit: "Entrepreneurship", difficulty: "Easy", explanation: "The entrepreneur takes on the risks and rewards of the business." },
+    { id: "q5", prompt: "Which of these is a source of long-term finance?", options: ["trade credit", "shares", "bank overdraft", "creditors"], correctIndex: 1, unit: "Finance", difficulty: "Medium", explanation: "Issuing shares raises long-term capital; the others are short-term." },
+  ],
+);
+
+const srHistory = quiz(
+  { subject: "History", subjectCode: "HIS-12", title: "Class 11–12 History Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "India gained independence in which year?", options: ["1942", "1947", "1950", "1930"], correctIndex: 1, unit: "Modern India", difficulty: "Easy", explanation: "India became independent on 15 August 1947." },
+    { id: "q2", prompt: "The Indian National Congress was founded in…", options: ["1885", "1905", "1920", "1947"], correctIndex: 0, unit: "Freedom Struggle", difficulty: "Medium", explanation: "The INC was founded in 1885." },
+    { id: "q3", prompt: "Who led the Salt March (Dandi March) of 1930?", options: ["Jawaharlal Nehru", "Mahatma Gandhi", "Subhas Chandra Bose", "Sardar Patel"], correctIndex: 1, unit: "Freedom Struggle", difficulty: "Easy", explanation: "Gandhi led the Dandi Salt March in 1930." },
+    { id: "q4", prompt: "The French Revolution began in which year?", options: ["1689", "1789", "1889", "1719"], correctIndex: 1, unit: "World History", difficulty: "Medium", explanation: "The French Revolution began in 1789." },
+    { id: "q5", prompt: "The Quit India Movement was launched in…", options: ["1930", "1942", "1945", "1947"], correctIndex: 1, unit: "Freedom Struggle", difficulty: "Medium", explanation: "The Quit India Movement began in August 1942." },
+  ],
+);
+
+const srPolitical = quiz(
+  { subject: "Political Science", subjectCode: "POL-12", title: "Class 11–12 Political Science Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The head of state of India is the…", options: ["Prime Minister", "President", "Chief Justice", "Speaker"], correctIndex: 1, unit: "Indian Polity", difficulty: "Easy", explanation: "The President of India is the head of state." },
+    { id: "q2", prompt: "The Indian Parliament consists of the President, Lok Sabha and…", options: ["Vidhan Sabha", "Rajya Sabha", "Supreme Court", "Cabinet"], correctIndex: 1, unit: "Indian Polity", difficulty: "Medium", explanation: "Parliament = President + Lok Sabha + Rajya Sabha." },
+    { id: "q3", prompt: "The minimum age to vote in India is…", options: ["16", "18", "21", "25"], correctIndex: 1, unit: "Democracy", difficulty: "Easy", explanation: "Indian citizens can vote from age 18." },
+    { id: "q4", prompt: "Fundamental Rights are guaranteed in which part of the Constitution?", options: ["Part I", "Part III", "Part IV", "Part V"], correctIndex: 1, unit: "Constitution", difficulty: "Medium", explanation: "Fundamental Rights are in Part III of the Constitution." },
+    { id: "q5", prompt: "A form of government in which people elect their representatives is called…", options: ["monarchy", "democracy", "dictatorship", "oligarchy"], correctIndex: 1, unit: "Political Theory", difficulty: "Easy", explanation: "In a democracy, people rule through elected representatives." },
+  ],
+);
+
 export const SCHOOL_BANDS: SchoolBand[] = [
   {
     id: "primary",
@@ -209,6 +312,23 @@ export const SCHOOL_BANDS: SchoolBand[] = [
       { subject: "Science", blurb: "Physics, chemistry and biology.", quiz: secondaryScience },
       { subject: "Social Science", blurb: "History, civics and geography.", quiz: secondarySocial },
       { subject: "English", blurb: "Grammar, parts of speech and vocabulary.", quiz: secondaryEnglish },
+    ],
+  },
+  {
+    id: "senior",
+    label: "Senior Secondary",
+    range: "Classes 11–12",
+    grades: [11, 12],
+    subjects: [
+      { subject: "Physics", stream: "Science", blurb: "Mechanics, gravitation and electricity.", quiz: srPhysics },
+      { subject: "Chemistry", stream: "Science", blurb: "Atomic structure, acids and the periodic table.", quiz: srChemistry },
+      { subject: "Biology", stream: "Science", blurb: "Cells, genetics and human physiology.", quiz: srBiology },
+      { subject: "Mathematics", stream: "Science", blurb: "Calculus, trigonometry and logarithms.", quiz: srMaths },
+      { subject: "Accountancy", stream: "Commerce", blurb: "Accounting equation, journals and final accounts.", quiz: srAccountancy },
+      { subject: "Economics", stream: "Commerce", blurb: "Demand, GDP, markets and inflation.", quiz: srEconomics },
+      { subject: "Business Studies", stream: "Commerce", blurb: "Management, business forms and marketing.", quiz: srBusiness },
+      { subject: "History", stream: "Arts", blurb: "Modern India and the freedom struggle.", quiz: srHistory },
+      { subject: "Political Science", stream: "Arts", blurb: "Indian polity, the Constitution and democracy.", quiz: srPolitical },
     ],
   },
 ];
@@ -305,6 +425,50 @@ const collegeScience = quiz(
   ],
 );
 
+const collegeCivil = quiz(
+  { subject: "Civil Engineering Basics", subjectCode: "CE-101", title: "Civil Engineering Basics Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The main binding material in concrete is…", options: ["sand", "cement", "gravel", "water"], correctIndex: 1, unit: "Materials", difficulty: "Easy", explanation: "Cement binds the aggregates together in concrete." },
+    { id: "q2", prompt: "The SI unit of stress is the…", options: ["Newton", "Pascal", "Joule", "Watt"], correctIndex: 1, unit: "Mechanics of Solids", difficulty: "Medium", explanation: "Stress = force/area, measured in pascals (N/m²)." },
+    { id: "q3", prompt: "Reinforced cement concrete (RCC) combines concrete with…", options: ["wood", "steel bars", "plastic", "glass"], correctIndex: 1, unit: "Structures", difficulty: "Easy", explanation: "Steel reinforcement carries tension that concrete alone cannot." },
+    { id: "q4", prompt: "Which instrument is used to measure horizontal angles in surveying?", options: ["barometer", "theodolite", "ammeter", "vernier caliper"], correctIndex: 1, unit: "Surveying", difficulty: "Medium", explanation: "A theodolite measures horizontal and vertical angles." },
+    { id: "q5", prompt: "A beam primarily resists which kind of load action?", options: ["bending", "magnetism", "evaporation", "refraction"], correctIndex: 0, unit: "Structures", difficulty: "Medium", explanation: "Beams are designed mainly to resist bending." },
+  ],
+);
+
+const collegeBiotech = quiz(
+  { subject: "Biotechnology Basics", subjectCode: "BT-101", title: "Biotechnology Basics Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The molecule that carries genetic information is…", options: ["protein", "DNA", "glucose", "lipid"], correctIndex: 1, unit: "Molecular Biology", difficulty: "Easy", explanation: "DNA stores the genetic blueprint of an organism." },
+    { id: "q2", prompt: "Enzymes are biological…", options: ["catalysts", "acids", "salts", "gases"], correctIndex: 0, unit: "Biochemistry", difficulty: "Easy", explanation: "Enzymes speed up reactions without being consumed — biological catalysts." },
+    { id: "q3", prompt: "Making genetically identical copies of an organism or gene is called…", options: ["mutation", "cloning", "digestion", "respiration"], correctIndex: 1, unit: "Genetic Engineering", difficulty: "Medium", explanation: "Cloning produces identical genetic copies." },
+    { id: "q4", prompt: "Human insulin for diabetics is now produced using…", options: ["fermentation of fruit", "recombinant DNA technology", "simple distillation", "crystallization"], correctIndex: 1, unit: "Applications", difficulty: "Medium", explanation: "Recombinant DNA technology lets microbes produce human insulin." },
+    { id: "q5", prompt: "The basic unit of heredity is the…", options: ["cell", "gene", "atom", "tissue"], correctIndex: 1, unit: "Genetics", difficulty: "Easy", explanation: "A gene is the basic unit of inheritance." },
+  ],
+);
+
+const collegePharmacy = quiz(
+  { subject: "Pharmacy Fundamentals", subjectCode: "PHARM-101", title: "Pharmacy Fundamentals Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The study of drugs and their effects on the body is called…", options: ["pathology", "pharmacology", "radiology", "cardiology"], correctIndex: 1, unit: "Pharmacology", difficulty: "Medium", explanation: "Pharmacology studies how drugs act on living systems." },
+    { id: "q2", prompt: "The branch dealing with dosage forms like tablets and capsules is…", options: ["pharmaceutics", "anatomy", "botany", "surgery"], correctIndex: 0, unit: "Pharmaceutics", difficulty: "Medium", explanation: "Pharmaceutics covers formulating and preparing dosage forms." },
+    { id: "q3", prompt: "A medicine that reduces fever is called a/an…", options: ["antibiotic", "antipyretic", "antiseptic", "anaesthetic"], correctIndex: 1, unit: "Drug Classes", difficulty: "Medium", explanation: "Antipyretics (e.g. paracetamol) lower fever." },
+    { id: "q4", prompt: "Paracetamol is commonly used as a…", options: ["pain reliever", "vitamin", "vaccine", "antacid"], correctIndex: 0, unit: "Drug Classes", difficulty: "Easy", explanation: "Paracetamol is an analgesic (pain reliever) and antipyretic." },
+    { id: "q5", prompt: "The amount of a drug administered at one time is called the…", options: ["dose", "formula", "residue", "solvent"], correctIndex: 0, unit: "Fundamentals", difficulty: "Easy", explanation: "A dose is the measured quantity of drug given at one time." },
+  ],
+);
+
+const collegeLaw = quiz(
+  { subject: "Law Fundamentals", subjectCode: "LAW-101", title: "Law Fundamentals Quiz", durationMins: 15 },
+  [
+    { id: "q1", prompt: "The supreme law of India is the…", options: ["Indian Penal Code", "Constitution of India", "Code of Civil Procedure", "Contract Act"], correctIndex: 1, unit: "Constitutional Law", difficulty: "Easy", explanation: "The Constitution is the supreme law from which all others derive." },
+    { id: "q2", prompt: "The highest court in India is the…", options: ["High Court", "Supreme Court", "District Court", "Tribunal"], correctIndex: 1, unit: "Judiciary", difficulty: "Easy", explanation: "The Supreme Court of India is the apex court." },
+    { id: "q3", prompt: "A legally enforceable agreement between parties is a…", options: ["tort", "contract", "will", "notice"], correctIndex: 1, unit: "Contract Law", difficulty: "Medium", explanation: "A contract is an agreement enforceable by law." },
+    { id: "q4", prompt: "In criminal law, the accused is presumed to be…", options: ["guilty", "innocent until proven guilty", "liable", "convicted"], correctIndex: 1, unit: "Criminal Law", difficulty: "Medium", explanation: "The presumption of innocence places the burden of proof on the prosecution." },
+    { id: "q5", prompt: "The branch of law that deals with crimes is…", options: ["civil law", "criminal law", "corporate law", "tax law"], correctIndex: 1, unit: "Fundamentals", difficulty: "Easy", explanation: "Criminal law defines offences and their punishments." },
+  ],
+);
+
 export const COLLEGE_DEPTS: CollegeDept[] = [
   {
     id: "cse",
@@ -369,6 +533,38 @@ export const COLLEGE_DEPTS: CollegeDept[] = [
     blurb: "Physics, chemistry and biology.",
     subjects: [
       { subject: "General Science", blurb: "Cells, atoms, pH and genetics.", quiz: collegeScience },
+    ],
+  },
+  {
+    id: "civil",
+    label: "Civil Engineering",
+    blurb: "Materials, structures and surveying.",
+    subjects: [
+      { subject: "Civil Engineering Basics", blurb: "Concrete, stress, RCC and surveying.", quiz: collegeCivil },
+    ],
+  },
+  {
+    id: "biotech",
+    label: "Biotechnology",
+    blurb: "Molecular biology and genetic engineering.",
+    subjects: [
+      { subject: "Biotechnology Basics", blurb: "DNA, enzymes, cloning and genetics.", quiz: collegeBiotech },
+    ],
+  },
+  {
+    id: "pharmacy",
+    label: "Pharmacy (B.Pharm)",
+    blurb: "Drugs, dosage forms and pharmacology.",
+    subjects: [
+      { subject: "Pharmacy Fundamentals", blurb: "Pharmacology, dosage forms and drug classes.", quiz: collegePharmacy },
+    ],
+  },
+  {
+    id: "law",
+    label: "Law (LLB)",
+    blurb: "Constitution, contracts and the judiciary.",
+    subjects: [
+      { subject: "Law Fundamentals", blurb: "Constitution, courts, contracts and criminal law.", quiz: collegeLaw },
     ],
   },
 ];

@@ -30,7 +30,7 @@ function allQuizzes(): { where: string; quiz: Quiz }[] {
 }
 
 describe("school catalog structure", () => {
-  it("covers every class 1–10 exactly once across the bands", () => {
+  it("covers every supported class exactly once across the bands", () => {
     const covered = SCHOOL_BANDS.flatMap((b) => b.grades).sort((a, b) => a - b);
     expect(covered).toEqual(SCHOOL_GRADES);
     expect(new Set(covered).size).toBe(covered.length); // no overlaps
@@ -116,8 +116,8 @@ describe("subjectsForGrade", () => {
     expect(c1).toEqual(c5); // both Primary
   });
 
-  it("returns nothing for a class outside 1–10", () => {
-    expect(subjectsForGrade(11)).toEqual([]);
+  it("returns nothing for a class outside the supported range", () => {
+    expect(subjectsForGrade(13)).toEqual([]);
     expect(subjectsForGrade(0)).toEqual([]);
   });
 });
