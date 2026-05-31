@@ -18,7 +18,8 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Reveal } from "@/components/ui/reveal";
-import { examplePaper } from "@/lib/demo-data";
+import { examplePaperForLevel } from "@/lib/demo-data";
+import type { QuestionPaper } from "@/lib/types";
 import { getDb } from "@/lib/db";
 import { papers, quizzes, usage, users } from "@/lib/db/schema";
 import { PLANS, type PlanId } from "@/lib/plans";
@@ -106,11 +107,14 @@ export default async function DashboardPage() {
           .limit(1)
           .then((rows) => rows[0] ?? { generations: 0 }),
         getDb()
-          .select({ plan: users.plan })
+          .select({
+            plan: users.plan,
+            educationLevel: users.educationLevel,
+          })
           .from(users)
           .where(eq(users.id, userId))
           .limit(1)
-          .then((rows) => rows[0] ?? { plan: "unpaid" }),
+          .then((rows) => rows[0] ?? { plan: "unpaid", educationLevel: null }),
         // Degrade to 0 rather than taking down the whole dashboard if this
         // fails. The drill queue is an auxiliary metric — on a preview deploy
         // (which skips migrations) the question_reviews table may not exist
@@ -131,7 +135,7 @@ export default async function DashboardPage() {
         },
         { days: Array(7).fill(false), done: 0, target: 5, hit: false },
         { generations: 0 },
-        { plan: "unpaid" },
+        { plan: "unpaid", educationLevel: null },
         0,
       ];
 
@@ -142,6 +146,13 @@ export default async function DashboardPage() {
   const generationsUsed = usageRow.generations;
   const generationsCap =
     PLANS[(profileRow.plan ?? "unpaid") as PlanId]?.generationsPerMonth ?? 0;
+
+  // The sample paper shown to users without their own papers, matched to the
+  // account's education level (school students see a school paper, not the
+  // B.Tech DSA one).
+  const samplePaper: QuestionPaper = examplePaperForLevel(
+    profileRow.educationLevel,
+  );
 
   const milestone = currentMilestone(streak.current);
 
@@ -357,7 +368,7 @@ export default async function DashboardPage() {
         <>
           <FirstRunEmptyState />
           <div className="mt-6">
-            <SamplePaperTeaser />
+            <SamplePaperTeaser paper={samplePaper} />
           </div>
         </>
       ) : (
@@ -491,7 +502,7 @@ export default async function DashboardPage() {
               they already produce. */}
           {recentPapers.length === 0 && (
             <div className="mt-6">
-              <SamplePaperTeaser />
+              <SamplePaperTeaser paper={samplePaper} />
             </div>
           )}
         </>
@@ -507,7 +518,7 @@ export default async function DashboardPage() {
  * before hitting any paywall. Extracted because it appears in two branches of
  * the dashboard (no-subjects onboarding and subjects-but-no-papers).
  */
-function SamplePaperTeaser() {
+function SamplePaperTeaser({ paper }: { paper: QuestionPaper }) {
   return (
     <Reveal>
       <div className="overflow-hidden rounded-2xl glass-strong">
@@ -517,7 +528,7 @@ function SamplePaperTeaser() {
             <div className="leading-tight">
               <p className="text-sm font-medium">Sample generated paper</p>
               <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
-                {examplePaper.subjectCode} · {examplePaper.totalMarks} marks
+                {paper.subjectCode} · {paper.totalMarks} marks
               </p>
             </div>
           </div>
@@ -529,7 +540,7 @@ function SamplePaperTeaser() {
 
         <div className="relative">
           <div className="max-h-[26rem] overflow-hidden">
-            <PaperSheet paper={examplePaper} />
+            <PaperSheet paper={paper} />
           </div>
           {/* gradient fade masks the cut-off sheet. We lead with the free demo
               quiz CTA (zero-friction, real product feel) and put Subscribe

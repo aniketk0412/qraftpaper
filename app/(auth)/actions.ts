@@ -11,6 +11,7 @@ import { signIn } from "@/auth";
 import { identifyUser, trackEvent } from "@/lib/analytics";
 import { issueVerificationEmail, hashVerificationToken } from "@/lib/verification";
 import { getDb } from "@/lib/db";
+import { isValidGrade } from "@/lib/education";
 import {
   auditLogs,
   emailVerificationTokens,
@@ -251,9 +252,17 @@ export async function signupAction(formData: FormData) {
   const email = getRequiredString(formData, "email").toLowerCase();
   const institution = getRequiredString(formData, "institution");
   const password = getRequiredString(formData, "password");
+  const educationLevel = getRequiredString(formData, "educationLevel");
+  const educationGrade = getRequiredString(formData, "educationGrade");
 
   if (!name || !email || !institution || password.length < 8) {
     redirect("/signup?error=invalid-fields");
+  }
+
+  // The level/grade is locked after signup (changeable once per ~6 months), so
+  // validate it now rather than persist a malformed pair.
+  if (!isValidGrade(educationLevel, educationGrade)) {
+    redirect("/signup?error=invalid-grade");
   }
 
   const db = getDb();
@@ -311,6 +320,10 @@ export async function signupAction(formData: FormData) {
       plan: "unpaid",
       role: "owner",
       status: "active",
+      educationLevel,
+      educationGrade,
+      // Stamp the change time so the 6-month lock starts from signup.
+      educationGradeUpdatedAt: new Date(),
     })
     .returning();
 

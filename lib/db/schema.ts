@@ -19,6 +19,17 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   name: text("name"),
   institution: text("institution"),
+  // Education level + grade, captured at signup and effectively locked: a user
+  // can change it at most once every ~6 months (enforced in the settings
+  // action). educationLevel is "school" | "college"; educationGrade is the
+  // class number ("1".."12") for school or a department id ("cse", …) for
+  // college. Nullable so pre-existing users (and non-student accounts) simply
+  // have no grade set.
+  educationLevel: text("education_level"),
+  educationGrade: text("education_grade"),
+  educationGradeUpdatedAt: timestamp("education_grade_updated_at", {
+    withTimezone: true,
+  }),
   // Default to "unpaid" — a real plan only unlocks after the LemonSqueezy
   // webhook fires. signupAction sets this explicitly today, but the schema
   // default backs that up against any future insertion path.

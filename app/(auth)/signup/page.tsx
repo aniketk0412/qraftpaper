@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, Building2, Lock, Mail, User } from "lucide-react";
 import { auth } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
+import { EducationPicker } from "@/components/auth/education-picker";
 import { Turnstile } from "@/components/auth/turnstile";
 import { GlowButton } from "@/components/ui/glow-button";
 import { signupAction } from "../actions";
@@ -18,6 +19,7 @@ const errorMessages: Record<string, string> = {
   "email-exists": "That email is already registered. Sign in instead.",
   "invalid-fields":
     "Enter all details and use a password with at least 8 characters.",
+  "invalid-grade": "Please pick your level and class/department.",
   "too-many": "Too many sign-ups from your network recently. Please try again later.",
   captcha: "Please complete the verification and try again.",
 };
@@ -69,6 +71,7 @@ export default async function SignupPage({
           icon={Building2}
           placeholder="Parul University"
         />
+        <EducationPicker />
         <AuthField
           id="password"
           name="password"

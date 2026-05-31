@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { desc, eq, sql } from "drizzle-orm";
-import { Building2, CheckCircle2, CreditCard, LogOut, Mail, Receipt, Trash2, User } from "lucide-react";
+import { Building2, CheckCircle2, CreditCard, GraduationCap, Lock, LogOut, Mail, Receipt, Trash2, User } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
+import { EducationPicker } from "@/components/auth/education-picker";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { Reveal } from "@/components/ui/reveal";
@@ -13,9 +14,19 @@ import {
 } from "@/components/dashboard/billing-history";
 import { getDb } from "@/lib/db";
 import { billingEvents, subscriptions, users } from "@/lib/db/schema";
+import {
+  canChangeGrade,
+  describeGrade,
+  nextGradeChangeAt,
+  type EducationLevel,
+} from "@/lib/education";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { cn } from "@/lib/utils";
-import { deleteAccountAction, updateProfileAction } from "./actions";
+import {
+  deleteAccountAction,
+  updateEducationAction,
+  updateProfileAction,
+} from "./actions";
 
 export const runtime = "nodejs";
 
@@ -37,6 +48,9 @@ export default async function SettingsPage({
       email: users.email,
       institution: users.institution,
       plan: users.plan,
+      educationLevel: users.educationLevel,
+      educationGrade: users.educationGrade,
+      educationGradeUpdatedAt: users.educationGradeUpdatedAt,
     })
     .from(users)
     .where(eq(users.id, session.user.id))
@@ -86,6 +100,16 @@ export default async function SettingsPage({
           year: "numeric",
         }).format(d)
       : null;
+
+  // Education level/grade + the 6-month change lock.
+  const gradeLabel = describeGrade(
+    profile?.educationLevel,
+    profile?.educationGrade,
+  );
+  const gradeUpdatedAt = profile?.educationGradeUpdatedAt ?? null;
+  const canEditGrade = canChangeGrade(gradeUpdatedAt);
+  const nextChangeDate =
+    !canEditGrade && gradeUpdatedAt ? nextGradeChangeAt(gradeUpdatedAt) : null;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -153,6 +177,66 @@ export default async function SettingsPage({
               Save changes
             </GlowButton>
           </form>
+        </GlassCard>
+      </Reveal>
+
+      <Reveal>
+        <GlassCard className="mt-3 p-7">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h2 className="text-lg font-semibold tracking-tight">Your level</h2>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-violet/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-violet-bright ring-1 ring-violet/25">
+              <GraduationCap className="h-3 w-3" />
+              {gradeLabel ?? "Not set"}
+            </span>
+          </div>
+          <p className="mt-1 text-[0.84rem] text-fg-muted">
+            Your dashboard sample and recommendations are tailored to this. It&apos;s
+            locked to your account — changeable only once every 6 months.
+          </p>
+
+          {saved === "grade" && (
+            <p className="mt-4 flex items-center gap-2 rounded-xl border border-tint/15 bg-tint/[0.04] px-4 py-3 text-[0.82rem] text-fg">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              Level updated.
+            </p>
+          )}
+          {error === "invalid-grade" && (
+            <p className="mt-4 rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.82rem] text-fg-muted">
+              Pick a valid level and class/department.
+            </p>
+          )}
+          {error === "grade-locked" && (
+            <p className="mt-4 rounded-xl border border-gold/30 bg-gold/[0.08] px-4 py-3 text-[0.82rem] text-fg">
+              You changed your level recently. You can change it again
+              {nextChangeDate ? ` on ${dateFmt(nextChangeDate)}` : " later"}.
+            </p>
+          )}
+
+          {canEditGrade ? (
+            <form
+              action={updateEducationAction}
+              className="mt-5 flex flex-col gap-4"
+            >
+              <EducationPicker
+                defaultLevel={(profile?.educationLevel ?? "") as EducationLevel | ""}
+                defaultGrade={profile?.educationGrade ?? ""}
+              />
+              <GlowButton type="submit" size="md" className="self-start">
+                Save level
+              </GlowButton>
+            </form>
+          ) : (
+            <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-line bg-tint/[0.02] px-4 py-3.5">
+              <Lock className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" />
+              <p className="text-[0.82rem] leading-relaxed text-fg-muted">
+                Your level is locked until{" "}
+                <span className="font-medium text-fg">
+                  {dateFmt(nextChangeDate)}
+                </span>
+                . This keeps papers and samples consistent with what you study.
+              </p>
+            </div>
+          )}
         </GlassCard>
       </Reveal>
 

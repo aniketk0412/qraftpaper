@@ -134,6 +134,145 @@ export const examplePaper: QuestionPaper = {
   ],
 };
 
+/**
+ * School-level sample paper (CBSE-style Class 10 Mathematics), shown on the
+ * dashboard to school users instead of the college DSA paper — so a school
+ * student sees a sample at their level. Picked via examplePaperForLevel().
+ */
+export const schoolExamplePaper: QuestionPaper = {
+  id: "demo-school",
+  subject: "Mathematics",
+  subjectCode: "MATH-X",
+  course: "Class 10 · Secondary (CBSE pattern)",
+  examTitle: "Half-Yearly Examination",
+  durationMins: 120,
+  totalMarks: 20,
+  sections: [
+    {
+      id: "a",
+      title: "Section A — Very Short Answer",
+      instruction: "Answer all questions. Each question carries 1 mark.",
+      questions: [
+        {
+          id: "a1",
+          number: "1",
+          text: "State whether the number 7 × 11 × 13 + 13 is prime or composite. Justify in one line.",
+          marks: 1,
+          unit: "Real Numbers",
+          difficulty: "Easy",
+          bloom: "Understand",
+        },
+        {
+          id: "a2",
+          number: "2",
+          text: "Write the sum of the roots of the quadratic equation x² − 5x + 6 = 0.",
+          marks: 1,
+          unit: "Quadratic Equations",
+          difficulty: "Easy",
+          bloom: "Apply",
+        },
+        {
+          id: "a3",
+          number: "3",
+          text: "Find the distance of the point (3, 4) from the origin.",
+          marks: 1,
+          unit: "Coordinate Geometry",
+          difficulty: "Easy",
+          bloom: "Apply",
+        },
+        {
+          id: "a4",
+          number: "4",
+          text: "What is the probability of getting a head when a fair coin is tossed once?",
+          marks: 1,
+          unit: "Probability",
+          difficulty: "Easy",
+          bloom: "Remember",
+        },
+        {
+          id: "a5",
+          number: "5",
+          text: "If sin θ = 1/2 and 0° ≤ θ ≤ 90°, write the value of θ.",
+          marks: 1,
+          unit: "Trigonometry",
+          difficulty: "Easy",
+          bloom: "Remember",
+        },
+      ],
+    },
+    {
+      id: "b",
+      title: "Section B — Short Answer",
+      instruction: "Answer all questions. Each question carries 2 marks.",
+      questions: [
+        {
+          id: "b1",
+          number: "6",
+          text: "Solve the pair of linear equations: x + y = 14 and x − y = 4.",
+          marks: 2,
+          unit: "Linear Equations",
+          difficulty: "Medium",
+          bloom: "Apply",
+        },
+        {
+          id: "b2",
+          number: "7",
+          text: "Find the roots of the quadratic equation x² − 7x + 10 = 0 by factorisation.",
+          marks: 2,
+          unit: "Quadratic Equations",
+          difficulty: "Medium",
+          bloom: "Apply",
+        },
+        {
+          id: "b3",
+          number: "8",
+          text: "Find the 10th term of the arithmetic progression 3, 7, 11, 15, …",
+          marks: 2,
+          unit: "Arithmetic Progressions",
+          difficulty: "Medium",
+          bloom: "Apply",
+        },
+      ],
+    },
+    {
+      id: "c",
+      title: "Section C — Long Answer",
+      instruction: "Answer all questions. Each question carries 3 marks.",
+      questions: [
+        {
+          id: "c1",
+          number: "9",
+          text: "Prove that √2 is an irrational number.",
+          marks: 3,
+          unit: "Real Numbers",
+          difficulty: "Hard",
+          bloom: "Analyse",
+        },
+        {
+          id: "c2",
+          number: "10",
+          text: "The angle of elevation of the top of a tower from a point 30 m away from its foot on level ground is 45°. Find the height of the tower.",
+          marks: 3,
+          unit: "Trigonometry",
+          difficulty: "Medium",
+          bloom: "Apply",
+        },
+      ],
+    },
+  ],
+};
+
+/**
+ * The sample paper to showcase for a given education level. School users get
+ * the Class-10 Maths paper; everyone else (college / unknown) gets the
+ * engineering DSA paper. Kept here so the dashboard stays a thin consumer.
+ */
+export function examplePaperForLevel(
+  level: string | null | undefined,
+): QuestionPaper {
+  return level === "school" ? schoolExamplePaper : examplePaper;
+}
+
 export const exampleWeightage: UnitWeight[] = [
   { unit: "Unit I", title: "Foundations & ADTs", weight: 10 },
   { unit: "Unit II", title: "Linear Structures", weight: 22 },
