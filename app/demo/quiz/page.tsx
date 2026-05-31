@@ -25,7 +25,7 @@ export default function DemoQuizPage() {
       <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-5 py-3.5 sm:px-8">
           <Logo />
-          <GlowButton href="/signup" size="sm">
+          <GlowButton href="/dashboard/subjects/new" size="sm">
             <Sparkles className="h-3.5 w-3.5" />
             Build your own
           </GlowButton>

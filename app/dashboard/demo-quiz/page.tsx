@@ -41,9 +41,9 @@ export default async function DemoQuizPage() {
             <span className="h-8 w-px bg-line" />
             <p className="text-sm font-medium">Sample MCQ quiz</p>
           </div>
-          <GlowButton href="/billing" size="sm">
+          <GlowButton href="/dashboard/subjects/new" size="sm">
             <Sparkles className="h-3.5 w-3.5" />
-            Subscribe to generate your own
+            Add a subject to generate
           </GlowButton>
         </div>
       </header>

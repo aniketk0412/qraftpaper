@@ -54,12 +54,18 @@ export function QuizRunner({
   backHref = "/dashboard",
   backLabel = "Back to dashboard",
   gradeUrl,
+  ephemeral = false,
 }: {
   quiz: RunnerQuiz;
   backHref?: string;
   backLabel?: string;
   /** When set, answers are graded server-side instead of from the local key. */
   gradeUrl?: string;
+  /** Throwaway run (the sample/demo quiz): don't persist the attempt, the
+   *  missed questions, or the completion. Keeps a signed-in user's history and
+   *  spaced-repetition drill free of demo content (e.g. a college student
+   *  shouldn't get "Class 5 Maths" cards from trying the school sample). */
+  ephemeral?: boolean;
 }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -157,6 +163,9 @@ export function QuizRunner({
   useEffect(() => {
     if (!finished || savedRef.current) return;
     savedRef.current = true;
+    // A demo/sample run is throwaway — never write it to history, the drill
+    // queue, or the server. Bail before any persistence side effect.
+    if (ephemeral) return;
     const now = Date.now();
     saveQuizAttempt({
       quizId: quiz.id,

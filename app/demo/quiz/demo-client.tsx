@@ -91,27 +91,37 @@ const DEPT_ICON: Record<string, LucideIcon> = {
 const subjectIcon = (subject: string): LucideIcon =>
   SUBJECT_ICON[subject] ?? BookOpen;
 
-/** Where the conversion CTAs point — signed-out → sign up, signed-in → subscribe. */
+/**
+ * Where the demo's links point.
+ *  - `build*`  → the "make your own" CTA, which sends the user to the add-subject
+ *    section (`/dashboard/subjects/new`). For an anonymous visitor the proxy
+ *    bounces that through login/signup and back, so it lands on add-subject
+ *    either way.
+ *  - `exit*`   → leaving the demo (the step-1 back control and the runner's
+ *    back link): home for the public page, the dashboard for the in-app one.
+ */
 interface Cta {
-  primaryHref: string;
-  primaryLabel: string;
-  backHref: string;
-  backLabel: string;
+  buildHref: string;
+  buildLabel: string;
+  exitHref: string;
+  exitLabel: string;
 }
+
+const ADD_SUBJECT_HREF = "/dashboard/subjects/new";
 
 function ctaFor(signedIn: boolean): Cta {
   return signedIn
     ? {
-        primaryHref: "/billing",
-        primaryLabel: "Subscribe to generate your own",
-        backHref: "/dashboard",
-        backLabel: "Back to dashboard",
+        buildHref: ADD_SUBJECT_HREF,
+        buildLabel: "Add a subject to generate your own",
+        exitHref: "/dashboard",
+        exitLabel: "Back to dashboard",
       }
     : {
-        primaryHref: "/signup",
-        primaryLabel: "Generate from your own syllabus",
-        backHref: "/signup",
-        backLabel: "Build your own quiz",
+        buildHref: ADD_SUBJECT_HREF,
+        buildLabel: "Build your own — add a subject",
+        exitHref: "/",
+        exitLabel: "Back to home",
       };
 }
 
@@ -263,8 +273,9 @@ export function DemoQuizClient({ signedIn = false }: { signedIn?: boolean }) {
         })}
       </ol>
 
-      {/* Back control (everything except the first step) */}
-      {stepIndex > 0 && (
+      {/* Back control. On step 1 there's no previous step, so it leaves the
+          demo entirely (home / dashboard); on later steps it steps back one. */}
+      {stepIndex > 0 ? (
         <button
           type="button"
           onClick={back}
@@ -273,6 +284,14 @@ export function DemoQuizClient({ signedIn = false }: { signedIn?: boolean }) {
           <ArrowLeft className="h-3.5 w-3.5" />
           Back
         </button>
+      ) : (
+        <Link
+          href={cta.exitHref}
+          className="mb-4 inline-flex items-center gap-1.5 text-[0.8rem] text-fg-muted transition-colors hover:text-fg"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          {cta.exitLabel}
+        </Link>
       )}
 
       {/* STEP CONTENT */}
@@ -300,7 +319,7 @@ export function DemoQuizClient({ signedIn = false }: { signedIn?: boolean }) {
       <p className="mt-7 text-center text-[0.78rem] text-fg-subtle">
         Studying something else?{" "}
         <Link
-          href={cta.primaryHref}
+          href={cta.buildHref}
           className="text-violet-bright underline-offset-2 hover:underline"
         >
           Build a quiz from your own syllabus
@@ -590,8 +609,9 @@ function QuizView({
       <QuizRunner
         key={quiz.subjectCode}
         quiz={quiz}
-        backHref={cta.backHref}
-        backLabel={cta.backLabel}
+        backHref={cta.exitHref}
+        backLabel={cta.exitLabel}
+        ephemeral
       />
 
       <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl glass p-6 text-center">
@@ -599,9 +619,9 @@ function QuizView({
           This is a hand-picked sample. QraftPaper builds quizzes and full mock
           papers like this from your own syllabus and past papers.
         </p>
-        <GlowButton href={cta.primaryHref} size="md">
+        <GlowButton href={cta.buildHref} size="md">
           <Sparkles className="h-4 w-4" />
-          {cta.primaryLabel}
+          {cta.buildLabel}
           <ArrowRight className="h-4 w-4" />
         </GlowButton>
         <Link

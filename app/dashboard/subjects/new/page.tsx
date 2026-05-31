@@ -26,12 +26,14 @@ export default function NewSubjectPage() {
                 New subject
               </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gradient">
-                Upload source material
+                Add a subject to generate your own quizzes
               </h1>
               <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">
+                A subject is what QraftPaper generates from — once it&apos;s
+                added you can create mock papers and timed MCQ quizzes on it.
                 Upload one combined PDF, or separate syllabus, sample and PYQ
-                files. QraftPaper extracts text once and stores a compact
-                profile for generation.
+                files; we extract the text once and store a compact profile for
+                generation.
               </p>
             </div>
           </div>
