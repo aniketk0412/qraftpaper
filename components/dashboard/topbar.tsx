@@ -53,7 +53,7 @@ export function Topbar({
   const showUsageNudge = plan !== "unpaid" && usage.nudge;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-canvas/85 px-5 backdrop-blur-md sm:px-8">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-canvas px-5 sm:px-8">
       <div className="flex min-w-0 items-center gap-3">
         <MobileNav plan={plan} />
         <p className="shrink-0 text-sm font-medium">{title}</p>

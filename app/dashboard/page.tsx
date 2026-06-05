@@ -224,34 +224,34 @@ export default async function DashboardPage() {
     },
   ];
 
-  // Welcome copy that adapts to streak state. The goal is to feel like
-  // Duolingo's homepage — instant feedback on whether you showed up today.
+  // Welcome copy adapts to recent activity without making the dashboard feel
+  // like a toy habit app.
   const welcome =
     streak.current === 0
       ? {
           eyebrow: "Welcome to QraftPaper",
-          title: "Generate your first mock paper today.",
-          sub: "Add a subject, drop in your syllabus, and you'll see your first practice paper in under a minute.",
+          title: "Build your first exam-ready paper workspace.",
+          sub: "Add a subject, attach the syllabus and PYQs, then generate papers and quizzes from the same structured profile.",
         }
       : streak.current === 1
         ? {
-            eyebrow: "Day 1 on the board",
-            title: "Nice — come back tomorrow to keep the streak.",
-            sub: "Practising at least once a day builds the habit. Two days in a row is harder than you'd think.",
+            eyebrow: "First workspace activity logged",
+            title: "Your exam workflow is starting to take shape.",
+            sub: "Generate another paper or quiz to keep the subject profile active and useful.",
           }
         : streak.practisedToday
           ? {
               eyebrow: `${streak.current}-day streak`,
-              title: "You've shown up today. Keep going.",
+              title: "Today's exam-prep activity is logged.",
               sub:
                 streak.current >= streak.longest
-                  ? "This is your personal best — every day from here resets the bar higher."
+                  ? "This is your strongest activity run so far."
                   : `${streak.longest - streak.current} more days to match your record of ${streak.longest}.`,
             }
           : {
-              eyebrow: `${streak.current}-day streak — don't break it`,
-              title: "Do anything today and the streak holds.",
-              sub: "Generate a quick MCQ, take a quiz, or just regenerate one question. Any activity counts.",
+              eyebrow: `${streak.current}-day activity streak`,
+              title: "Run one useful action to keep the workspace current.",
+              sub: "Generate a paper, start a quiz, or revise one subject profile. Any meaningful activity counts.",
             };
 
   return (
@@ -548,13 +548,13 @@ function SamplePaperTeaser({ paper }: { paper: QuestionPaper }) {
               has felt any value. */}
           <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-canvas via-canvas/95 to-transparent px-6 pb-6 pt-24 text-center">
             <p className="max-w-sm text-sm text-fg-muted">
-              This is what we&apos;d generate from your syllabus. Take a sample
-              MCQ quiz to feel it for yourself — it&apos;s free and uses no
-              credits.
+              This is the structure QraftPaper can produce from your syllabus.
+              Open the sample quiz to review the learner-side flow before
+              generating from your own material.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2.5">
               <GlowButton href="/dashboard/demo-quiz" size="md">
-                Try a sample quiz
+                Open sample quiz
                 <ArrowRight className="h-4 w-4" />
               </GlowButton>
               <GlowButton href="/billing" variant="secondary" size="md">

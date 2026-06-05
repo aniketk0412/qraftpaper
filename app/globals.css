@@ -90,14 +90,14 @@
 :root {
   color-scheme: light;
   /* Surface treatments that can't live in @theme (gradients, shadows) */
-  --glass-a: rgba(255, 255, 255, 0.92);
-  --glass-b: rgba(255, 255, 255, 0.7);
-  --glass-strong-a: rgba(255, 255, 255, 0.98);
-  --glass-strong-b: rgba(255, 255, 255, 0.86);
-  --glass-shadow: 0 1px 2px rgba(20, 32, 46, 0.04),
-    0 10px 30px -22px rgba(20, 32, 46, 0.4);
-  --glass-shadow-strong: 0 2px 6px rgba(20, 32, 46, 0.06),
-    0 18px 44px -26px rgba(20, 32, 46, 0.5);
+  --glass-a: rgba(255, 255, 255, 0.98);
+  --glass-b: rgba(248, 250, 252, 0.98);
+  --glass-strong-a: rgba(255, 255, 255, 1);
+  --glass-strong-b: rgba(244, 247, 250, 1);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 10px 30px -24px rgba(20, 32, 46, 0.45);
+  --glass-shadow-strong: inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 18px 44px -28px rgba(20, 32, 46, 0.55);
   --heading-grad: linear-gradient(115deg, #1a2332 0%, #1f7d7d 58%, #1f6b6b 100%);
   --violet-grad: linear-gradient(100deg, #1f7d7d 0%, #1a2332 60%, #1a2332 110%);
   --sb-track: #dbe0e6;
@@ -132,14 +132,14 @@ html[data-theme="dark"] {
   --color-accent-soft: #8ad8d8;
   --color-on-accent: #07131b;
   --color-tint: #ffffff;
-  --glass-a: rgba(255, 255, 255, 0.06);
-  --glass-b: rgba(255, 255, 255, 0.02);
-  --glass-strong-a: rgba(255, 255, 255, 0.09);
-  --glass-strong-b: rgba(255, 255, 255, 0.03);
-  --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.3),
-    0 12px 30px -20px rgba(0, 0, 0, 0.6);
-  --glass-shadow-strong: 0 2px 8px rgba(0, 0, 0, 0.4),
-    0 20px 50px -24px rgba(0, 0, 0, 0.7);
+  --glass-a: rgba(24, 32, 40, 0.99);
+  --glass-b: rgba(14, 22, 32, 0.99);
+  --glass-strong-a: rgba(30, 40, 50, 1);
+  --glass-strong-b: rgba(15, 24, 34, 1);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 18px 50px -28px rgba(0, 0, 0, 0.75);
+  --glass-shadow-strong: inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 24px 70px -34px rgba(0, 0, 0, 0.85);
   --heading-grad: linear-gradient(115deg, #ffffff 0%, #bfe6e6 60%, #5fc4c4 100%);
   --violet-grad: linear-gradient(100deg, #ffffff 0%, #cfeaea 70%, #5fc4c4 110%);
   --sb-track: #0b1219;
@@ -199,7 +199,6 @@ body {
 
 @utility glass {
   background: linear-gradient(180deg, var(--glass-a), var(--glass-b));
-  backdrop-filter: blur(14px);
   border: 1px solid var(--color-line);
   box-shadow: var(--glass-shadow);
 }
@@ -210,7 +209,6 @@ body {
     var(--glass-strong-a),
     var(--glass-strong-b)
   );
-  backdrop-filter: blur(20px);
   border: 1px solid var(--color-line-strong);
   box-shadow: var(--glass-shadow-strong);
 }

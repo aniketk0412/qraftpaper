@@ -36,7 +36,7 @@ export function SubjectsSection({
     <div className="mt-10">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold tracking-tight">Your subjects</h2>
-        <div className="flex items-center gap-1 self-start rounded-full glass p-1">
+        <div className="flex items-center gap-1 self-start rounded-full border border-line bg-card p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
           {sorts.map((s) => (
             <button
               key={s.key}

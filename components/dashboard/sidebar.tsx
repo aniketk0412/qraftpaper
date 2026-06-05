@@ -38,7 +38,7 @@ export function Sidebar({
       initial={{ x: -280, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.42, ease: easeOut }}
-      className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-line bg-panel/70 backdrop-blur-xl lg:flex"
+      className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-line bg-ink lg:flex"
     >
       <div className="flex h-16 items-center border-b border-line px-6">
         <Logo />
@@ -81,19 +81,17 @@ function UsageCard({
 
   return (
     <div className="relative overflow-hidden rounded-2xl glass-strong p-4">
-      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/15 blur-2xl" />
-
-      <div className="relative flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <IconTile icon={Sparkles} size="sm" tone="violet" />
         <span className="rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 font-mono text-[0.56rem] uppercase tracking-wider text-gold">
           {planName}
         </span>
       </div>
 
-      <p className="relative mt-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-fg-subtle">
+      <p className="mt-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-fg-subtle">
         Generations this month
       </p>
-      <p className="relative mt-1 text-2xl font-semibold tracking-tight tabular-nums">
+      <p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums">
         {u.used}
         <span className="text-base font-medium text-fg-subtle">
           {u.cap === null ? " used" : `/${u.cap}`}
@@ -101,7 +99,7 @@ function UsageCard({
       </p>
 
       {u.cap !== null && (
-        <div className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full bg-tint/[0.06]">
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-tint/[0.06]">
           <div
             className={cn(
               "h-full rounded-full transition-all duration-500",
@@ -112,7 +110,7 @@ function UsageCard({
         </div>
       )}
 
-      <p className="relative mt-2 text-[0.72rem] leading-snug text-fg-muted">
+      <p className="mt-2 text-[0.72rem] leading-snug text-fg-muted">
         {u.cap === null
           ? "Unlimited generations on your plan."
           : u.remaining === 0
@@ -125,14 +123,14 @@ function UsageCard({
       {warn && (
         <Link
           href="/billing"
-          className="relative mt-2.5 inline-flex items-center gap-1 text-[0.72rem] font-medium text-gold underline-offset-2 hover:underline"
+          className="mt-2.5 inline-flex items-center gap-1 text-[0.72rem] font-medium text-gold underline-offset-2 hover:underline"
         >
           {u.level === "exhausted" ? "Upgrade for more" : "Running low — upgrade"}
           <ArrowRight className="h-3 w-3" />
         </Link>
       )}
 
-      <GlowButton href="/dashboard#generate" size="sm" className="relative mt-3.5 w-full">
+      <GlowButton href="/dashboard#generate" size="sm" className="mt-3.5 w-full">
         Generate
         <ArrowRight className="h-3.5 w-3.5" />
       </GlowButton>
@@ -187,18 +185,17 @@ function GettingStartedCard({ hasSubjects }: { hasSubjects: boolean }) {
   return (
     <div className="relative overflow-hidden rounded-2xl glass-strong p-4">
       {celebrate && <Confetti particleCount={18} durationMs={1800} />}
-      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet/18 blur-2xl" />
 
-      <div className="relative flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <IconTile icon={Rocket} size="sm" tone="violet" />
         <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-fg-subtle">
           {doneCount}/{steps.length}
         </span>
       </div>
 
-      <p className="relative mt-3 text-sm font-medium">Getting started</p>
+      <p className="mt-3 text-sm font-medium">Getting started</p>
 
-      <ol className="relative mt-3 flex flex-col gap-2">
+      <ol className="mt-3 flex flex-col gap-2">
         {steps.map((step, i) => {
           const current = i === currentIndex;
           return (
@@ -238,18 +235,18 @@ function GettingStartedCard({ hasSubjects }: { hasSubjects: boolean }) {
       </ol>
 
       {/* Progress bar — same data as the n/3 badge, read at a glance. */}
-      <div className="relative mt-3 h-1 w-full overflow-hidden rounded-full bg-tint/[0.06]">
+      <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-tint/[0.06]">
         <div
           className="h-full rounded-full bg-gradient-to-r from-violet to-gold transition-all duration-500"
           style={{ width: `${(doneCount / steps.length) * 100}%` }}
         />
       </div>
 
-      <GlowButton href={cta.href} size="sm" className="relative mt-3.5 w-full">
+      <GlowButton href={cta.href} size="sm" className="mt-3.5 w-full">
         {cta.label}
         <ArrowRight className="h-3.5 w-3.5" />
       </GlowButton>
-      <p className="relative mt-2 text-center text-[0.68rem] leading-snug text-fg-subtle">
+      <p className="mt-2 text-center text-[0.68rem] leading-snug text-fg-subtle">
         {cta.sub}
       </p>
     </div>
