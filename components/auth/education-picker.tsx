@@ -22,9 +22,13 @@ const selectClass =
 export function EducationPicker({
   defaultLevel = "",
   defaultGrade = "",
+  hideNote = false,
 }: {
   defaultLevel?: EducationLevel | "";
   defaultGrade?: string;
+  /** Suppress the built-in lock note when the parent renders its own (e.g. the
+   *  settings page shows a more prominent callout above the dropdowns). */
+  hideNote?: boolean;
 }) {
   const [level, setLevel] = useState<EducationLevel | "">(defaultLevel);
   const [grade, setGrade] = useState(defaultGrade);
@@ -85,11 +89,13 @@ export function EducationPicker({
         </select>
       </div>
 
-      <p className="flex items-start gap-1.5 text-[0.72rem] leading-relaxed text-fg-subtle">
-        <Lock className="mt-0.5 h-3 w-3 shrink-0" />
-        Pick carefully — this is locked to your account and can be changed only
-        once every 6 months. Your dashboard and samples are tailored to it.
-      </p>
+      {!hideNote && (
+        <p className="flex items-start gap-1.5 text-[0.72rem] leading-relaxed text-fg-subtle">
+          <Lock className="mt-0.5 h-3 w-3 shrink-0" />
+          Pick carefully — this is locked to your account and can be changed only
+          once every 6 months. Your dashboard and samples are tailored to it.
+        </p>
+      )}
     </div>
   );
 }

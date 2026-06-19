@@ -267,7 +267,12 @@ export default async function BillingPage({
 
   return (
     <div className="min-h-screen lg:pl-[260px]">
-      <Sidebar plan={currentPlan} />
+      <Sidebar
+        plan={currentPlan}
+        subjectCount={subjects.length}
+        generationsUsed={usedThisMonth}
+        generationsCap={PLANS[currentPlan as PlanId]?.generationsPerMonth ?? null}
+      />
       <Topbar
         subjects={subjects}
         user={user}
@@ -275,6 +280,8 @@ export default async function BillingPage({
         streak={streak.current}
         practisedToday={streak.practisedToday}
         daysSinceLast={streak.daysSinceLast}
+        generationsUsed={usedThisMonth}
+        generationsCap={PLANS[currentPlan as PlanId]?.generationsPerMonth ?? null}
       />
       <main className="px-5 py-8 sm:px-8">
         <div className="mx-auto max-w-6xl">

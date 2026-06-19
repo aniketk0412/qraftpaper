@@ -38,7 +38,7 @@ export function Sidebar({
       initial={{ x: -280, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.42, ease: easeOut }}
-      className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-line bg-ink lg:flex"
+      className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-line bg-canvas lg:flex"
     >
       <div className="flex h-16 items-center border-b border-line px-6">
         <Logo />

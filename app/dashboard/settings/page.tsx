@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { desc, eq, sql } from "drizzle-orm";
-import { Building2, CheckCircle2, CreditCard, GraduationCap, Lock, LogOut, Mail, Receipt, Trash2, User } from "lucide-react";
+import { Building2, CheckCircle2, CreditCard, GraduationCap, Lock, LogOut, Mail, Receipt, User } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
 import { EducationPicker } from "@/components/auth/education-picker";
@@ -8,6 +8,8 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { Reveal } from "@/components/ui/reveal";
 import { BackLink } from "@/components/dashboard/back-link";
+import { ConfirmSaveButton } from "@/components/dashboard/confirm-save-button";
+import { DeleteAccountDialog } from "@/components/dashboard/delete-account-dialog";
 import {
   BillingHistory,
   type BillingHistoryItem,
@@ -217,13 +219,26 @@ export default async function SettingsPage({
               action={updateEducationAction}
               className="mt-5 flex flex-col gap-4"
             >
+              <div className="flex items-start gap-2.5 rounded-xl border border-gold/30 bg-gold/[0.08] px-4 py-3">
+                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                <p className="text-[0.82rem] leading-relaxed text-fg">
+                  Heads up — once you save, your level is{" "}
+                  <span className="font-medium">locked for 6 months</span>. Your
+                  dashboard samples and recommendations are tailored to it, so
+                  pick the one you&apos;ll actually be studying.
+                </p>
+              </div>
               <EducationPicker
                 defaultLevel={(profile?.educationLevel ?? "") as EducationLevel | ""}
                 defaultGrade={profile?.educationGrade ?? ""}
+                hideNote
               />
-              <GlowButton type="submit" size="md" className="self-start">
+              <ConfirmSaveButton
+                message="Your level can only be changed once every 6 months. Save this choice now?"
+                className="self-start"
+              >
                 Save level
-              </GlowButton>
+              </ConfirmSaveButton>
             </form>
           ) : (
             <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-line bg-tint/[0.02] px-4 py-3.5">
@@ -316,63 +331,47 @@ export default async function SettingsPage({
         </GlassCard>
       </Reveal>
 
+      {/* Account actions — sign-out and the destructive delete live in one
+          card. Delete is fenced into its own "Danger zone" sub-section and
+          gated behind a themed confirmation modal so a stray click can never
+          wipe a paying user's account. */}
       <Reveal>
-        <GlassCard className="mt-3 flex flex-col gap-4 p-7 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Account</h2>
-            <p className="mt-1 text-[0.84rem] text-fg-muted">
-              Sign out of this device.
-            </p>
-          </div>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/" });
-            }}
-          >
-            <GlowButton type="submit" variant="secondary" size="md">
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </GlowButton>
-          </form>
-        </GlassCard>
-      </Reveal>
-
-      {/* Danger zone — irreversible operations get a separate visually distinct
-          card and a typed confirmation so a stray click can never wipe a
-          paying user's account. */}
-      <Reveal>
-        <GlassCard className="mt-6 border border-gold/25 p-7">
-          <h2 className="text-lg font-semibold tracking-tight text-gold">
-            Danger zone
-          </h2>
-          <p className="mt-1 text-[0.84rem] text-fg-muted">
-            Deleting your account permanently removes every subject, paper,
-            quiz and attempt history. We do not keep a copy. There is no undo.
-          </p>
-          {error === "delete-confirm" && (
-            <p className="mt-3 rounded-xl border border-gold/30 bg-gold/[0.08] px-4 py-3 text-[0.82rem] text-fg">
-              Type the word DELETE exactly to confirm.
-            </p>
-          )}
-          <form
-            action={deleteAccountAction}
-            className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center"
-          >
-            <input
-              name="confirmation"
-              required
-              placeholder='Type "DELETE" to confirm'
-              className="h-11 flex-1 rounded-xl border border-line bg-tint/[0.03] px-3.5 text-sm text-fg placeholder:text-fg-subtle transition-all duration-200 focus:border-gold/50 focus:bg-tint/[0.05] focus:outline-none focus:ring-2 focus:ring-gold/20"
-            />
-            <button
-              type="submit"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-gold/45 bg-gold/15 px-5 text-[0.86rem] font-medium text-gold transition-colors hover:bg-gold/25"
+        <GlassCard className="mt-3 p-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight">Account</h2>
+              <p className="mt-1 text-[0.84rem] text-fg-muted">
+                Sign out of this device.
+              </p>
+            </div>
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/" });
+              }}
             >
-              <Trash2 className="h-4 w-4" />
-              Delete my account
-            </button>
-          </form>
+              <GlowButton type="submit" variant="secondary" size="md">
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </GlowButton>
+            </form>
+          </div>
+
+          <div className="mt-7 border-t border-gold/20 pt-6">
+            <h3 className="text-base font-semibold tracking-tight text-gold">
+              Danger zone
+            </h3>
+            <p className="mt-1 max-w-xl text-[0.84rem] leading-relaxed text-fg-muted">
+              Permanently delete your account and everything in it. We do not
+              keep a copy — there is no undo.
+            </p>
+            <div className="mt-4">
+              <DeleteAccountDialog
+                action={deleteAccountAction}
+                showConfirmError={error === "delete-confirm"}
+              />
+            </div>
+          </div>
         </GlassCard>
       </Reveal>
     </div>

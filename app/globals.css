@@ -178,6 +178,18 @@ body {
   color: var(--sel-fg);
 }
 
+/* Native <select> dropdown options. The OS-drawn popup ignores the control's
+   translucent background and falls back to the white system surface, so the
+   inherited light `text-fg` would be invisible on it in dark mode. Pin options
+   to themed tokens so the list is readable in both themes. */
+option {
+  background-color: var(--color-panel);
+  color: var(--color-fg);
+}
+option:disabled {
+  color: var(--color-fg-subtle);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
