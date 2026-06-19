@@ -1,11 +1,40 @@
 import bcrypt from "bcryptjs";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import authConfig from "./auth.config";
 import { getDb } from "@/lib/db";
 import { auditLogs, users } from "@/lib/db/schema";
+
+// Per-IP brute-force brake, layered on top of the per-account lockout below.
+// Counts only failed logins in a rolling window, so it clears itself as old
+// failures age out. The threshold is deliberately generous: this app's users
+// (schools/colleges) often share one institutional NAT IP, so a tight cap
+// would lock out a whole campus. It's set high enough that normal shared-IP
+// fat-fingering won't trip it, but still throttles a password-spray that
+// rotates across many accounts from a single host (the per-account cap of 5
+// stays the fine-grained control).
+const IP_LOGIN_FAIL_WINDOW_MS = 15 * 60 * 1000;
+const MAX_IP_LOGIN_FAILURES = 50;
+
+async function tooManyRecentLoginFailuresFromIp(
+  db: ReturnType<typeof getDb>,
+  ip: string,
+): Promise<boolean> {
+  const since = new Date(Date.now() - IP_LOGIN_FAIL_WINDOW_MS);
+  const [row] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(auditLogs)
+    .where(
+      and(
+        eq(auditLogs.action, "login_failed"),
+        eq(auditLogs.ipAddress, ip),
+        gte(auditLogs.createdAt, since),
+      ),
+    );
+  return (row?.n ?? 0) >= MAX_IP_LOGIN_FAILURES;
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -35,6 +64,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const db = getDb();
         const ipAddress = getClientIp(request);
+
+        // IP-level brake: stop a distributed spray before spending a bcrypt
+        // compare. Checked ahead of the user lookup so it applies even to
+        // attempts against non-existent accounts.
+        if (ipAddress && (await tooManyRecentLoginFailuresFromIp(db, ipAddress))) {
+          await db.insert(auditLogs).values({
+            action: "login_blocked_ip",
+            entityType: "ip",
+            ipAddress,
+          });
+          return null;
+        }
+
         const [user] = await db
           .select()
           .from(users)

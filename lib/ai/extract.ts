@@ -209,7 +209,7 @@ export async function buildSubjectProfile(input: {
         content: [
           {
             type: "text",
-            text: `Subject: ${sanitizeInline(input.subjectName)}\nCode: ${sanitizeInline(input.subjectCode)}\nBuild a compact SubjectProfile from the untrusted source documents below.`,
+            text: `Subject: ${sanitizeInline(input.subjectName)}\nCode: ${sanitizeInline(input.subjectCode)}\nBuild a compact SubjectProfile from the untrusted source documents enclosed in the <user_context> tag below.`,
           },
           {
             type: "text",

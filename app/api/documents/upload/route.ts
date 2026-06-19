@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+﻿import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
@@ -21,7 +21,7 @@ export const runtime = "nodejs";
 
 const allowedDocumentTypes = ["combined", "syllabus", "sample", "pyq"] as const;
 
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB per file
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB per file (hard limit)
 const MIN_EXTRACTED_CHARS = 200; // below this it isn't real study material
 const MAX_EXTRACTED_CHARS = 60_000; // cap tokens sent to the profile builder
 
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    // No email-verification gate — see /api/generate/paper for rationale.
+    // No email-verification gate â€” see /api/generate/paper for rationale.
     await assertWithinRateLimit(session.user.id);
   } catch (error) {
     if (error instanceof RateLimitError) {
@@ -83,27 +83,32 @@ export async function POST(request: Request) {
       continue;
     }
 
+    // Never trust the client-supplied name. Strip any path components and
+    // control characters before it's reflected in an error or persisted â€”
+    // prevents path traversal (../../etc) and stored-XSS via the filename.
+    const safeName = sanitizeFileName(file.name);
+
     if (file.type && file.type !== "application/pdf") {
       return NextResponse.json(
-        { error: `${file.name} must be a PDF` },
+        { error: `${safeName} must be a PDF` },
         { status: 400 },
       );
     }
 
     if (file.size > MAX_UPLOAD_BYTES) {
       return NextResponse.json(
-        { error: `${file.name} is too large — upload a PDF under 10 MB.` },
+        { error: `${safeName} is too large â€” upload a PDF under 5 MB.` },
         { status: 400 },
       );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Don't trust the client-supplied MIME type — verify the real file header.
+    // Don't trust the client-supplied MIME type â€” verify the real file header.
     // Every PDF begins with "%PDF-"; anything else is a renamed/spoofed file.
     if (!buffer.subarray(0, 5).toString("latin1").startsWith("%PDF-")) {
       return NextResponse.json(
-        { error: `${file.name} isn't a real PDF file.` },
+        { error: `${safeName} isn't a real PDF file.` },
         { status: 400 },
       );
     }
@@ -114,18 +119,18 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json(
         {
-          error: `${file.name} isn't a readable PDF. Upload a text-based PDF, not an image or scan.`,
+          error: `${safeName} isn't a readable PDF. Upload a text-based PDF, not an image or scan.`,
         },
         { status: 400 },
       );
     }
 
-    // Photos, scans and image-only PDFs yield little or no extractable text —
+    // Photos, scans and image-only PDFs yield little or no extractable text â€”
     // reject them here, before spending anything on the AI profile build.
     if (extractedText.trim().length < MIN_EXTRACTED_CHARS) {
       return NextResponse.json(
         {
-          error: `We couldn't read enough text from ${file.name}. It looks like a scan, photo or image-only PDF — please upload a text-based PDF of your study material.`,
+          error: `We couldn't read enough text from ${safeName}. It looks like a scan, photo or image-only PDF â€” please upload a text-based PDF of your study material.`,
         },
         { status: 422 },
       );
@@ -148,8 +153,8 @@ export async function POST(request: Request) {
       .values({
         subjectId,
         type,
-        fileName: file.name,
-        // contentBase64 intentionally not written — it's vestigial (never
+        fileName: safeName,
+        // contentBase64 intentionally not written â€” it's vestigial (never
         // read) and stored multi-MB blobs per row. See schema note.
         extractedText,
       })
@@ -266,4 +271,33 @@ export async function POST(request: Request) {
 function getString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+/**
+ * Reduce a client-supplied filename to a safe, display-only basename:
+ *  - take only the last path segment, so "../../etc/passwd" and
+ *    "C:\Windows\system32\x" both collapse to their final component;
+ *  - drop control characters and the characters that are illegal/dangerous
+ *    in file paths and easy to abuse in stored output;
+ *  - collapse whitespace and cap the length so a row can't be bloated by a
+ *    pathological name.
+ * Returns a fallback when nothing usable remains.
+ */
+function sanitizeFileName(rawName: string): string {
+  // Split on both POSIX and Windows separators, keep the last non-empty part.
+  const base =
+    rawName
+      .split(/[\\/]/)
+      .filter(Boolean)
+      .pop() ?? "";
+
+  const cleaned = base
+    .replace(/[\x00-\x1f\x7f]/g, "") // control chars (incl. NUL, DEL)
+    .replace(/[<>:"|?*]/g, "") // illegal path / injection-prone chars
+    .replace(/\s+/g, " ")
+    .replace(/^\.+/, "") // no leading dots (".", "..", hidden files)
+    .trim()
+    .slice(0, 200);
+
+  return cleaned || "upload.pdf";
 }
