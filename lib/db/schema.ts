@@ -388,6 +388,10 @@ export const generationJobs = pgTable(
     status: text("status").notNull().default("queued"),
     input: jsonb("input"),
     error: text("error"),
+    // Client IP at request time. Nullable (older rows + jobs created off-request
+    // have none). Used by the per-IP generation rate limit so abuse can't be
+    // spread across freshly-created accounts from a single host.
+    ipAddress: text("ip_address"),
     startedAt: timestamp("started_at", { withTimezone: true }),
     finishedAt: timestamp("finished_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -395,6 +399,8 @@ export const generationJobs = pgTable(
   (table) => [
     index("generation_jobs_user_created_idx").on(table.userId, table.createdAt),
     index("generation_jobs_status_created_idx").on(table.status, table.createdAt),
+    // Backs the per-IP hourly paper limit: count by (ip, type) in a time window.
+    index("generation_jobs_ip_created_idx").on(table.ipAddress, table.createdAt),
   ],
 );
 

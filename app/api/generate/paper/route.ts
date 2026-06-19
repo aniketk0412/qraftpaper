@@ -16,8 +16,10 @@ import {
 } from "@/lib/generation-quality";
 import { normalizePaperConfig } from "@/lib/generation-config";
 import { normalizeUuid } from "@/lib/ids";
+import { getClientIp } from "@/lib/request-ip";
 import {
   assertCanGenerate,
+  assertPaperHourlyLimit,
   assertSubjectPaperLimit,
   assertWithinRateLimit,
   incrementGenerationUsage,
@@ -87,6 +89,8 @@ export async function POST(request: Request) {
     .limit(1);
   const plan = account?.plan ?? "unpaid";
 
+  const clientIp = getClientIp(request);
+
   try {
     // Email-verification gate intentionally OMITTED for the first paid
     // generation — onboarding wall was killing conversion. The banner on
@@ -95,6 +99,7 @@ export async function POST(request: Request) {
     // abuse meaningfully. Re-introduce later if we see verified-account
     // abuse signals in PostHog.
     await assertWithinRateLimit(session.user.id);
+    await assertPaperHourlyLimit(session.user.id, clientIp);
     await assertCanGenerate(session.user.id, plan);
     await assertSubjectPaperLimit(session.user.id, subjectId, plan);
   } catch (error) {
@@ -117,6 +122,7 @@ export async function POST(request: Request) {
       status: "running",
       startedAt: new Date(),
       input: config,
+      ipAddress: clientIp,
     })
     .returning();
 

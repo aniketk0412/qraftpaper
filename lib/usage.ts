@@ -8,6 +8,12 @@ import { planLimits } from "@/lib/plans";
 const RATE_WINDOW_MS = 60_000;
 const MAX_AI_OPS_PER_WINDOW = 6;
 
+// Strict hourly ceiling on paper generations, enforced independently per user
+// account AND per client IP. The per-IP axis stops the limit being bypassed by
+// spinning up fresh accounts from one host.
+const PAPER_HOUR_WINDOW_MS = 60 * 60_000;
+const MAX_PAPERS_PER_HOUR = 3;
+
 export class UsageLimitError extends Error {
   constructor(message: string) {
     super(message);
@@ -93,6 +99,66 @@ export async function assertWithinRateLimit(userId: string) {
   if (recent >= MAX_AI_OPS_PER_WINDOW) {
     throw new RateLimitError(
       "You're generating too quickly. Please wait a minute and try again.",
+    );
+  }
+}
+
+/**
+ * Strict per-hour cap on paper generations: at most MAX_PAPERS_PER_HOUR paper
+ * jobs in any rolling 60-minute window, checked separately for the user account
+ * and the originating IP. We count generationJobs of type "paper" — one row is
+ * inserted per request before generation runs, so this counts *requests*
+ * (including failed attempts), which is the abuse-resistant interpretation.
+ *
+ * DB-backed on purpose: Postgres is shared across all serverless instances, so
+ * the count is consistent without standing up Redis. ipAddress may be null in
+ * local dev / off-request calls — we simply skip the IP axis then.
+ */
+export async function assertPaperHourlyLimit(
+  userId: string,
+  ipAddress: string | null,
+) {
+  const since = new Date(Date.now() - PAPER_HOUR_WINDOW_MS);
+
+  const byUser = await countRows(
+    getDb()
+      .select({ n: sql<number>`count(*)::int` })
+      .from(generationJobs)
+      .where(
+        and(
+          eq(generationJobs.userId, userId),
+          eq(generationJobs.type, "paper"),
+          gt(generationJobs.createdAt, since),
+        ),
+      ),
+  );
+
+  if (byUser >= MAX_PAPERS_PER_HOUR) {
+    throw new RateLimitError(
+      `You can generate up to ${MAX_PAPERS_PER_HOUR} papers per hour. Please try again later.`,
+    );
+  }
+
+  if (!ipAddress) {
+    return;
+  }
+
+  const byIp = await countRows(
+    getDb()
+      .select({ n: sql<number>`count(*)::int` })
+      .from(generationJobs)
+      .where(
+        and(
+          eq(generationJobs.ipAddress, ipAddress),
+          eq(generationJobs.type, "paper"),
+          gt(generationJobs.createdAt, since),
+        ),
+      ),
+  );
+
+  if (byIp >= MAX_PAPERS_PER_HOUR) {
+    throw new RateLimitError(
+      `This network has reached the limit of ${MAX_PAPERS_PER_HOUR} paper generations per hour. Please try again later.`,
     );
   }
 }
