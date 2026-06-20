@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Terms of Service — QraftPaper",
   description:
     "The terms that govern your use of QraftPaper, including accounts, billing, the no-refund policy, AI-output disclaimers, acceptable use and liability.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "About - QraftPaper",
   description:
     "QraftPaper is an AI exam-prep tool for college students. Upload your syllabus and last year's question paper, get mock exam papers and MCQ quizzes to practise on.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {

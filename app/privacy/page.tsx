@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy — QraftPaper",
   description:
     "How QraftPaper collects, uses, shares, secures and retains your data, the cookies and storage we use, and the rights you have over your data.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

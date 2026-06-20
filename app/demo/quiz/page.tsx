@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Sample MCQ quiz — QraftPaper",
   description:
     "Pick your level and subject, then try a real QraftPaper-generated MCQ quiz with timer + scoring. No signup required.",
+  alternates: { canonical: "/demo/quiz" },
 };
 
 export const runtime = "nodejs";
