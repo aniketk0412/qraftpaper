@@ -57,11 +57,15 @@ export function Hero({ signedIn = false }: { signedIn?: boolean }) {
                       transition: { duration: 0.7, ease: easeOut },
                     },
                   }}
-                  className={
-                    w.accent
-                      ? "mr-[0.24em] inline-block text-accent"
-                      : "text-gradient mr-[0.24em] inline-block"
-                  }
+                  // pb-[0.2em]: the gradient (background-clip:text) only paints
+                  // inside the span's box, and the tight leading cuts the box
+                  // off at the baseline — clipping the descenders of y / p so
+                  // their tips go transparent. The bottom padding extends the
+                  // painted box below the baseline to cover them. Applied to
+                  // every word so baselines stay aligned across a line.
+                  className={`mr-[0.24em] inline-block pb-[0.2em] ${
+                    w.accent ? "text-accent" : "text-gradient"
+                  }`}
                 >
                   {w.t}
                 </motion.span>
