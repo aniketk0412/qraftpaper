@@ -42,12 +42,18 @@ export function Hero({ signedIn = false }: { signedIn?: boolean }) {
               {words.map((w, i) => (
                 <motion.span
                   key={i}
+                  // NOTE: do not animate `filter` here. The words use
+                  // `text-gradient` (background-clip:text + transparent text),
+                  // and Framer leaves the resolved `filter: blur(0px)` inline
+                  // after the animation. A non-`none` filter on a clipped-text
+                  // element makes Chromium composite it against the backdrop,
+                  // so the page background bleeds through the headline. Fade +
+                  // rise only keeps the entrance without that artifact.
                   variants={{
-                    hidden: { opacity: 0, y: 22, filter: "blur(6px)" },
+                    hidden: { opacity: 0, y: 22 },
                     visible: {
                       opacity: 1,
                       y: 0,
-                      filter: "blur(0px)",
                       transition: { duration: 0.7, ease: easeOut },
                     },
                   }}
