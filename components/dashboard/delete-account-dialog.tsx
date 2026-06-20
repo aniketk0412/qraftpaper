@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
@@ -33,6 +34,15 @@ export function DeleteAccountDialog({
   const [typed, setTyped] = useState("");
   const confirmed = typed.trim() === "DELETE";
 
+  // Portal target is only available on the client. Gate the portal on mount so
+  // SSR renders nothing for the overlay (the trigger button still renders).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    // Client-only mount flag for the portal; runs once after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
   // Lock background scroll + wire Escape-to-close while the modal is open.
   useEffect(() => {
     if (!open) return;
@@ -58,14 +68,21 @@ export function DeleteAccountDialog({
         Delete my account
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+      {/* Portal to <body> so the overlay escapes transformed ancestors (the
+          GlassCard/Reveal motion wrappers + Lenis smooth-scroll container).
+          Without this, `position: fixed` resolves against the nearest
+          transformed ancestor instead of the viewport and the modal drifts
+          toward the bottom of the page instead of centering. */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
             {/* Scrim — clicking it cancels, matching the app's other overlays. */}
             <div
               className="absolute inset-0 bg-ink/70 backdrop-blur-md"
@@ -76,7 +93,7 @@ export function DeleteAccountDialog({
               role="dialog"
               aria-modal="true"
               aria-labelledby="delete-account-title"
-              className="relative w-full max-w-md overflow-hidden rounded-2xl glass-strong p-6"
+              className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl glass-strong p-6"
               initial={{ opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 10 }}
@@ -176,10 +193,12 @@ export function DeleteAccountDialog({
                   </button>
                 </div>
               </form>
+              </motion.div>
             </motion.div>
-          </motion.div>
+          )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
     </>
   );
 }
