@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -12,12 +12,13 @@ import { UpdatePrompt } from "@/components/update-prompt";
 import { RouteProgress } from "@/components/route-progress";
 import { siteConfig, siteUrl } from "@/lib/site";
 
-// Single global typeface, self-hosted via next/font — Inter for the
-// SaaS-modern feel (Söhne / GT America class, closest free Google Font). Used
-// everywhere; the `font-mono` utility points at this same family in globals.css
-// so the whole UI shares one font (just varied weight/tracking where needed).
-const sans = Inter({
-  variable: "--font-inter",
+// Single global typeface, self-hosted via next/font — Plus Jakarta Sans for a
+// modern, characterful SaaS feel. Used everywhere; the `font-mono` utility
+// points at this same family in globals.css so the whole UI shares one font
+// (just varied weight/tracking where needed). To swap the site font, change
+// this one import + variable.
+const sans = Plus_Jakarta_Sans({
+  variable: "--font-app",
   subsets: ["latin"],
   display: "swap",
 });

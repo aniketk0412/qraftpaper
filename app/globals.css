@@ -50,13 +50,13 @@
   /* Tint — deep navy, used for subtle overlays/highlights on light surfaces */
   --color-tint: #1a2332;
 
-  /* Single global typeface — Inter everywhere (closest free Google Font to the
-     Söhne / GT America style modern SaaS sites use). The `font-mono` utility is
-     kept because eyebrow labels rely on it for uppercase + letter-spacing, but
-     it now points at the SAME family, so the whole UI shares one font. To swap
-     the site font, change just `--font-inter` in app/layout.tsx. */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Single global typeface — Plus Jakarta Sans everywhere. The `font-mono`
+     utility is kept because eyebrow labels rely on it for uppercase +
+     letter-spacing, but it now points at the SAME family, so the whole UI
+     shares one font. To swap the site font, change just the next/font import
+     in app/layout.tsx (it feeds --font-app). */
+  --font-sans: var(--font-app), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-app), ui-sans-serif, system-ui, sans-serif;
 
   /* Radii */
   --radius-xl: 1.5rem;
