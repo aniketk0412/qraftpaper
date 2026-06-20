@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -9,19 +9,15 @@ import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { SiteBackground } from "@/components/effects/site-background";
 import { CursorGlow } from "@/components/effects/cursor-glow";
 import { UpdatePrompt } from "@/components/update-prompt";
+import { RouteProgress } from "@/components/route-progress";
 import { siteConfig, siteUrl } from "@/lib/site";
 
-// Self-hosted via next/font — Inter for the SaaS-modern body/headline feel
-// (Söhne / GT America class, closest free equivalent on Google Fonts), with
-// JetBrains Mono for monospace eyebrow labels and code-like text.
+// Single global typeface, self-hosted via next/font — Inter for the
+// SaaS-modern feel (Söhne / GT America class, closest free Google Font). Used
+// everywhere; the `font-mono` utility points at this same family in globals.css
+// so the whole UI shares one font (just varied weight/tracking where needed).
 const sans = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const mono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -102,7 +98,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${sans.variable} ${mono.variable} antialiased`}
+      className={`${sans.variable} antialiased`}
     >
       <body className="min-h-screen bg-canvas text-fg">
         {/* Preconnect to the third-party hosts our app talks to on first
@@ -116,6 +112,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://us.i.posthog.com" />
         <link rel="dns-prefetch" href="https://us-assets.i.posthog.com" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <RouteProgress />
         <PostHogProvider>
           <MotionConfig reducedMotion="user">
             <SiteBackground />
