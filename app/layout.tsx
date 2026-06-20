@@ -10,6 +10,7 @@ import { SiteBackground } from "@/components/effects/site-background";
 import { CursorGlow } from "@/components/effects/cursor-glow";
 import { UpdatePrompt } from "@/components/update-prompt";
 import { RouteProgress } from "@/components/route-progress";
+import { AdSense } from "@/components/adsense";
 import { siteConfig, siteUrl } from "@/lib/site";
 
 // Single global typeface, self-hosted via next/font — Plus Jakarta Sans for a
@@ -124,6 +125,7 @@ export default function RootLayout({
           </MotionConfig>
         </PostHogProvider>
         <UpdatePrompt />
+        <AdSense />
         <Analytics />
         <SpeedInsights />
       </body>

@@ -16,14 +16,31 @@ const withBundleAnalyzer = bundleAnalyzer({
 //  'unsafe-eval' is kept because the Next.js dev/runtime client uses it; the
 //  rest of the policy still blocks foreign script/style origins, object/embed,
 //  framing of this app, and <base>/form hijacking.
+// Google AdSense needs its script, ad-iframe, pixel and beacon hosts
+// allowlisted. These are added ONLY when AdSense is actually configured
+// (NEXT_PUBLIC_ADSENSE_CLIENT set), so the default policy stays tight for a
+// site that isn't serving ads yet.
+const adsenseEnabled = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT);
+const adsHosts = {
+  script:
+    "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://partner.googleadservices.com https://www.googletagservices.com https://adservice.google.com https://tpc.googlesyndication.com",
+  img: "https://*.googlesyndication.com https://*.g.doubleclick.net https://www.google.com",
+  connect:
+    "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.g.doubleclick.net https://www.google.com",
+  frame:
+    "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com",
+} as const;
+const ads = (key: keyof typeof adsHosts) =>
+  adsenseEnabled ? ` ${adsHosts[key]}` : "";
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com${ads("script")}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  `img-src 'self' data: blob:${ads("img")}`,
   "font-src 'self' data:",
-  "connect-src 'self' https://challenges.cloudflare.com",
-  "frame-src 'self' https://challenges.cloudflare.com",
+  `connect-src 'self' https://challenges.cloudflare.com${ads("connect")}`,
+  `frame-src 'self' https://challenges.cloudflare.com${ads("frame")}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
