@@ -40,21 +40,33 @@ export function Sidebar({
       transition={{ duration: 0.42, ease: easeOut }}
       className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-line bg-canvas lg:flex"
     >
-      <div className="flex h-16 items-center border-b border-line px-6">
+      <div className="flex h-16 shrink-0 items-center border-b border-line px-6">
         <Logo />
       </div>
 
-      <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-6">
-        <NavGroup label="Workspace" items={workspaceNav} pathname={pathname} />
-        <NavGroup label="Account" items={accountNav} pathname={pathname} />
-      </nav>
+      {/* Everything below the logo is ONE scroll region so the sidebar scrolls
+          on its own instead of moving the page. `min-h-0` lets this flex child
+          shrink below its content so `overflow-y-auto` actually engages;
+          `data-lenis-prevent` stops the app-wide Lenis smooth-scroll from
+          hijacking the wheel here; `overscroll-contain` stops the scroll from
+          chaining to the page at the top/bottom. The bottom card is pushed down
+          with `mt-auto` when there's room, and scrolls with the nav when not. */}
+      <div
+        data-lenis-prevent
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain"
+      >
+        <nav className="flex flex-col gap-6 px-4 py-6">
+          <NavGroup label="Workspace" items={workspaceNav} pathname={pathname} />
+          <NavGroup label="Account" items={accountNav} pathname={pathname} />
+        </nav>
 
-      <div className="px-4 pb-6">
-        {isPaid ? (
-          <UsageCard plan={plan} used={generationsUsed} cap={generationsCap} />
-        ) : (
-          <GettingStartedCard hasSubjects={subjectCount > 0} />
-        )}
+        <div className="mt-auto px-4 pb-6">
+          {isPaid ? (
+            <UsageCard plan={plan} used={generationsUsed} cap={generationsCap} />
+          ) : (
+            <GettingStartedCard hasSubjects={subjectCount > 0} />
+          )}
+        </div>
       </div>
     </motion.aside>
   );
