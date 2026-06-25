@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Building2, Lock, Mail, User } from "lucide-react";
+import { ArrowRight, Building2, Mail, User } from "lucide-react";
 import { auth } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
+import { PasswordField } from "@/components/auth/password-field";
 import { EducationPicker } from "@/components/auth/education-picker";
 import { Turnstile } from "@/components/auth/turnstile";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -72,14 +73,13 @@ export default async function SignupPage({
           placeholder="Parul University"
         />
         <EducationPicker />
-        <AuthField
+        <PasswordField
           id="password"
           name="password"
           label="Create password"
-          type="password"
-          icon={Lock}
           placeholder="********"
           autoComplete="new-password"
+          showStrength
         />
 
         {errorMessage && (

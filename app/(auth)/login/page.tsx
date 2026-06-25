@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Lock, Mail } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 import { auth } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
+import { PasswordField } from "@/components/auth/password-field";
 import { GlowButton } from "@/components/ui/glow-button";
 import { loginAction } from "../actions";
 
@@ -59,12 +60,10 @@ export default async function LoginPage({
           placeholder="you@somewhere.com"
           autoComplete="email"
         />
-        <AuthField
+        <PasswordField
           id="password"
           name="password"
           label="Password"
-          type="password"
-          icon={Lock}
           placeholder="********"
           autoComplete="current-password"
         />
