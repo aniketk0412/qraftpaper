@@ -49,18 +49,19 @@ const font = (weight: number) =>
 export default async function QuizOg({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   let title = "Practice quiz";
   let subjectCode = "QraftPaper";
   let questionCount = 0;
   let duration = 0;
 
-  if (isUuid(params.id)) {
+  if (isUuid(id)) {
     const [row] = await getDb()
       .select({ title: quizzes.title, content: quizzes.content })
       .from(quizzes)
-      .where(eq(quizzes.id, params.id))
+      .where(eq(quizzes.id, id))
       .limit(1);
     if (row?.content && typeof row.content === "object") {
       const content = row.content as {
