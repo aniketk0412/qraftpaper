@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, FileText, Sparkles } from "lucide-react";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
+import { GridBackdrop } from "@/components/landing/grid-backdrop";
 import { GlowButton } from "@/components/ui/glow-button";
 import {
   examPapers,
@@ -95,11 +96,12 @@ export default async function ExamPaperPage({
   };
 
   return (
-    <>
+    <div className="relative">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <GridBackdrop />
       <SiteNav />
 
       <main className="mx-auto max-w-4xl px-5 pb-24 pt-32 sm:px-8">
@@ -250,6 +252,6 @@ export default async function ExamPaperPage({
       </main>
 
       <SiteFooter />
-    </>
+    </div>
   );
 }
