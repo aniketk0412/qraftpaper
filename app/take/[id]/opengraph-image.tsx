@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { quizzes } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
+import { OG, ogGridUri, ogBackground, loadOgFonts, OgBrandHeader } from "@/lib/og";
 
 export const alt = "QraftPaper practice quiz";
 export const size = { width: 1200, height: 630 };
@@ -21,30 +22,7 @@ export const runtime = "nodejs";
  * a generic card if the id doesn't resolve, so link unfurling never throws.
  */
 
-const INK = "#1a2332";
-const MUTED = "#4a5f6f";
-const SUBTLE = "#5a6c7a";
-const TEAL = "#1f7d7d";
-const TEAL_SOFT = "#2f9a9a";
-const LINE = "rgba(26,35,50,0.12)";
-
-const gridSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='630'>
-  <defs>
-    <pattern id='minor' width='40' height='40' patternUnits='userSpaceOnUse'>
-      <path d='M40 0H0V40' fill='none' stroke='rgba(26,35,50,0.06)' stroke-width='1'/>
-    </pattern>
-    <pattern id='major' width='200' height='200' patternUnits='userSpaceOnUse'>
-      <path d='M200 0H0V200' fill='none' stroke='rgba(31,125,125,0.13)' stroke-width='1.2'/>
-    </pattern>
-  </defs>
-  <rect width='1200' height='630' fill='url(#minor)'/>
-  <rect width='1200' height='630' fill='url(#major)'/>
-</svg>`;
-const gridUri = `data:image/svg+xml;utf8,${encodeURIComponent(gridSvg)}`;
-
-const FONT = "https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest";
-const font = (weight: number) =>
-  fetch(`${FONT}/latin-${weight}-normal.ttf`).then((r) => r.arrayBuffer());
+const { INK, MUTED, TEAL, LINE } = OG;
 
 export default async function QuizOg({
   params,
@@ -77,7 +55,7 @@ export default async function QuizOg({
     }
   }
 
-  const [pjs400, pjs600, pjs700] = await Promise.all([font(400), font(600), font(700)]);
+  const fonts = await loadOgFonts();
 
   // Long titles shrink so they always fit on two lines in the hero slot.
   const clean = title.slice(0, 90);
@@ -93,43 +71,15 @@ export default async function QuizOg({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background:
-            "radial-gradient(820px 520px at 88% -6%, rgba(31,125,125,0.16), transparent 60%), radial-gradient(620px 420px at -4% 104%, rgba(31,125,125,0.10), transparent 60%), #ece5d8",
+          background: ogBackground,
           padding: "58px 64px",
           fontFamily: "Plus Jakarta Sans",
         }}
       >
-        <img width={1200} height={630} src={gridUri} style={{ position: "absolute", top: 0, left: 0 }} />
+        <img width={1200} height={630} src={ogGridUri} style={{ position: "absolute", top: 0, left: 0 }} />
 
         {/* Header — Q mark + wordmark */}
-        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "18px" }}>
-          <div
-            style={{
-              display: "flex",
-              width: "60px",
-              height: "60px",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "16px",
-              background: "#fbf8f1",
-              border: `1px solid ${LINE}`,
-            }}
-          >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-              <defs>
-                <linearGradient id="qtail" x1="14" y1="15" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-                  <stop offset="0" stopColor="#1f7d7d" />
-                  <stop offset="1" stopColor="#b45309" />
-                </linearGradient>
-              </defs>
-              <circle cx="10.8" cy="11" r="7" stroke={INK} strokeWidth="2.8" />
-              <path d="M14.8 15.2 L19.2 19.6" stroke="url(#qtail)" strokeWidth="3.6" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div style={{ display: "flex", fontSize: "32px", fontWeight: 700, color: INK }}>
-            Qraft<span style={{ color: SUBTLE }}>Paper</span>
-          </div>
-        </div>
+        {OgBrandHeader()}
 
         {/* Body — quiz title left, MCQ mini-card right */}
         <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "44px" }}>
@@ -280,11 +230,7 @@ export default async function QuizOg({
     ),
     {
       ...size,
-      fonts: [
-        { name: "Plus Jakarta Sans", data: pjs400, weight: 400, style: "normal" },
-        { name: "Plus Jakarta Sans", data: pjs600, weight: 600, style: "normal" },
-        { name: "Plus Jakarta Sans", data: pjs700, weight: 700, style: "normal" },
-      ],
+      fonts,
     },
   );
 }

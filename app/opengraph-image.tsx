@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { OG, ogGridUri, ogBackground, loadOgFonts, OgBrandHeader } from "@/lib/og";
 
 export const alt = "QraftPaper — mock exams from your own syllabus";
 export const size = { width: 1200, height: 630 };
@@ -6,35 +7,12 @@ export const contentType = "image/png";
 
 // Branded social card. Light "ivory paper" theme (the site's default) — a warm
 // card reads brighter against the dark backgrounds of WhatsApp/iMessage/Discord
-// than a dark card does. Mirrors the landing hero: enhanced graph-paper grid,
-// headline on the left, and a stylised mock-paper card on the right, so a
-// shared link previews what QraftPaper actually makes.
-//
-// Built with next/og (Satori): every container sets display:flex, the grid
-// ships as an inline SVG data URI (Satori doesn't tile CSS grids reliably), and
-// the real brand font (Plus Jakarta Sans) is loaded from bundled TTFs since
-// Satori has no access to the app's next/font.
+// than a dark card does. Mirrors the landing hero: graph-paper grid, headline
+// on the left, and a stylised mock-paper card on the right, so a shared link
+// previews what QraftPaper actually makes. Shared OG primitives (colours, grid,
+// font loader, brand header) live in lib/og.tsx.
 
-const INK = "#1a2332";
-const MUTED = "#4a5f6f";
-const SUBTLE = "#5a6c7a";
-const TEAL = "#1f7d7d";
-const TEAL_SOFT = "#2f9a9a";
-const LINE = "rgba(26,35,50,0.12)";
-
-const gridSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='630'>
-  <defs>
-    <pattern id='minor' width='40' height='40' patternUnits='userSpaceOnUse'>
-      <path d='M40 0H0V40' fill='none' stroke='rgba(26,35,50,0.06)' stroke-width='1'/>
-    </pattern>
-    <pattern id='major' width='200' height='200' patternUnits='userSpaceOnUse'>
-      <path d='M200 0H0V200' fill='none' stroke='rgba(31,125,125,0.13)' stroke-width='1.2'/>
-    </pattern>
-  </defs>
-  <rect width='1200' height='630' fill='url(#minor)'/>
-  <rect width='1200' height='630' fill='url(#major)'/>
-</svg>`;
-const gridUri = `data:image/svg+xml;utf8,${encodeURIComponent(gridSvg)}`;
+const { INK, MUTED, SUBTLE, TEAL, TEAL_SOFT, LINE } = OG;
 
 const rows = [
   { n: "01", text: "Define an abstract data type with one example.", marks: "2m", unit: "Unit I" },
@@ -42,16 +20,8 @@ const rows = [
   { n: "03", text: "Compare separate chaining vs. open addressing.", marks: "10m", unit: "Unit IV" },
 ];
 
-// Real brand font (Plus Jakarta Sans). Fetched from the Fontsource CDN at
-// generation time — Satori can't see the app's next/font, and the bundled-asset
-// pattern (fetch(new URL(..., import.meta.url))) isn't supported by Turbopack.
-// The result is cached by Vercel after the card is first generated.
-const FONT = "https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest";
-const font = (weight: number) =>
-  fetch(`${FONT}/latin-${weight}-normal.ttf`).then((r) => r.arrayBuffer());
-
 export default async function OpengraphImage() {
-  const [pjs400, pjs600, pjs700] = await Promise.all([font(400), font(600), font(700)]);
+  const fonts = await loadOgFonts();
 
   return new ImageResponse(
     (
@@ -63,44 +33,16 @@ export default async function OpengraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background:
-            "radial-gradient(820px 520px at 88% -6%, rgba(31,125,125,0.16), transparent 60%), radial-gradient(620px 420px at -4% 104%, rgba(31,125,125,0.10), transparent 60%), #ece5d8",
+          background: ogBackground,
           padding: "60px 64px",
           fontFamily: "Plus Jakarta Sans",
         }}
       >
         {/* Graph-paper grid */}
-        <img width={1200} height={630} src={gridUri} style={{ position: "absolute", top: 0, left: 0 }} />
+        <img width={1200} height={630} src={ogGridUri} style={{ position: "absolute", top: 0, left: 0 }} />
 
         {/* Header — Q mark + wordmark */}
-        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "18px" }}>
-          <div
-            style={{
-              display: "flex",
-              width: "60px",
-              height: "60px",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "16px",
-              background: "#fbf8f1",
-              border: `1px solid ${LINE}`,
-            }}
-          >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-              <defs>
-                <linearGradient id="qtail" x1="14" y1="15" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-                  <stop offset="0" stopColor="#1f7d7d" />
-                  <stop offset="1" stopColor="#b45309" />
-                </linearGradient>
-              </defs>
-              <circle cx="10.8" cy="11" r="7" stroke={INK} strokeWidth="2.8" />
-              <path d="M14.8 15.2 L19.2 19.6" stroke="url(#qtail)" strokeWidth="3.6" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div style={{ display: "flex", fontSize: "34px", fontWeight: 700, color: INK }}>
-            Qraft<span style={{ color: SUBTLE }}>Paper</span>
-          </div>
-        </div>
+        {OgBrandHeader({ wordmarkSize: 34 })}
 
         {/* Body — headline left, mock-paper card right */}
         <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "44px" }}>
@@ -272,13 +214,6 @@ export default async function OpengraphImage() {
         </div>
       </div>
     ),
-    {
-      ...size,
-      fonts: [
-        { name: "Plus Jakarta Sans", data: pjs400, weight: 400, style: "normal" },
-        { name: "Plus Jakarta Sans", data: pjs600, weight: 600, style: "normal" },
-        { name: "Plus Jakarta Sans", data: pjs700, weight: 700, style: "normal" },
-      ],
-    },
+    { ...size, fonts },
   );
 }
