@@ -5,6 +5,7 @@ import { ArrowRight, ListChecks, Sparkles } from "lucide-react";
 
 import { Logo } from "@/components/logo";
 import { QuizRunner } from "@/components/quiz-runner";
+import { GridBackdrop } from "@/components/landing/grid-backdrop";
 import { GlowButton } from "@/components/ui/glow-button";
 import { isQuiz } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
@@ -77,7 +78,8 @@ export default async function TakeQuizPage({
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen overflow-hidden">
+      <GridBackdrop />
       <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-5 py-3.5 sm:px-8">
           <Logo />
