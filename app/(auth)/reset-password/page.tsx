@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Lock } from "lucide-react";
-import { AuthField } from "@/components/auth/auth-field";
+import { ArrowRight } from "lucide-react";
+import { PasswordField } from "@/components/auth/password-field";
 import { GlowButton } from "@/components/ui/glow-button";
 import { resetPasswordAction } from "../actions";
 
@@ -39,14 +39,13 @@ export default async function ResetPasswordPage({
 
       <form action={resetPasswordAction} className="mt-7 flex flex-col gap-4">
         <input type="hidden" name="token" value={tokenValue ?? ""} />
-        <AuthField
+        <PasswordField
           id="password"
           name="password"
           label="New password"
-          type="password"
-          icon={Lock}
           placeholder="********"
           autoComplete="new-password"
+          showStrength
         />
 
         {errorMessage && (
