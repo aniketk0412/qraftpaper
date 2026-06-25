@@ -248,6 +248,32 @@ export function QuizRunner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, score, total, quiz, totalSeconds, remaining]);
 
+  // Count the big score up from 0 on the results screen — the cheap, classic
+  // dopamine micro-moment for a reveal. Jumps straight to the final value under
+  // prefers-reduced-motion (or a zero score, where there's nothing to count).
+  // displayScore starts at 0 and is reset by restart(); all writes happen inside
+  // a rAF callback so we never call setState synchronously in the effect body.
+  const [displayScore, setDisplayScore] = useState(0);
+  useEffect(() => {
+    if (!finished) return;
+    let raf = 0;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || score === 0) {
+      raf = requestAnimationFrame(() => setDisplayScore(score));
+      return () => cancelAnimationFrame(raf);
+    }
+    const start = performance.now();
+    const duration = 650;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      setDisplayScore(Math.round(eased * score));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [finished, score]);
+
   async function pick(index: number) {
     if (answered || grading) return;
     setAnswers((a) => ({ ...a, [question.id]: index }));
@@ -302,6 +328,7 @@ export function QuizRunner({
     setStep(0);
     setFinished(false);
     setReviewing(false);
+    setDisplayScore(0);
     savedRef.current = false;
     setDeadline(Date.now() + totalSeconds * 1000);
     setRemaining(totalSeconds);
@@ -357,8 +384,8 @@ export function QuizRunner({
                 ? "New personal best"
                 : "Quiz complete"}
           </p>
-          <p className="mt-3 text-display text-gradient">
-            {score}
+          <p className="mt-3 text-display text-gradient tabular-nums">
+            {displayScore}
             <span className="text-fg-subtle">/{total}</span>
           </p>
           <p className="mt-2 text-sm text-fg-muted">
