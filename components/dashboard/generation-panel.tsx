@@ -20,7 +20,7 @@ export function GenerationPanel({
   subjects: DashboardSubject[];
   /** How many generations the user has already burned this month. */
   generationsUsed?: number;
-  /** Plan ceiling. null = unlimited (Institution), 0 = unpaid. */
+  /** Plan ceiling. 0 = unpaid. null is accepted defensively by shared callers. */
   generationsCap?: number | null;
 }) {
   const router = useRouter();
@@ -140,10 +140,9 @@ export function GenerationPanel({
             Choose a profiled subject, then generate a paper or MCQ quiz.
           </p>
           {/* Budget hint — transparent about what generating costs against
-              the monthly allowance. Cap of null = unlimited (Institution),
-              0 = unpaid (rendered as the subscribe nudge). Capped users see
-              "X / Y this month" with the remaining count gold-tinted once
-              there are 3 or fewer left. */}
+              the monthly allowance. 0 = unpaid (rendered as the subscribe
+              nudge). Capped users see "X / Y this month" with the remaining
+              count gold-tinted once there are 3 or fewer left. */}
           {generationsCap !== null && generationsCap > 0 && (
             <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-line bg-tint/[0.02] px-3 py-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-muted">
               <span

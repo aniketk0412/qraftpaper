@@ -1,11 +1,17 @@
 // Single source of truth for plans: pricing-page display AND enforced limits
 // both read from here, so they can never drift apart.
 //
-// Tune these as you learn your real cost per generation (the aiUsageEvents
-// table tracks estimatedCostCents per AI call). Generation runs on Claude
-// Sonnet (~$0.10–0.20 per paper/quiz); the monthly allowance is your cost cap.
+// Generation runs on Claude Haiku 4.5 via OpenRouter (input $1 / output $5 per
+// 1M tokens). Measured cost per generation is ~1.5–3¢ (paper max_tokens 5000,
+// quiz 4500, ~3.5k prompt tokens dominated by the cached subject profile). A
+// full trial — 3 papers + one syllabus extraction — costs ~6–12¢ worst case.
+// The aiUsageEvents table tracks estimatedCostCents per call; the per-plan
+// allowance below is your hard cost cap. Tune as your real numbers come in.
 
-export type PlanId = "unpaid" | "educator" | "department" | "institution";
+export type PlanId =
+  | "unpaid"
+  | "trial"
+  | "educator";
 
 export interface PlanLimits {
   /** Paper + quiz generations allowed per calendar month. null = unlimited. */
@@ -48,9 +54,38 @@ export const PLANS: Record<PlanId, Plan> = {
     quizzesPerSubject: 0,
     features: ["Browse a sample paper", "No generation until you subscribe"],
   },
-  // Plan ids stay "educator" / "department" so existing DB rows, LemonSqueezy
-  // variant mappings, webhooks and audit logs don't have to migrate. Only the
-  // display strings change to match the actual buyer: a student.
+  // One-time $1 "3-Day Pass" — a paid tripwire, not a free tier. It exists to
+  // let a student feel the "this matches my exam" moment before committing to
+  // Solo. The 3-generation cap is the cost ceiling (~6–12¢ COGS worst case, so
+  // ~8× margin even with zero conversion). The 3-DAY WINDOW is enforced at the
+  // subscription/account layer (expiry), NOT here — `generationsPerMonth` is
+  // only the generation cap; see `lib/billing/trial.ts` for expiry +
+  // one-time-eligibility enforcement.
+  trial: {
+    id: "trial",
+    name: "3-Day Pass",
+    price: "$1",
+    priceInr: "₹99",
+    period: "one-time",
+    tagline: "Try it on your real exam before you commit. Three papers, three days.",
+    cta: "Start the $1 pass",
+    featured: false,
+    badge: "Try first",
+    generationsPerMonth: 3,
+    maxSubjects: 1,
+    papersPerSubject: 3,
+    quizzesPerSubject: 3,
+    features: [
+      "3 generations (papers or quizzes)",
+      "Matched to your syllabus + previous-year paper",
+      "PDF & Word export",
+      "Full access for 3 days",
+      "Upgrade to Solo anytime — no second charge",
+    ],
+  },
+  // Plan id stays "educator" so existing DB rows, LemonSqueezy variant mappings,
+  // webhooks and audit logs don't have to migrate. Only the display strings
+  // change to match the actual buyer: a student.
   educator: {
     id: "educator",
     name: "Solo",
@@ -60,6 +95,7 @@ export const PLANS: Record<PlanId, Plan> = {
     tagline: "Everything you need to actually prep for one exam season.",
     cta: "Start practising",
     featured: true,
+    badge: "Most popular",
     generationsPerMonth: 20,
     maxSubjects: 5,
     papersPerSubject: 6,
@@ -73,51 +109,6 @@ export const PLANS: Record<PlanId, Plan> = {
       "PDF & Word export — print and solve by hand",
       "Shareable quiz links for friends",
       "Cancel anytime from your dashboard",
-    ],
-  },
-  department: {
-    id: "department",
-    name: "Crew",
-    price: "$24",
-    priceInr: "₹1,999",
-    period: "/ month",
-    tagline: "For a study group splitting one workspace across friends.",
-    cta: "Get started",
-    featured: true,
-    badge: "Best value",
-    generationsPerMonth: 90,
-    maxSubjects: 25,
-    papersPerSubject: 12,
-    quizzesPerSubject: 20,
-    features: [
-      "90 papers & quizzes / month",
-      "Up to 25 subjects across the group",
-      "Reusable blueprints for repeat exam patterns",
-      "Repeat-reduction so no two papers feel identical",
-      "Difficulty & Bloom's balancing",
-      "Faster support",
-    ],
-  },
-  institution: {
-    id: "institution",
-    name: "Institution",
-    price: "Custom",
-    period: "",
-    tagline: "For universities running examinations at scale.",
-    cta: "Talk to sales",
-    featured: false,
-    badge: "Enterprise",
-    generationsPerMonth: null,
-    maxSubjects: null,
-    papersPerSubject: null,
-    quizzesPerSubject: null,
-    features: [
-      "Custom monthly allowance",
-      "Unlimited subjects & seats",
-      "Workspace roles by agreement",
-      "Usage and billing review",
-      "Dedicated success manager",
-      "Custom integrations & SLA",
     ],
   },
 };
@@ -135,9 +126,7 @@ export function planLimits(planId: string): PlanLimits {
 
 /** Tiers shown on the public pricing page, in display order.
  *
- * Single-tier today: just Solo. The Crew/department tier is kept in PLANS
- * for legacy DB rows + future workspace-sharing work, but it is NOT publicly
- * sold — there is no shared-workspace feature yet, so selling it would be
- * vapourware. Institution stays internal-only for the same reason.
+ * The 3-Day Pass is the paid try-before-subscribe entry point; Solo is the
+ * primary recurring plan.
  */
-export const PRICING_TIERS: Plan[] = [PLANS.educator];
+export const PRICING_TIERS: Plan[] = [PLANS.trial, PLANS.educator];

@@ -6,6 +6,8 @@ import {
   isBillingConfigured,
   isBillingTier,
 } from "@/lib/billing/lemonsqueezy";
+import { isTrialEligible } from "@/lib/billing/trial";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 
@@ -35,6 +37,15 @@ export async function POST(request: Request) {
     );
   }
 
+  // One-time eligibility for the $1 3-Day Pass: never consumed before, and not
+  // already on a real plan. Stops a user buying a second pass or downgrading.
+  if (body.tier === "trial" && !(await isTrialEligible(session.user.id))) {
+    return NextResponse.json(
+      { error: "The 3-Day Pass is one per account. Upgrade to Solo instead." },
+      { status: 409 },
+    );
+  }
+
   try {
     const checkoutUrl = await createBillingCheckout({
       tier: body.tier,
@@ -46,7 +57,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ checkoutUrl });
   } catch (error) {
-    console.error("[billing:checkout] failed to create checkout", error);
+    captureException(error, { scope: "billing:checkout", userId: session.user.id });
     return NextResponse.json(
       { error: "Unable to start checkout right now. Please try again shortly." },
       { status: 502 },

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { trackEvent } from "@/lib/analytics";
+import { captureException } from "@/lib/observability";
 import { getDb } from "@/lib/db";
 import { quizAttempts } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
@@ -98,7 +99,7 @@ export async function POST(
     }
   } catch (error) {
     // Logging failed analytics shouldn't break the user's experience.
-    console.error("[quiz:complete] failed to record attempt", error);
+    captureException(error, { scope: "quiz:complete" });
   }
 
   return NextResponse.json({ ok: true });

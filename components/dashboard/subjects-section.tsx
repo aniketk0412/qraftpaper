@@ -2,13 +2,24 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowUpRight, BookOpen, CalendarClock, Target } from "lucide-react";
+import { BookOpen, CalendarClock, Target } from "lucide-react";
 import { useMemo, useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { IconTile } from "@/components/ui/icon-tile";
+import { ReadinessRing } from "@/components/dashboard/readiness-ring";
 import { easeOut } from "@/lib/motion";
+import { computeReadiness, type ReadinessBand } from "@/lib/exam-readiness";
 import type { DashboardSubject } from "@/lib/subjects";
 import { cn } from "@/lib/utils";
+
+// Readiness band → chip tone, aligned with the card's existing colour language.
+const BAND_TONE: Record<ReadinessBand, "accent" | "violet" | "gold" | "neutral"> = {
+  ready: "accent",
+  solid: "violet",
+  building: "gold",
+  starting: "gold",
+  setup: "neutral",
+};
 
 type Sort = "recent" | "papers" | "name";
 
@@ -77,7 +88,15 @@ export function SubjectsSection({
             </div>
           </GlassCard>
         )}
-        {subjects.map((subject) => (
+        {subjects.map((subject) => {
+          // Pure, ~instant readiness from data already on the card — no query.
+          const readiness = computeReadiness({
+            hasProfile: subject.hasProfile,
+            masteryPct: subject.masteryPct,
+            quizzesTaken: subject.quizzesTaken,
+            papersGenerated: subject.papers,
+          });
+          return (
           <motion.div
             key={subject.id}
             layout
@@ -85,11 +104,11 @@ export function SubjectsSection({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.35, ease: easeOut }}
           >
-            <Link href="/dashboard/subjects" className="block h-full">
+            <Link href={`/dashboard/subjects/${subject.id}`} className="block h-full">
               <GlassCard hover className="h-full p-5">
                 <div className="flex items-start justify-between">
                   <IconTile icon={BookOpen} tone={subject.accent} />
-                  <ArrowUpRight className="h-4 w-4 text-fg-subtle" />
+                  <ReadinessRing readiness={readiness} />
                 </div>
                 <p className="mt-4 font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
                   {subject.code}
@@ -98,22 +117,18 @@ export function SubjectsSection({
                   {subject.name}
                 </h3>
 
-                {/* Mastery + exam countdown chips. Hidden when there is no
-                    data so empty-state subjects don't show "—%" placeholders. */}
-                {(subject.masteryPct !== null ||
+                {/* Readiness band + exam countdown chips. The ring above carries
+                    the score; this chip gives it a word ("Looking solid"). The
+                    band chip shows once the subject is set up; the exam chip
+                    whenever an exam date is in the future. */}
+                {(subject.hasProfile ||
                   (subject.daysToExam !== null && subject.daysToExam >= 0)) && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    {subject.masteryPct !== null && (
+                    {subject.hasProfile && (
                       <SubjectChip
                         icon={Target}
-                        tone={
-                          subject.masteryPct >= 80
-                            ? "accent"
-                            : subject.masteryPct >= 55
-                              ? "violet"
-                              : "gold"
-                        }
-                        label={`${subject.masteryPct}% mastery`}
+                        tone={BAND_TONE[readiness.band]}
+                        label={readiness.label}
                       />
                     )}
                     {subject.daysToExam !== null && subject.daysToExam >= 0 && (
@@ -141,7 +156,8 @@ export function SubjectsSection({
               </GlassCard>
             </Link>
           </motion.div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowRight, BookOpen, FilePlus2, UploadCloud } from "lucide-react";
 
 import { auth } from "@/auth";
@@ -100,9 +101,12 @@ export default async function SubjectsPage() {
                 <p className="mt-5 font-mono text-[0.64rem] uppercase tracking-wider text-fg-subtle">
                   {subject.code}
                 </p>
-                <h2 className="mt-1 text-lg font-semibold tracking-tight">
+                <Link
+                  href={`/dashboard/subjects/${subject.id}`}
+                  className="mt-1 block text-lg font-semibold tracking-tight transition-colors hover:text-violet-bright"
+                >
                   {subject.name}
-                </h2>
+                </Link>
                 <div className="mt-5 grid grid-cols-3 gap-2 border-t border-line pt-4 text-center">
                   <MiniStat label="Docs" value={String(docs)} />
                   <MiniStat label="Papers" value={String(subject.papers)} />

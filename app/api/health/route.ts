@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { getDb } from "@/lib/db";
+import { captureException } from "@/lib/observability";
 
 export const runtime = "nodejs";
 // Health checks are pure liveness — never cache them.
@@ -37,7 +38,7 @@ export async function GET() {
     // We log but don't expose the underlying message — error.message could
     // leak hostname / role info that's useful to attackers fingerprinting
     // the stack.
-    console.error("[health] database probe failed", error);
+    captureException(error, { scope: "health:db-probe" });
   }
 
   const body = {

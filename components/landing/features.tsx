@@ -28,7 +28,7 @@ export function Features() {
           className="max-w-2xl"
         />
 
-        <div className="mt-14 grid grid-cols-1 gap-3 lg:grid-cols-6">
+        <div className="mt-10 grid grid-cols-1 gap-3 lg:grid-cols-6">
           <Reveal className="lg:col-span-3">
             <GlassCard hover className="h-full p-7">
               <IconTile icon={Layers3} size="lg" />

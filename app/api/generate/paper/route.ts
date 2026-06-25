@@ -5,9 +5,11 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { trackEvent } from "@/lib/analytics";
+import { captureException } from "@/lib/observability";
 import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
-import { generationJobs, papers, subjects, users } from "@/lib/db/schema";
+import { generationJobs, papers, subjects } from "@/lib/db/schema";
+import { loadEffectivePlan } from "@/lib/billing/trial";
 import { generatePaperSections, type PaperGenerationConfig } from "@/lib/ai/generate";
 import { reconcilePaper } from "@/lib/paper-reconcile";
 import {
@@ -81,13 +83,9 @@ export async function POST(request: Request) {
   const profile = subject.profile;
 
   // Read the live plan from the DB — the session JWT can be stale after a
-  // downgrade/cancellation, so we never trust it for entitlement checks.
-  const [account] = await getDb()
-    .select({ plan: users.plan })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1);
-  const plan = account?.plan ?? "unpaid";
+  // downgrade/cancellation, so we never trust it for entitlement checks. This
+  // also lazily expires a lapsed 3-Day Pass (trial → unpaid) before the gate.
+  const plan = await loadEffectivePlan(session.user.id);
 
   const clientIp = getClientIp(request);
 
@@ -188,7 +186,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
-    console.error("[generate:paper] failed", error);
+    captureException(error, { scope: "generate:paper", userId: session.user.id });
     return NextResponse.json(
       { error: "Paper generation failed. Please try again." },
       { status: 502 },

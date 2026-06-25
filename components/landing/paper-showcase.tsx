@@ -22,7 +22,7 @@ export function PaperShowcase() {
           description="70-mark, 3-hour DSA mock paper from a real syllabus + PYQ upload. Notice the blueprint-match score showing how close the draft hit the requested structure."
         />
 
-        <div className="mt-14 grid items-start gap-4 lg:grid-cols-[0.82fr_1.18fr]">
+        <div className="mt-10 grid items-start gap-4 lg:grid-cols-[0.82fr_1.18fr]">
           <Reveal>
             <GlassCard className="p-7">
               <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-violet-bright">

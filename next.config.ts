@@ -69,6 +69,15 @@ const nextConfig: NextConfig = {
     root: process.cwd(),
   },
   serverExternalPackages: ["pdf-parse"],
+  // The PDF export routes read a vendored Unicode font (lib/export/fonts) at
+  // runtime via fs. Output-file tracing can't see that dynamically-built path,
+  // so include it explicitly or the font goes missing from the serverless
+  // bundle on Vercel. (render.ts falls back to the built-in font if it's
+  // absent, so a miss degrades gracefully rather than 500-ing — but we want it
+  // present so the glyphs actually render.)
+  outputFileTracingIncludes: {
+    "/api/export/**": ["./lib/export/fonts/**"],
+  },
   // A stable id for THIS build, inlined into both client and server bundles.
   // Each deploy gets a new value (git SHA on Vercel, else a build timestamp);
   // the update prompt compares the running app against /api/version to detect

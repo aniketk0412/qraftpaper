@@ -5,7 +5,7 @@ export const faqs = [
   },
   {
     q: "Is there a free trial?",
-    a: "No. Generations cost real money to run, so we do not offer a free tier. The cheapest plan is $7 a month with 20 papers and quizzes, less than a single tuition class. Cancel anytime from the dashboard.",
+    a: "No free tier — generations cost real money to run. But you can try it for $1 with the 3-Day Pass: a one-time paid trial to generate a few papers on your real exam before committing. After that, Solo is $7 a month with 20 papers and quizzes — less than a single tuition class. Cancel anytime from the dashboard.",
   },
   {
     q: "Will it work for my course or stream?",

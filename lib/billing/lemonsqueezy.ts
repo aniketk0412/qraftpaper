@@ -1,8 +1,12 @@
-import { createCheckout, lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
+import {
+  createCheckout,
+  getSubscription,
+  lemonSqueezySetup,
+} from "@lemonsqueezy/lemonsqueezy.js";
 
 import { PLANS } from "@/lib/plans";
 
-export type BillingTier = "educator" | "department";
+export type BillingTier = "educator" | "trial";
 
 export interface BillingTierInfo {
   tier: BillingTier;
@@ -28,21 +32,17 @@ function fromPlan(tier: BillingTier): BillingTierInfo {
     price: plan.price,
     period: plan.period,
     blurb: plan.tagline,
-    generationCap:
-      plan.generationsPerMonth === null
-        ? "Custom monthly allowance"
-        : `${plan.generationsPerMonth} generations / month`,
+    generationCap: `${plan.generationsPerMonth} generations / month`,
   };
 }
 
 export const billingTiers: Record<BillingTier, BillingTierInfo> = {
   educator: fromPlan("educator"),
-  department: fromPlan("department"),
+  trial: fromPlan("trial"),
 };
 
 /** True only when every Lemon Squeezy secret needed at runtime is present.
- *  We only sell Solo (educator variant) today — Department is internal-only,
- *  so its variant id is optional. */
+ *  Trial has its own optional variant; checkout for it fails closed until set. */
 export function isBillingConfigured(): boolean {
   return Boolean(
     process.env.LEMONSQUEEZY_API_KEY &&
@@ -76,7 +76,7 @@ export function getStoreId(): string {
 
 export function variantIdForTier(tier: BillingTier): string | undefined {
   if (tier === "educator") return process.env.LEMONSQUEEZY_VARIANT_EDUCATOR;
-  if (tier === "department") return process.env.LEMONSQUEEZY_VARIANT_DEPARTMENT;
+  if (tier === "trial") return process.env.LEMONSQUEEZY_VARIANT_TRIAL;
   return undefined;
 }
 
@@ -84,16 +84,18 @@ export function tierForVariantId(variantId: string): BillingTier | null {
   if (variantId && variantId === process.env.LEMONSQUEEZY_VARIANT_EDUCATOR) {
     return "educator";
   }
-  if (variantId && variantId === process.env.LEMONSQUEEZY_VARIANT_DEPARTMENT) {
-    return "department";
+  if (variantId && variantId === process.env.LEMONSQUEEZY_VARIANT_TRIAL) {
+    return "trial";
   }
   return null;
 }
 
 export function isBillingTier(value: unknown): value is BillingTier {
-  // Only Solo (educator) is publicly purchasable today; "department" remains
-  // a valid plan id for legacy DB rows but checkouts for it are not accepted.
-  return value === "educator";
+  // Publicly purchasable today: Solo (educator) and the $1 3-Day Pass (trial).
+  // The trial additionally requires one-time eligibility, enforced at the
+  // checkout route (isTrialEligible), and a configured LEMONSQUEEZY_VARIANT_TRIAL
+  // (createBillingCheckout throws otherwise).
+  return value === "educator" || value === "trial";
 }
 
 export async function createBillingCheckout({
@@ -155,4 +157,26 @@ export async function createBillingCheckout({
   }
 
   return checkout.data.data.attributes.url;
+}
+
+/**
+ * The Lemon Squeezy-hosted customer-portal URL for an active subscription —
+ * where a subscriber updates their card, downloads invoices or cancels.
+ *
+ * Fetched LIVE on each billing-page load rather than stored: Lemon Squeezy
+ * signs these URLs and expires them (~24h), so a value cached in our DB would
+ * go stale. Returns null when billing isn't configured or the lookup fails, so
+ * the caller can fall back gracefully (e.g. to the checkout button).
+ */
+export async function getCustomerPortalUrl(
+  subscriptionId: string,
+): Promise<string | null> {
+  if (!process.env.LEMONSQUEEZY_API_KEY) return null;
+  try {
+    ensureLemonSqueezy();
+    const result = await getSubscription(subscriptionId);
+    return result.data?.data.attributes.urls?.customer_portal ?? null;
+  } catch {
+    return null;
+  }
 }

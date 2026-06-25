@@ -2,6 +2,7 @@ import type { ChatCompletion } from "openai/resources/chat/completions";
 
 import { getOpenRouterClient, OPENROUTER_MODELS } from "./openrouter";
 import { fenceUntrusted, UNTRUSTED_CONTENT_GUARD } from "./safety";
+import type { QuizAngle } from "@/lib/quiz-angles";
 import type {
   Difficulty,
   PaperQuestion,
@@ -113,7 +114,10 @@ const quizQuestionsTool = {
                 maxItems: 4,
                 items: { type: "string" },
               },
-              correctIndex: { type: "number" },
+              // Exactly 4 options, so the answer index is 0–3. Bounding it in
+              // the tool schema (not just the prose) stops the model emitting
+              // an out-of-range index; isQuizQuestion rejects it downstream too.
+              correctIndex: { type: "integer", minimum: 0, maximum: 3 },
               unit: { type: "string" },
               difficulty: difficultySchema,
               explanation: { type: "string" },
@@ -167,17 +171,33 @@ export async function generateQuizQuestions(input: {
   subjectCode: string;
   profile: SubjectProfile;
   config: QuizGenerationConfig;
+  /** Cognitive stance for THIS quiz, rotated per subject so repeat quizzes feel
+   *  different. See lib/quiz-angles.ts. */
+  angle?: QuizAngle;
 }) {
   const response = await createToolCompletion({
     label: "generate-quiz",
     model: OPENROUTER_MODELS.generation,
     max_tokens: 4500,
-    temperature: 0.35,
-    system:
-      "You generate high-quality MCQ quizzes for educators. Return only through the requested tool. Every question must have exactly four options, one correctIndex from 0 to 3, and a concise explanation.",
+    // A touch hotter than paper generation: a quiz the student takes repeatedly
+    // needs variety between runs, and the strict tool schema + reconcileQuiz
+    // keep the format safe even at higher diversity.
+    temperature: 0.5,
+    system: [
+      "You are an expert exam question writer making an MCQ quiz for a student revising a specific subject. Return ONLY via the requested tool.",
+      "Every question MUST:",
+      "- Test real understanding, not trivial recall — prefer application, analysis and 'why / which is true' over 'define X'.",
+      "- Have exactly four options and one correct answer (correctIndex 0-3).",
+      "- Make EVERY wrong option a specific, plausible misconception a real student holds — never obvious filler. Someone who hasn't studied should find all four tempting.",
+      "- Carry a concise explanation that says why the right answer is right AND why the most tempting wrong option is wrong.",
+      "- Be answerable from the provided subject profile; never invent facts beyond it.",
+      "Across the set, vary the sub-topics, the cognitive level (per the difficulty mix) and the framing (scenario, comparison, spot-the-false, short calculation, interpret-a-result). Never ask two questions that test the same micro-fact.",
+    ].join("\n"),
     profile: input.profile,
     task: `Subject: ${input.subjectName} (${input.subjectCode})
-Generate ${input.config.questionCount} QuizQuestion objects from the profile and config.
+Generate ${input.config.questionCount} QuizQuestion objects from the profile and config.${
+      input.angle ? `\nEmphasis for THIS quiz — ${input.angle.guidance}` : ""
+    }
 Config JSON:
 ${JSON.stringify(input.config)}`,
     tools: [quizQuestionsTool],

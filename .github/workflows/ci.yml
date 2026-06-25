@@ -41,3 +41,11 @@ jobs:
 
       - name: Vitest
         run: npm run test
+
+      # Dependency vulnerability gate. Fails the build on HIGH/critical
+      # advisories only — moderate/low are reported by `npm audit` locally but
+      # don't block CI (today's tree has only moderate postcss issues bundled
+      # inside Next itself, which aren't separately fixable). Raise the bar to
+      # `moderate` once the dependency tree is clean at that level.
+      - name: Audit dependencies
+        run: npm audit --audit-level=high

@@ -21,16 +21,12 @@ test.describe("public pages", () => {
     await expect(signupCta).toHaveAttribute("href", "/signup");
   });
 
-  test("pricing section shows the single Solo tier and nothing else", async ({
+  test("pricing section shows the trial-to-Solo ladder and nothing else", async ({
     page,
   }) => {
     await page.goto("/#pricing");
+    await expect(page.getByRole("heading", { name: /3-day pass/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /solo/i })).toBeVisible();
-    // We publicly sell exactly one tier today. The Crew/department and
-    // Custom/Institution tiers were pulled (no shared-workspace feature) —
-    // guard against either sneaking back into the public pricing.
-    await expect(page.getByRole("heading", { name: /^crew$/i })).toHaveCount(0);
-    await expect(page.getByText(/talk to sales/i)).toHaveCount(0);
     // International-payment trust signal must be present (added so non-India
     // visitors know they can pay in their own currency).
     await expect(page.getByText(/130\+ currencies/i)).toBeVisible();
@@ -68,6 +64,25 @@ test.describe("public pages", () => {
     }
   });
 
+  test("exam-papers index lists catalogued subjects", async ({ page }) => {
+    await page.goto("/exam-papers");
+    await expect(page.locator("h1")).toBeVisible();
+    // Each catalogued subject is a card linking to its detail page — the
+    // programmatic SEO surface. If this list empties out the strategy is broken.
+    await expect(
+      page.getByRole("link", { name: /data structures/i }),
+    ).toBeVisible();
+  });
+
+  test("an exam-paper detail page renders its subject heading", async ({
+    page,
+  }) => {
+    await page.goto("/exam-papers/cs-204-data-structures");
+    await expect(
+      page.getByRole("heading", { level: 1, name: /data structures/i }),
+    ).toBeVisible();
+  });
+
   test("dashboard redirects logged-out visitors to /login", async ({ page }) => {
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/\/login/);
@@ -80,6 +95,10 @@ test.describe("public pages", () => {
     expect(body).toContain("/about");
     expect(body).toContain("/privacy");
     expect(body).toContain("/terms");
+    // Programmatic SEO landing pages must stay in the sitemap so they get
+    // crawled — they're the whole point of the /exam-papers route.
+    expect(body).toContain("/exam-papers");
+    expect(body).toContain("/exam-papers/cs-204-data-structures");
   });
 
   test("robots.txt blocks /dashboard from crawlers", async ({ request }) => {

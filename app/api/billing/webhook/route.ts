@@ -9,6 +9,7 @@ import { billingEvents, subscriptions, users } from "@/lib/db/schema";
 import { tierForVariantId, type BillingTier } from "@/lib/billing/lemonsqueezy";
 import { verifyWebhookSignature } from "@/lib/billing/webhook-signature";
 import { resolveEntitlement } from "@/lib/billing/entitlement";
+import { grantTrial, revokeTrial } from "@/lib/billing/trial";
 import { normalizeUuid } from "@/lib/ids";
 
 export const runtime = "nodejs";
@@ -32,6 +33,8 @@ interface LemonWebhookPayload {
       renews_at?: string | null;
       ends_at?: string | null;
       user_email?: string | null;
+      // One-time orders carry the variant on the line item, not the top level.
+      first_order_item?: { variant_id?: number | string | null } | null;
     };
   };
 }
@@ -100,6 +103,8 @@ export async function POST(request: Request) {
 
   if (eventName.startsWith("subscription_")) {
     await handleSubscriptionEvent(payload);
+  } else if (eventName.startsWith("order_")) {
+    await handleOrderEvent(payload, eventName);
   }
 
   await getDb()
@@ -174,10 +179,56 @@ async function handleSubscriptionEvent(payload: LemonWebhookPayload) {
   }
 }
 
+/**
+ * One-time orders. We only act on the $1 3-Day Pass here — subscription
+ * products ALSO emit `order_created`, but their entitlement is owned by the
+ * subscription_* branch, so anything that isn't the trial tier is ignored.
+ * Grant/revoke is idempotent (grantTrial refuses a second pass; the
+ * billingEvents dedupe upstream guards against double delivery).
+ */
+async function handleOrderEvent(payload: LemonWebhookPayload, eventName: string) {
+  const attributes = payload.data?.attributes;
+  const variantId =
+    attributes?.variant_id?.toString() ??
+    attributes?.first_order_item?.variant_id?.toString();
+  const mappedTier = variantId ? tierForVariantId(variantId) : null;
+  const customTier = toBillingTier(payload.meta?.custom_data?.tier);
+  const tier = mappedTier ?? customTier;
+  const userId = normalizeUuid(payload.meta?.custom_data?.userId);
+
+  if (tier !== "trial" || !userId) {
+    return;
+  }
+
+  if (eventName === "order_refunded") {
+    await revokeTrial(userId);
+    await safeTrack(userId, "trial_refunded");
+    return;
+  }
+
+  if (eventName === "order_created") {
+    const result = await grantTrial(userId);
+    if (result.granted) {
+      await safeTrack(userId, "trial_started");
+    }
+  }
+}
+
+async function safeTrack(
+  userId: string,
+  event: "trial_started" | "trial_refunded",
+) {
+  try {
+    await trackEvent({ distinctId: userId, event, properties: { plan: "trial" } });
+  } catch {
+    /* swallow */
+  }
+}
+
 function parseDate(value: string | null | undefined) {
   return value ? new Date(value) : null;
 }
 
 function toBillingTier(value: string | undefined): BillingTier | null {
-  return value === "educator" || value === "department" ? value : null;
+  return value === "educator" || value === "trial" ? value : null;
 }

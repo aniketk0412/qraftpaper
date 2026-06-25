@@ -62,7 +62,7 @@ export function HowItWorks({ signedIn = false }: { signedIn?: boolean }) {
           description="Takes longer to upload the PDFs than it does to generate the paper. Setup is once per subject — every paper after is one click."
         />
 
-        <div ref={ref} className="relative mx-auto mt-16 max-w-3xl">
+        <div ref={ref} className="relative mx-auto mt-10 max-w-3xl">
           <div className="absolute bottom-10 left-6 top-10 hidden w-px bg-line sm:block" />
           <motion.div
             style={{ scaleY }}
@@ -106,7 +106,7 @@ export function HowItWorks({ signedIn = false }: { signedIn?: boolean }) {
         </div>
 
         <Reveal delay={0.1}>
-          <div className="mt-12 flex flex-col items-center gap-3">
+          <div className="mt-8 flex flex-col items-center gap-3">
             <GlowButton
               href={signedIn ? "/dashboard" : "/signup"}
               size="lg"

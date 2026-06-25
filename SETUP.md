@@ -29,7 +29,7 @@ Copy `.env.example` → `.env.local` and fill these in.
 | `LEMONSQUEEZY_STORE_ID` | Your store id (Settings → Stores) |
 | `LEMONSQUEEZY_WEBHOOK_SECRET` | The signing secret from the webhook you create (step 5) |
 | `LEMONSQUEEZY_VARIANT_EDUCATOR` | Variant id of the **$7/mo** Educator product |
-| `LEMONSQUEEZY_VARIANT_DEPARTMENT` | Variant id of the **$24/mo** Department product |
+| `LEMONSQUEEZY_VARIANT_TRIAL` | Variant id of the one-time **$1** 3-Day Pass product |
 
 ### Email (required for password reset)
 | Variable | Where to get it |
@@ -71,30 +71,28 @@ Checks:
 
 Plans are defined in **one place — `lib/plans.ts`** — which feeds both the
 pricing page and the usage limiter, so they can never drift. The product is
-positioned for students; plan IDs are kept as `educator` / `department` so
-existing DB rows and LemonSqueezy variants don't have to migrate, only the
-display labels change:
+positioned for students; the recurring paid plan keeps the `educator` id so
+existing Solo subscription rows and LemonSqueezy variants don't have to migrate.
 
 | Display name | Plan ID | Price | Generations/mo | Subjects | Papers/subject |
 |---|---|---|---|---|---|
+| 3-Day Pass | `trial` | $1 | 3 | 1 | 3 |
 | Solo | `educator` | $7 | 20 | 5 | 6 |
-| Crew | `department` | $24 | 90 | 25 | 12 |
 
 Change a number there and both the marketing copy and enforcement update.
 **The price you set in LemonSqueezy must match the price shown here.**
 
-> The `institution` plan id is kept in `PLANS` for any hand-arranged enterprise
-> deal but is intentionally NOT in `PRICING_TIERS` — LemonSqueezy won't approve
-> a public "Custom / Talk to sales" tier without a real purchasable variant.
-
 ## 5. LemonSqueezy setup
 
-1. Create two **subscription** products: Educator **$7/mo** and Department
-   **$24/mo**. Copy each variant id into the env vars above.
-2. **Settings → Webhooks → +** : URL `https://<your-domain>/api/billing/webhook`,
-   subscribe to the **`subscription_*`** events, and copy the signing secret
+1. Create one **subscription** product: Educator/Solo **$7/mo**. Copy its
+   variant id into `LEMONSQUEEZY_VARIANT_EDUCATOR`.
+2. Create one **single-payment** product: 3-Day Pass **$1 one-time**. Copy its
+   variant id into `LEMONSQUEEZY_VARIANT_TRIAL`.
+3. **Settings → Webhooks → +** : URL `https://<your-domain>/api/billing/webhook`,
+   subscribe to **`subscription_*`**, **`order_created`**, and
+   **`order_refunded`** events, and copy the signing secret
    into `LEMONSQUEEZY_WEBHOOK_SECRET`.
-3. Activate the store (identity + payout bank) before taking real payments.
+4. Activate the store (identity + payout bank) before taking real payments.
    Until then, test with LemonSqueezy **Test mode**.
 
 The checkout (`/billing`) tags each purchase with the user + tier; the webhook

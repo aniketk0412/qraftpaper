@@ -48,10 +48,10 @@ export function Pricing({
               <span className="text-accent">tutoring session</span>
             </>
           }
-          description="No free tier — you pay for actual generations, not a sandbox. Each plan includes a monthly allowance. Cancel anytime from the dashboard."
+          description="Try QraftPaper on your real exam with the 3-Day Pass, then upgrade to Solo when you want the full monthly allowance. No fake free tier — every plan includes real generations."
         />
 
-        <div className="mx-auto mt-14 grid max-w-md items-stretch gap-3">
+        <div className="mx-auto mt-10 grid max-w-4xl items-stretch gap-4 lg:grid-cols-2">
           {PRICING_TIERS.map((tier, i) => (
             <Reveal key={tier.name} delay={i * 0.09}>
               <div
@@ -107,9 +107,20 @@ export function Pricing({
                       they saw was an abstract "$7". */}
                   <p className="mt-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-subtle">
                     {showInr && tier.priceInr
-                      ? `Billed as ${tier.price}${tier.period} · local currency at checkout`
+                      ? `Billed as ${tier.price} ${tier.period} · local currency at checkout`
                       : "Pay in your local currency at checkout"}
                   </p>
+                  {/* Per-paper value anchor on the primary plan — reframes the
+                      monthly price as the trivial per-unit cost it really is. */}
+                  {tier.featured && (
+                    <p className="mt-2.5 text-[0.74rem] leading-snug text-fg-muted">
+                      That&apos;s about{" "}
+                      <span className="font-medium text-fg">
+                        {showInr && tier.priceInr ? "₹29 a paper" : "$0.35 a paper"}
+                      </span>{" "}
+                      — cheaper than one tuition class.
+                    </p>
+                  )}
                 </div>
 
                 <div className="relative mt-6">
@@ -119,12 +130,12 @@ export function Pricing({
                     size="md"
                     className="w-full"
                   >
-                    {signedIn ? "Subscribe" : tier.cta}
+                    {tier.cta}
                     <ArrowRight className="h-4 w-4" />
                   </GlowButton>
                 </div>
 
-                <ul className="relative mt-7 flex flex-1 flex-col gap-3 border-t border-line pt-6">
+                <ul className="relative mt-6 flex flex-1 flex-col gap-2.5 border-t border-line pt-5">
                   {tier.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5">
                       <span

@@ -6,7 +6,8 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { trackEvent } from "@/lib/analytics";
 import { getDb } from "@/lib/db";
-import { subjects, users } from "@/lib/db/schema";
+import { subjects } from "@/lib/db/schema";
+import { loadEffectivePlan } from "@/lib/billing/trial";
 import { listUserSubjects, subjectsTagFor } from "@/lib/subjects";
 import { assertCanCreateSubject, UsageLimitError } from "@/lib/usage";
 import { sanitizeInline } from "@/lib/ai/safety";
@@ -54,14 +55,11 @@ export async function POST(request: Request) {
 
   if (!name) return badRequest("Subject name is required");
 
-  const [account] = await getDb()
-    .select({ plan: users.plan })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1);
+  // Effective plan (lazily expires a lapsed 3-Day Pass before the gate).
+  const plan = await loadEffectivePlan(session.user.id);
 
   try {
-    await assertCanCreateSubject(session.user.id, account?.plan ?? "unpaid");
+    await assertCanCreateSubject(session.user.id, plan);
   } catch (error) {
     if (error instanceof UsageLimitError) return paymentRequired(error.message);
     throw error;

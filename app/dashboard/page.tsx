@@ -21,7 +21,10 @@ import { Reveal } from "@/components/ui/reveal";
 import { examplePaperForLevel } from "@/lib/demo-data";
 import type { QuestionPaper } from "@/lib/types";
 import { getDb } from "@/lib/db";
-import { papers, quizzes, usage, users } from "@/lib/db/schema";
+import { papers, quizAttempts, quizzes, usage, users } from "@/lib/db/schema";
+import { computeReadiness } from "@/lib/exam-readiness";
+import { computeAchievements } from "@/lib/achievements";
+import { AchievementsShelf } from "@/components/dashboard/achievements-shelf";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { currentUsageMonth } from "@/lib/usage";
 import { getDueReviewCount } from "@/lib/reviews";
@@ -67,6 +70,7 @@ export default async function DashboardPage() {
     usageRow,
     profileRow,
     dueReviewCount,
+    quizAggRow,
   ] = userId
     ? await Promise.all([
         listUserSubjects(userId),
@@ -120,6 +124,17 @@ export default async function DashboardPage() {
         // (which skips migrations) the question_reviews table may not exist
         // yet, and a transient DB hiccup shouldn't 500 the landing surface.
         getDueReviewCount(userId).catch(() => 0),
+        // All-time quiz effort for the achievements shelf — questions answered
+        // and best score. One parallel aggregate; degrades to zeros on failure.
+        getDb()
+          .select({
+            answered: sql<number>`coalesce(sum(${quizAttempts.total}), 0)::int`,
+            best: sql<number>`coalesce(max(case when ${quizAttempts.total} > 0 then round(${quizAttempts.score}::numeric / ${quizAttempts.total} * 100) else 0 end), 0)::int`,
+          })
+          .from(quizAttempts)
+          .where(eq(quizAttempts.takerUserId, userId))
+          .then((rows) => rows[0] ?? { answered: 0, best: 0 })
+          .catch(() => ({ answered: 0, best: 0 })),
       ])
     : [
         [],
@@ -137,12 +152,12 @@ export default async function DashboardPage() {
         { generations: 0 },
         { plan: "unpaid", educationLevel: null },
         0,
+        { answered: 0, best: 0 },
       ];
 
   const paperStats = paperStatsRow;
-  // Monthly generation budget for the GenerationPanel + QuizLaunch hint —
-  // pulled from the single-source-of-truth PLANS table. null = unlimited
-  // (institution). 0 = unpaid (which the panel renders as a subscribe nudge).
+  // Monthly generation budget for the GenerationPanel + QuizLaunch hint,
+  // pulled from the single-source-of-truth PLANS table. 0 = unpaid.
   const generationsUsed = usageRow.generations;
   const generationsCap =
     PLANS[(profileRow.plan ?? "unpaid") as PlanId]?.generationsPerMonth ?? 0;
@@ -155,6 +170,26 @@ export default async function DashboardPage() {
   );
 
   const milestone = currentMilestone(streak.current);
+
+  // Achievement badges — derived from data already loaded (subjects + streak)
+  // plus the all-time quiz aggregate. Pure; no extra query beyond the one above.
+  const achievements = computeAchievements({
+    totalPapers: subjects.reduce((n, s) => n + s.papers, 0),
+    totalQuizzes: subjects.reduce((n, s) => n + s.quizzesTaken, 0),
+    totalQuestionsAnswered: quizAggRow.answered,
+    bestQuizPct: quizAggRow.answered > 0 ? quizAggRow.best : null,
+    longestStreak: streak.longest,
+    subjectsWithProfile: subjects.filter((s) => s.hasProfile).length,
+    subjectsExamReady: subjects.filter(
+      (s) =>
+        computeReadiness({
+          hasProfile: s.hasProfile,
+          masteryPct: s.masteryPct,
+          quizzesTaken: s.quizzesTaken,
+          papersGenerated: s.papers,
+        }).band === "ready",
+    ).length,
+  });
 
   const activity = [
     ...recentPapers.map((paper) => ({
@@ -404,6 +439,9 @@ export default async function DashboardPage() {
                   <WeeklyGoalCard weekly={weekly} />
                 </Reveal>
               )}
+              <Reveal delay={0.04}>
+                <AchievementsShelf achievements={achievements} />
+              </Reveal>
               {/* NextUpCard self-hides (returns null) when there's nothing
                   prescriptive — left unwrapped so it leaves no empty gap. */}
               <NextUpCard subjects={subjects} />

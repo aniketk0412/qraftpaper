@@ -28,6 +28,7 @@ function quizReport(generated: number, kept: number): QuizReconcileReport {
     kept,
     dropped: generated - kept,
     optionsDeduped: 0,
+    optionsShuffled: 0,
     trimmed: 0,
   };
 }

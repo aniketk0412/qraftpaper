@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarClock } from "lucide-react";
+import { ReadinessRing } from "@/components/dashboard/readiness-ring";
+import { computeReadiness } from "@/lib/exam-readiness";
 import type { DashboardSubject } from "@/lib/subjects";
 import { cn } from "@/lib/utils";
 
@@ -48,6 +50,14 @@ export function ExamCountdownBanner({
   if (upcoming.length === 0) return null;
   const target = upcoming[0];
   const days = target.daysToExam ?? 0;
+  // Readiness for the exam in front of them — the most motivating number to
+  // show right here ("3 days to go, you're 78% ready"). Pure, no extra query.
+  const readiness = computeReadiness({
+    hasProfile: target.hasProfile,
+    masteryPct: target.masteryPct,
+    quizzesTaken: target.quizzesTaken,
+    papersGenerated: target.papers,
+  });
 
   const headline =
     days === 0
@@ -110,9 +120,18 @@ export function ExamCountdownBanner({
         </p>
       </div>
 
+      {/* Readiness for this exam — the hero number, shown right where the
+          urgency is. Carries its own label so it reads on its own. */}
+      <div className="relative flex shrink-0 flex-col items-center gap-1">
+        <ReadinessRing readiness={readiness} size={52} />
+        <span className="font-mono text-[0.52rem] uppercase tracking-[0.16em] text-fg-subtle">
+          ready
+        </span>
+      </div>
+
       <ArrowRight
         className={cn(
-          "relative h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1",
+          "relative hidden h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1 sm:block",
           days <= 1 ? "text-gold" : "text-violet-bright",
         )}
       />

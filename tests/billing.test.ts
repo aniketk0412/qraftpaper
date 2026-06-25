@@ -63,7 +63,7 @@ describe("billing tier mapping", () => {
 
   beforeEach(() => {
     process.env.LEMONSQUEEZY_VARIANT_EDUCATOR = "variant_educator_123";
-    process.env.LEMONSQUEEZY_VARIANT_DEPARTMENT = "variant_department_456";
+    process.env.LEMONSQUEEZY_VARIANT_TRIAL = "variant_trial_456";
   });
   afterEach(() => {
     process.env = { ...ORIGINAL };
@@ -72,7 +72,7 @@ describe("billing tier mapping", () => {
   it("maps a known variant id to its tier", async () => {
     const { tierForVariantId } = await import("@/lib/billing/lemonsqueezy");
     expect(tierForVariantId("variant_educator_123")).toBe("educator");
-    expect(tierForVariantId("variant_department_456")).toBe("department");
+    expect(tierForVariantId("variant_trial_456")).toBe("trial");
   });
 
   it("maps an unknown variant id to null (never silently grants a plan)", async () => {
@@ -81,11 +81,10 @@ describe("billing tier mapping", () => {
     expect(tierForVariantId("")).toBeNull();
   });
 
-  it("only accepts the publicly-sellable tier at checkout", async () => {
+  it("only accepts the publicly-sellable tiers at checkout", async () => {
     const { isBillingTier } = await import("@/lib/billing/lemonsqueezy");
-    // Solo (educator) is the only tier sold today; department/garbage must
-    // be refused so nobody checks out an unlisted or vapourware plan.
     expect(isBillingTier("educator")).toBe(true);
+    expect(isBillingTier("trial")).toBe(true);
     expect(isBillingTier("department")).toBe(false);
     expect(isBillingTier("institution")).toBe(false);
     expect(isBillingTier("free")).toBe(false);

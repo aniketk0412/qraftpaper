@@ -21,7 +21,7 @@ export function Faq() {
           title="Everything else you might ask"
         />
 
-        <div className="mt-12 flex flex-col gap-2.5">
+        <div className="mt-8 flex flex-col gap-2.5">
           {faqs.map((item, i) => {
             const isOpen = open === i;
             return (

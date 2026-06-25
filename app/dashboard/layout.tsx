@@ -66,8 +66,7 @@ export default async function DashboardLayout({
 
   const plan = profile?.plan ?? "unpaid";
   const generationsUsed = usageRow?.generations ?? 0;
-  // Cap from the single-source-of-truth PLANS table: a number, or null =
-  // unlimited (institution). unpaid is 0.
+  // Cap from the single-source-of-truth PLANS table. unpaid is 0.
   const generationsCap = PLANS[plan as PlanId]?.generationsPerMonth ?? null;
 
   const user = {

@@ -1,18 +1,21 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { trackEvent } from "@/lib/analytics";
+import { captureException } from "@/lib/observability";
 import { isQuiz } from "@/lib/content-validation";
 import { generateQuizQuestions, type QuizGenerationConfig } from "@/lib/ai/generate";
 import { reconcileQuiz } from "@/lib/quiz-reconcile";
+import { pickQuizAngle } from "@/lib/quiz-angles";
 import { shouldRetryQuiz } from "@/lib/generation-quality";
 import { normalizeQuizConfig } from "@/lib/generation-config";
 import { normalizeUuid } from "@/lib/ids";
 import { getDb } from "@/lib/db";
-import { generationJobs, quizzes, subjects, users } from "@/lib/db/schema";
+import { generationJobs, quizzes, subjects } from "@/lib/db/schema";
+import { loadEffectivePlan } from "@/lib/billing/trial";
 import {
   assertCanGenerate,
   assertSubjectQuizLimit,
@@ -73,14 +76,21 @@ export async function POST(request: Request) {
   // Const-capture so the generate closure below keeps the non-null narrowing.
   const profile = subject.profile;
 
+  // Rotate the quiz "angle" by how many quizzes already exist for this subject,
+  // so the student's 1st, 2nd, 3rd… quiz each take a different cognitive stance
+  // (applied → misconception → analysis → …) and feel genuinely different.
+  const [priorQuizRow] = await getDb()
+    .select({ n: sql<number>`count(*)::int` })
+    .from(quizzes)
+    .where(
+      and(eq(quizzes.userId, session.user.id), eq(quizzes.subjectId, subjectId)),
+    );
+  const angle = pickQuizAngle(priorQuizRow?.n ?? 0);
+
   // Read the live plan from the DB — the session JWT can be stale after a
-  // downgrade/cancellation, so we never trust it for entitlement checks.
-  const [account] = await getDb()
-    .select({ plan: users.plan })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1);
-  const plan = account?.plan ?? "unpaid";
+  // downgrade/cancellation, so we never trust it for entitlement checks. Also
+  // lazily expires a lapsed 3-Day Pass (trial → unpaid) before the gate.
+  const plan = await loadEffectivePlan(session.user.id);
 
   try {
     // No email-verification gate — see /api/generate/paper for rationale.
@@ -111,7 +121,9 @@ export async function POST(request: Request) {
     .returning();
 
   const quizId = randomUUID();
-  const title = `${subject.name} Practice Quiz`;
+  // Surface the angle in the title so each quiz visibly reads as a fresh take
+  // ("… — Misconception hunt" vs "… — Applied scenarios"), not a reshuffle.
+  const title = `${subject.name} — ${angle.label}`;
 
   // One generate+reconcile attempt. Reconcile drops malformed questions and
   // dedupes duplicate options, so a single bad question never wastes the
@@ -122,6 +134,7 @@ export async function POST(request: Request) {
       subjectCode: subject.code,
       profile,
       config,
+      angle,
     });
     return reconcileQuiz(
       {
@@ -167,7 +180,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
-    console.error("[generate:quiz] failed", error);
+    captureException(error, { scope: "generate:quiz", userId: session.user.id });
     return NextResponse.json(
       { error: "Quiz generation failed. Please try again." },
       { status: 502 },
@@ -241,6 +254,7 @@ export async function POST(request: Request) {
         subjectId,
         questionCount: config.questionCount,
         durationMins: config.durationMins,
+        angle: angle.key,
       },
     });
   } catch {

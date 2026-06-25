@@ -1,8 +1,28 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/site";
+import { examPapers } from "@/lib/exam-papers";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
+
+  // Programmatic SEO landing pages — one per catalogued subject. These target
+  // the high-intent "<subject> previous year question paper" queries, so they
+  // carry a higher priority than the static legal/auth pages.
+  const examPaperRoutes: MetadataRoute.Sitemap = [
+    {
+      url: `${siteUrl}/exam-papers`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    ...examPapers.map((p) => ({
+      url: `${siteUrl}/exam-papers/${p.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+  ];
+
   return [
     {
       url: `${siteUrl}/`,
@@ -55,5 +75,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.3,
     },
+    ...examPaperRoutes,
   ];
 }

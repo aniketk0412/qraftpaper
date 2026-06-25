@@ -41,6 +41,12 @@ export function PaperEditor({
   const firstRenderRef = useRef(true);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedSignatureRef = useRef<string>(JSON.stringify(initial));
+  // Latest paper kept in a ref so the unmount-flush effect can read the current
+  // value without re-subscribing (and re-arming the flush) on every keystroke.
+  const paperRef = useRef(paper);
+  useEffect(() => {
+    paperRef.current = paper;
+  }, [paper]);
 
   const allQuestions = useMemo(
     () => paper.sections.flatMap((s) => s.questions),
@@ -107,6 +113,30 @@ export function PaperEditor({
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [autosaveState]);
+
+  // Flush a still-pending autosave when the editor unmounts via client-side
+  // navigation (a Next.js <Link> to another route). The 2 s debounce timer is
+  // cleared on unmount and the beforeunload guard above only fires on a full
+  // page close/reload — so without this, a final edit made <2 s before clicking
+  // a sidebar link would be silently lost. `keepalive` lets the PATCH outlive
+  // the unmount; the signature check skips it when there's nothing unsaved.
+  useEffect(() => {
+    return () => {
+      if (JSON.stringify(paperRef.current) === lastSavedSignatureRef.current) {
+        return;
+      }
+      try {
+        void fetch(`/api/papers/${paperId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: paperRef.current }),
+          keepalive: true,
+        });
+      } catch {
+        /* best-effort flush — we're unmounting, nothing else to do */
+      }
+    };
+  }, [paperId]);
 
   function saveEdit(id: string) {
     setPaper((p) => ({

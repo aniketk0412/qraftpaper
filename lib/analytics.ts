@@ -34,7 +34,10 @@ export type AnalyticsEvent =
   | "quiz_reconciled"
   // Monetization
   | "subscription_activated"
-  | "subscription_cancelled";
+  | "subscription_cancelled"
+  // 3-Day Pass (one-time trial)
+  | "trial_started"
+  | "trial_refunded";
 
 let client: PostHog | undefined;
 

@@ -60,7 +60,10 @@ describe("reconcileQuiz — duplicate options + answer remap", () => {
     ]);
     const { quiz: out, report } = reconcileQuiz(input);
     const q = out.questions[0];
-    expect(q.options).toEqual(["5", "10", "15"]);
+    // Options may be re-ordered by answer-position balancing, so assert the
+    // SET survives and the answer still points at the right VALUE.
+    expect(q.options).toHaveLength(3);
+    expect(new Set(q.options)).toEqual(new Set(["5", "10", "15"]));
     expect(q.options[q.correctIndex]).toBe("10");
     expect(report.optionsDeduped).toBe(1);
   });
@@ -84,6 +87,55 @@ describe("reconcileQuiz — duplicate options + answer remap", () => {
   it("does not count a question as deduped when options were already clean", () => {
     const { report } = reconcileQuiz(quiz([qq({})]));
     expect(report.optionsDeduped).toBe(0);
+  });
+});
+
+describe("reconcileQuiz — answer-position balancing", () => {
+  const colour = (over: Partial<QuizQuestion>) =>
+    qq({ options: ["Red", "Green", "Blue", "Yellow"], correctIndex: 0, ...over });
+
+  it("spreads the correct-answer position across questions (no 'always A')", () => {
+    // The model put the answer at index 0 in EVERY question — the exact bias
+    // students learn to game. After balancing, the positions must not all stay 0.
+    const input = quiz(
+      Array.from({ length: 12 }, (_, i) => colour({ id: `q${i}` })),
+    );
+    const out = reconcileQuiz(input).quiz;
+    const positions = new Set(out.questions.map((q) => q.correctIndex));
+    expect(positions.size).toBeGreaterThan(1);
+  });
+
+  it("keeps correctIndex pointing at the same option after shuffling", () => {
+    const out = reconcileQuiz(quiz([colour({ id: "x", correctIndex: 2 })])).quiz;
+    const q = out.questions[0];
+    expect(q.options[q.correctIndex]).toBe("Blue"); // the original index-2 value
+    expect(new Set(q.options)).toEqual(
+      new Set(["Red", "Green", "Blue", "Yellow"]),
+    );
+  });
+
+  it("is deterministic — same input yields the same option order", () => {
+    const a = reconcileQuiz(quiz([colour({ id: "same" })])).quiz.questions[0];
+    const b = reconcileQuiz(quiz([colour({ id: "same" })])).quiz.questions[0];
+    expect(a.options).toEqual(b.options);
+    expect(a.correctIndex).toBe(b.correctIndex);
+  });
+
+  it("does NOT shuffle order-sensitive questions ('All of the above')", () => {
+    const opts = ["Paris", "London", "Berlin", "All of the above"];
+    const out = reconcileQuiz(
+      quiz([qq({ id: "ots", options: opts, correctIndex: 3 })]),
+    ).quiz.questions[0];
+    expect(out.options).toEqual(opts); // untouched
+    expect(out.correctIndex).toBe(3);
+  });
+
+  it("does not reorder two-option questions", () => {
+    const out = reconcileQuiz(
+      quiz([qq({ id: "tf", options: ["True", "False"], correctIndex: 1 })]),
+    ).quiz.questions[0];
+    expect(out.options).toEqual(["True", "False"]);
+    expect(out.correctIndex).toBe(1);
   });
 });
 

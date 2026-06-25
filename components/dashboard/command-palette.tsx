@@ -90,6 +90,7 @@ export function CommandPalette({
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const allItems = useMemo<CommandItem[]>(() => {
     const subjectItems = subjects.map((s) => ({
@@ -186,6 +187,25 @@ export function CommandPalette({
       select(results[activeIndex]);
     } else if (e.key === "Escape") {
       close();
+    } else if (e.key === "Tab") {
+      // Focus trap: keep Tab/Shift+Tab cycling inside the modal so a keyboard
+      // user can't tab onto the (inert, scrim-covered) page behind it. The set
+      // of focusable elements changes as results filter, so query it live.
+      const root = dialogRef.current;
+      if (!root) return;
+      const focusable = root.querySelectorAll<HTMLElement>(
+        'input, button, [href], [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   }
 
@@ -229,6 +249,7 @@ export function CommandPalette({
                   onClick={close}
                 />
                 <motion.div
+                  ref={dialogRef}
                   role="dialog"
                   aria-modal="true"
                   aria-label="Command palette — search subjects, papers and actions"

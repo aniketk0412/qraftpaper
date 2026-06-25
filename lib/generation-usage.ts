@@ -7,7 +7,7 @@
  * DB, and is unit-tested at every boundary.
  *
  * Levels:
- *   - "unlimited"  — institution plan (cap null). Never nudges.
+ *   - "unlimited"  — defensive support for callers with no cap. Never nudges.
  *   - "ok"         — comfortably within the allowance.
  *   - "low"        — about 10% (or the last 2) left. Nudge.
  *   - "exhausted"  — none left this month. Nudge.
@@ -33,7 +33,7 @@ export function describeGenerationUsage(
 ): GenerationUsage {
   const u = Number.isFinite(used) ? Math.max(0, Math.floor(used)) : 0;
 
-  // Unlimited (institution): never a cap, never a nudge.
+  // Unlimited/uncapped: never a cap, never a nudge.
   if (cap === null) {
     return { level: "unlimited", used: u, cap: null, remaining: null, pct: 0, nudge: false };
   }

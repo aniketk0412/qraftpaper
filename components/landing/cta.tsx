@@ -7,7 +7,7 @@ export function Cta({ signedIn = false }: { signedIn?: boolean }) {
     <section className="section-pad">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal>
-          <div className="relative overflow-hidden rounded-[2rem] glass-strong px-6 py-16 text-center sm:px-16 sm:py-24">
+          <div className="relative overflow-hidden rounded-[2rem] glass-strong px-6 py-12 text-center sm:px-16 sm:py-16">
             <div className="pointer-events-none absolute -top-32 left-1/2 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-violet/14 blur-[120px]" />
             <div className="pointer-events-none absolute -bottom-40 right-0 h-72 w-72 rounded-full bg-gold/[0.07] blur-[120px]" />
             <span className="pointer-events-none absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-tint/30 to-transparent" />

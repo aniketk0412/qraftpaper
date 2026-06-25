@@ -9,6 +9,8 @@ export interface QuizReconcileReport {
   dropped: number;
   /** Questions whose duplicate options were collapsed. */
   optionsDeduped: number;
+  /** Questions whose options were re-ordered to balance the answer position. */
+  optionsShuffled: number;
   /** Questions trimmed off the end because the model over-produced past the
    *  requested count. */
   trimmed: number;
@@ -34,6 +36,14 @@ export interface QuizReconcileReport {
  * A question is dropped when it can't be made coherent: fewer than 2 distinct
  * options, or a correctIndex that never pointed at a real option.
  *
+ * It also BALANCES THE ANSWER POSITION. LLMs cluster the correct answer at one
+ * or two option slots; a student who notices "it's usually B" games the quiz
+ * instead of learning it. We deterministically permute each question's options
+ * (seeded by the question id, so it's reproducible and spreads the answer
+ * across a quiz's distinct ids) and re-point correctIndex — skipping
+ * order-sensitive questions ("All of the above", "Both A and C") where
+ * shuffling would corrupt the meaning.
+ *
  * Pure — input is not mutated.
  */
 export function reconcileQuiz(
@@ -42,13 +52,16 @@ export function reconcileQuiz(
 ): { quiz: Quiz; report: QuizReconcileReport } {
   const generated = quiz.questions.length;
   let optionsDeduped = 0;
+  let optionsShuffled = 0;
 
   const valid: QuizQuestion[] = [];
   for (const q of quiz.questions) {
     const sanitised = sanitiseQuestion(q);
     if (!sanitised) continue;
     if (sanitised.options.length !== q.options.length) optionsDeduped += 1;
-    valid.push(sanitised);
+    const { question: balanced, changed } = balanceAnswerPosition(sanitised);
+    if (changed) optionsShuffled += 1;
+    valid.push(balanced);
   }
 
   let kept = valid;
@@ -65,6 +78,7 @@ export function reconcileQuiz(
       kept: kept.length,
       dropped: generated - valid.length,
       optionsDeduped,
+      optionsShuffled,
       trimmed,
     },
   };
@@ -101,4 +115,71 @@ function sanitiseQuestion(q: QuizQuestion): QuizQuestion | null {
   if (newIndex < 0) return null;
 
   return { ...q, options: deduped, correctIndex: newIndex };
+}
+
+// Options whose meaning depends on their position — shuffling these would
+// corrupt them ("All of the above" must stay last; "Both A and C" / "I and II"
+// reference other slots by label). Conservative: a false positive just means we
+// leave that question in its original order (never breaks it), so we err toward
+// skipping.
+const ORDER_SENSITIVE_OPTION =
+  /\b(?:all|none|both|neither|either)\b|of the (?:above|following)|\boption\s*\d|\b(?:[a-d]|i{1,3}|iv|v|\d+)\s+and\s+(?:[a-d]|i{1,3}|iv|v|\d+)\b|\(\s*[a-d]\s*\)/i;
+
+function isOrderSensitive(options: string[]): boolean {
+  return options.some((o) => ORDER_SENSITIVE_OPTION.test(o));
+}
+
+// Deterministic 32-bit string hash (FNV-1a) → seed, so the permutation is
+// reproducible and unit-testable without any global RNG.
+function hashString(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+
+// Small seeded PRNG (mulberry32). Good enough to scatter answer positions.
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Seeded Fisher–Yates: returns the original indices in their new order.
+function seededOrder(n: number, seed: number): number[] {
+  const rng = mulberry32(seed);
+  const order = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
+}
+
+/**
+ * Re-order a question's options to spread the correct-answer position, keeping
+ * correctIndex pointing at the same option. Skipped for 2-option and
+ * order-sensitive questions, and reported as unchanged when the permutation
+ * happens to be the identity.
+ */
+function balanceAnswerPosition(
+  q: QuizQuestion,
+): { question: QuizQuestion; changed: boolean } {
+  if (q.options.length < 3) return { question: q, changed: false };
+  if (isOrderSensitive(q.options)) return { question: q, changed: false };
+
+  const order = seededOrder(q.options.length, hashString(q.id));
+  if (order.every((orig, pos) => orig === pos)) {
+    return { question: q, changed: false };
+  }
+
+  const options = order.map((i) => q.options[i]);
+  const correctIndex = order.indexOf(q.correctIndex);
+  return { question: { ...q, options, correctIndex }, changed: true };
 }

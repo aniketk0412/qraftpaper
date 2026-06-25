@@ -39,9 +39,9 @@ describe("resolveEntitlement", () => {
   });
 
   it("grants whatever tier it's handed (doesn't hard-code educator)", () => {
-    expect(resolveEntitlement("active", "department")).toEqual({
+    expect(resolveEntitlement("active", "trial")).toEqual({
       shouldUpdate: true,
-      plan: "department",
+      plan: "trial",
       granting: true,
     });
   });

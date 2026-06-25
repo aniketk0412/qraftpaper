@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { captureException } from "@/lib/observability";
 import { getDb } from "@/lib/db";
 import {
   documents,
@@ -217,7 +218,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
-    console.error("[documents:upload] profile build failed", error);
+    captureException(error, { scope: "documents:upload", userId: session.user.id });
     return NextResponse.json(
       {
         error:

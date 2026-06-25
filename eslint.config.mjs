@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Nested build output (e.g. agent worktrees under .claude/) — git-ignored
+    // workspace that must not be linted.
+    ".claude/**",
+    "**/.next/**",
   ]),
 ]);
 

@@ -35,6 +35,13 @@ export const users = pgTable("users", {
   // default backs that up against any future insertion path.
   plan: text("plan").notNull().default("unpaid"),
   status: text("status").notNull().default("active"),
+  // The $1 "3-Day Pass" (one-time, non-subscription). `trialEndsAt` is when the
+  // current pass lapses — effectivePlan() collapses an expired trial to
+  // "unpaid" and loadEffectivePlan() lazily writes that downgrade. Both NULL for
+  // users who never bought a pass. `trialConsumedAt` is set the first time a
+  // pass is ever activated and never cleared, so a user can't re-buy the trial.
+  trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
+  trialConsumedAt: timestamp("trial_consumed_at", { withTimezone: true }),
   role: text("role").notNull().default("teacher"),
   emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
@@ -471,6 +478,15 @@ export const auditLogs = pgTable(
   (table) => [
     index("audit_logs_user_created_idx").on(table.userId, table.createdAt),
     index("audit_logs_entity_idx").on(table.entityType, table.entityId),
+    // The per-IP abuse throttles (signup, password-reset, resend-verification)
+    // count rows by (action, ipAddress, createdAt > since). audit_logs is the
+    // fastest-growing table, so without this those checks sequential-scan it on
+    // every signup/reset attempt. Equality on action+ip, range on createdAt.
+    index("audit_logs_action_ip_created_idx").on(
+      table.action,
+      table.ipAddress,
+      table.createdAt,
+    ),
   ],
 );
 

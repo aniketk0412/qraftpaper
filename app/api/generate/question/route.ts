@@ -2,9 +2,11 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { captureException } from "@/lib/observability";
 import { regeneratePaperQuestion } from "@/lib/ai/generate";
 import { getDb } from "@/lib/db";
-import { generationJobs, papers, subjects, users } from "@/lib/db/schema";
+import { generationJobs, papers, subjects } from "@/lib/db/schema";
+import { loadEffectivePlan } from "@/lib/billing/trial";
 import { normalizeUuid } from "@/lib/ids";
 import {
   assertCanGenerate,
@@ -78,12 +80,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Question not found" }, { status: 404 });
   }
 
-  const [account] = await getDb()
-    .select({ plan: users.plan })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1);
-  const plan = account?.plan ?? "unpaid";
+  // Live plan from the DB (JWT can be stale); also lazily expires a lapsed
+  // 3-Day Pass (trial → unpaid) before the gate.
+  const plan = await loadEffectivePlan(session.user.id);
 
   try {
     // No email-verification gate — see /api/generate/paper for rationale.
@@ -137,7 +136,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
-    console.error("[generate:question] failed", error);
+    captureException(error, { scope: "generate:question", userId: session.user.id });
     return NextResponse.json(
       { error: "Question regeneration failed. Please try again." },
       { status: 502 },

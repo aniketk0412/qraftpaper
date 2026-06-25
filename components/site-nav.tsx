@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -27,6 +28,7 @@ import { Logo } from "@/components/logo";
 import { GlowButton } from "@/components/ui/glow-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { easeOut } from "@/lib/motion";
+import { resolveHref } from "@/lib/nav";
 import { PRICING_TIERS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
@@ -90,6 +92,7 @@ const navItems: NavItem[] = [
 ];
 
 export function SiteNav({ signedIn = false }: { signedIn?: boolean }) {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -140,7 +143,7 @@ export function SiteNav({ signedIn = false }: { signedIn?: boolean }) {
                 onMouseEnter={() => setActive(item.hasMenu ? item.key : null)}
               >
                 <Link
-                  href={item.href}
+                  href={resolveHref(item.href, pathname)}
                   onClick={() => setActive(null)}
                   className={cn(
                     "flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
@@ -169,7 +172,7 @@ export function SiteNav({ signedIn = false }: { signedIn?: boolean }) {
                       transition={{ duration: 0.22, ease: easeOut }}
                       className="absolute left-1/2 top-full -translate-x-1/2 pt-3"
                     >
-                      <NavMenu menuKey={item.key as MenuKey} onNavigate={() => setActive(null)} />
+                      <NavMenu menuKey={item.key as MenuKey} pathname={pathname} onNavigate={() => setActive(null)} />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -222,7 +225,7 @@ export function SiteNav({ signedIn = false }: { signedIn?: boolean }) {
               {navItems.map((item) => (
                 <Link
                   key={item.key}
-                  href={item.href}
+                  href={resolveHref(item.href, pathname)}
                   onClick={() => setOpen(false)}
                   className="rounded-xl px-4 py-3 text-sm font-semibold text-fg-muted transition-colors hover:bg-tint/5 hover:text-fg"
                 >
@@ -255,9 +258,11 @@ export function SiteNav({ signedIn = false }: { signedIn?: boolean }) {
 
 function NavMenu({
   menuKey,
+  pathname,
   onNavigate,
 }: {
   menuKey: MenuKey;
+  pathname: string;
   onNavigate: () => void;
 }) {
   if (menuKey === "pricing") {
@@ -269,7 +274,7 @@ function NavMenu({
         {pricingTiers.map((t) => (
           <Link
             key={t.name}
-            href="#pricing"
+            href={resolveHref("#pricing", pathname)}
             onClick={onNavigate}
             className="flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-tint/[0.05]"
           >
@@ -279,7 +284,12 @@ function NavMenu({
             </span>
           </Link>
         ))}
-        <MenuFooter href="#pricing" label="Compare all plans" onNavigate={onNavigate} />
+        <MenuFooter
+          href={resolveHref("#pricing", pathname)}
+          label="Compare plans"
+          description="3-Day Pass or Solo monthly"
+          onNavigate={onNavigate}
+        />
       </Panel>
     );
   }
@@ -293,28 +303,28 @@ function NavMenu({
       width: "w-[560px]",
       cols: true,
       footerHref: "#features",
-      footerLabel: "Explore the platform",
+      footerLabel: "Browse all features",
     },
     quiz: {
       rows: quizRows,
       width: "w-[380px]",
       cols: false,
       footerHref: "#quiz",
-      footerLabel: "See quiz generation",
+      footerLabel: "Try quiz generation",
     },
     how: {
       rows: howRows,
       width: "w-[340px]",
       cols: false,
       footerHref: "#how",
-      footerLabel: "See the full workflow",
+      footerLabel: "View workflow",
     },
     showcase: {
       rows: showcaseRows,
       width: "w-[340px]",
       cols: false,
       footerHref: "#showcase",
-      footerLabel: "View live output",
+      footerLabel: "View sample output",
     },
   };
 
@@ -326,7 +336,7 @@ function NavMenu({
         {rows.map((row) => (
           <Link
             key={row.title}
-            href={row.href}
+            href={resolveHref(row.href, pathname)}
             onClick={onNavigate}
             className="group/row flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-tint/[0.05]"
           >
@@ -344,7 +354,12 @@ function NavMenu({
           </Link>
         ))}
       </div>
-      <MenuFooter href={footerHref} label={footerLabel} onNavigate={onNavigate} />
+      <MenuFooter
+        href={resolveHref(footerHref, pathname)}
+        label={footerLabel}
+        description="Jump to this section"
+        onNavigate={onNavigate}
+      />
     </Panel>
   );
 }
@@ -372,20 +387,33 @@ function Panel({
 function MenuFooter({
   href,
   label,
+  description,
   onNavigate,
 }: {
   href: string;
   label: string;
+  description?: string;
   onNavigate: () => void;
 }) {
   return (
     <Link
       href={href}
       onClick={onNavigate}
-      className="mt-1 flex items-center justify-between rounded-xl border-t border-line px-3 py-2.5 text-[0.78rem] text-fg-muted transition-colors hover:text-fg"
+      className="group/footer mt-2 flex items-center justify-between gap-3 rounded-xl border border-line bg-tint/[0.025] px-3.5 py-3 transition-colors hover:border-violet/30 hover:bg-violet/[0.055]"
     >
-      {label}
-      <ArrowRight className="h-3.5 w-3.5" />
+      <span className="min-w-0">
+        <span className="block text-[0.82rem] font-medium text-fg">
+          {label}
+        </span>
+        {description && (
+          <span className="mt-0.5 block text-[0.7rem] leading-snug text-fg-muted">
+            {description}
+          </span>
+        )}
+      </span>
+      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-tint/[0.05] text-fg-muted ring-1 ring-line transition-all group-hover/footer:translate-x-0.5 group-hover/footer:bg-violet/12 group-hover/footer:text-violet-bright group-hover/footer:ring-violet/25">
+        <ArrowRight className="h-3.5 w-3.5" />
+      </span>
     </Link>
   );
 }

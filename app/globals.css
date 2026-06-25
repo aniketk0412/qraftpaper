@@ -228,11 +228,20 @@ option:disabled {
   box-shadow: var(--glass-shadow-strong);
 }
 
+/* background-clip:text paints only inside the element's box. With the tight
+ * heading leading we use everywhere, the box is cut off at the baseline, so
+ * the descenders of y/g/p/j fall outside it and render transparent. Extend
+ * the paint box down with padding-bottom, then cancel it with an equal
+ * negative margin-bottom so descenders are covered with ZERO layout shift
+ * at any of the ~30 call sites. (Was previously patched ad-hoc per word in
+ * the hero; this fixes the whole class of bug in one place.) */
 @utility text-gradient {
   background: var(--heading-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  padding-bottom: 0.2em;
+  margin-bottom: -0.2em;
 }
 
 @utility text-violet-gradient {
@@ -240,6 +249,8 @@ option:disabled {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  padding-bottom: 0.2em;
+  margin-bottom: -0.2em;
 }
 
 /* Big-numeric display type. Used wherever a single number is the whole
@@ -273,7 +284,7 @@ option:disabled {
 }
 
 .section-pad {
-  padding-block: clamp(5rem, 11vw, 9rem);
+  padding-block: clamp(3rem, 5vw, 4.75rem);
 }
 
 @media (prefers-reduced-motion: reduce) {

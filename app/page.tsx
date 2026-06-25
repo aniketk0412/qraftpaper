@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Hero } from "@/components/landing/hero";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Features } from "@/components/landing/features";
+import { Comparison } from "@/components/landing/comparison";
 import { PaperShowcase } from "@/components/landing/paper-showcase";
 import { Quiz } from "@/components/landing/quiz";
 import { Pricing } from "@/components/landing/pricing";
@@ -83,6 +84,7 @@ export default async function Home() {
         <Hero signedIn={signedIn} />
         <HowItWorks signedIn={signedIn} />
         <Features />
+        <Comparison />
         <PaperShowcase />
         <Quiz signedIn={signedIn} />
         <Pricing country={country} signedIn={signedIn} />
