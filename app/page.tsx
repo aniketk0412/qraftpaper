@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
 import { Hero } from "@/components/landing/hero";
+import { GridBackdrop } from "@/components/landing/grid-backdrop";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Features } from "@/components/landing/features";
 import { Comparison } from "@/components/landing/comparison";
@@ -79,19 +80,24 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <SiteNav signedIn={signedIn} />
-      <main>
-        <Hero signedIn={signedIn} />
-        <HowItWorks signedIn={signedIn} />
-        <Features />
-        <Comparison />
-        <PaperShowcase />
-        <Quiz signedIn={signedIn} />
-        <Pricing country={country} signedIn={signedIn} />
-        <Faq />
-        <Cta signedIn={signedIn} />
-      </main>
-      <SiteFooter />
+      {/* Positioned wrapper so the absolutely-filled GridBackdrop spans the
+          full document height behind every section. */}
+      <div className="relative">
+        <GridBackdrop />
+        <SiteNav signedIn={signedIn} />
+        <main>
+          <Hero signedIn={signedIn} />
+          <HowItWorks signedIn={signedIn} />
+          <Features />
+          <Comparison />
+          <PaperShowcase />
+          <Quiz signedIn={signedIn} />
+          <Pricing country={country} signedIn={signedIn} />
+          <Faq />
+          <Cta signedIn={signedIn} />
+        </main>
+        <SiteFooter />
+      </div>
     </>
   );
 }
