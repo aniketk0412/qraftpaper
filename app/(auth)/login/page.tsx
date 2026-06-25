@@ -42,7 +42,7 @@ export default async function LoginPage({
   const statusMessage = resetKey ? statusMessages[resetKey] : undefined;
 
   return (
-    <div>
+    <div className="animate-rise">
       <h1 className="text-2xl font-semibold tracking-tight text-gradient">
         Welcome back
       </h1>

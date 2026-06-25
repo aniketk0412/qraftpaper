@@ -38,7 +38,7 @@ export default async function SignupPage({
   const errorMessage = errorKey ? errorMessages[errorKey] : undefined;
 
   return (
-    <div>
+    <div className="animate-rise">
       <h1 className="text-2xl font-semibold tracking-tight text-gradient">
         Sign up
       </h1>

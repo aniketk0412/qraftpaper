@@ -29,7 +29,7 @@ export default async function ResetPasswordPage({
   const errorMessage = errorKey ? errorMessages[errorKey] : undefined;
 
   return (
-    <div>
+    <div className="animate-rise">
       <h1 className="text-2xl font-semibold tracking-tight text-gradient">
         Choose a new password
       </h1>
