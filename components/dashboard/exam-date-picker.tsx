@@ -71,7 +71,7 @@ export function ExamDatePicker({
         type="button"
         disabled={pending || !value}
         onClick={() => save(value || null)}
-        className="inline-flex h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-[0.74rem] font-medium text-on-accent transition-colors hover:bg-[#247373] disabled:opacity-60"
+        className="inline-flex h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-[0.74rem] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60"
       >
         {pending && <Loader2 className="h-3 w-3 animate-spin" />}
         Save

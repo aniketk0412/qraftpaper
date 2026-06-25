@@ -837,7 +837,7 @@ function ShareScoreButton({
       <button
         type="button"
         onClick={handleShare}
-        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-4 py-2.5 text-[0.84rem] font-medium text-on-accent transition-colors hover:bg-[#247373]"
+        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-4 py-2.5 text-[0.84rem] font-medium text-on-accent transition-colors hover:bg-accent-hover"
       >
         {copied ? (
           <>

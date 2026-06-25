@@ -284,7 +284,7 @@ export function PaperEditor({
                                 <div className="mt-2 flex gap-2">
                                   <button
                                     onClick={() => saveEdit(q.id)}
-                                    className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[0.74rem] font-medium text-on-accent transition-colors hover:bg-[#247373]"
+                                    className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[0.74rem] font-medium text-on-accent transition-colors hover:bg-accent-hover"
                                   >
                                     <Check className="h-3.5 w-3.5" />
                                     Save
