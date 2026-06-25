@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { AuthShowcase } from "@/components/auth/auth-showcase";
+import { GridBackdrop } from "@/components/landing/grid-backdrop";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 // NOTE: this layout does NOT redirect signed-in users away. /verify-email,
@@ -16,7 +17,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <AuthShowcase />
-      <div className="flex flex-col">
+      <div className="relative flex flex-col overflow-hidden">
+        {/* On phones the left showcase is hidden, so the form would sit on a
+            flat canvas. Bring the branded grid in for small screens only — the
+            desktop right column stays clean (the grid lives on the showcase). */}
+        <div className="lg:hidden">
+          <GridBackdrop />
+        </div>
         <div className="flex items-center justify-between px-6 py-6 sm:px-10">
           <div className="lg:hidden">
             <Logo />
@@ -32,6 +39,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             </Link>
           </div>
         </div>
+        {/* Slim brand line for mobile — gives the bare phone view the context
+            the desktop showcase provides, in a single unobtrusive row. */}
+        <p className="px-6 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-violet-bright sm:px-10 lg:hidden">
+          AI exam-prep · built from your syllabus
+        </p>
         <div className="flex flex-1 items-center justify-center px-6 pb-14 sm:px-10">
           <div className="w-full max-w-sm">{children}</div>
         </div>
