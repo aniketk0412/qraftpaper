@@ -5,6 +5,7 @@ import { ArrowRight, Mail } from "lucide-react";
 import { auth } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
 import { PasswordField } from "@/components/auth/password-field";
+import { FormError } from "@/components/ui/form-error";
 import { GlowButton } from "@/components/ui/glow-button";
 import { loginAction } from "../actions";
 
@@ -86,11 +87,7 @@ export default async function LoginPage({
           </Link>
         </div>
 
-        {errorMessage && (
-          <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
-            {errorMessage}
-          </p>
-        )}
+        {errorMessage && <FormError>{errorMessage}</FormError>}
         {statusMessage && (
           <p className="rounded-xl border border-accent/25 bg-accent/[0.08] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
             {statusMessage}

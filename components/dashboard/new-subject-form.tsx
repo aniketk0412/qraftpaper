@@ -5,6 +5,8 @@ import { FileCheck2, Info, UploadCloud, X } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { GlowButton } from "@/components/ui/glow-button";
+import { FormError } from "@/components/ui/form-error";
+import { readErrorMessage } from "@/lib/fetch-error";
 import { cn } from "@/lib/utils";
 
 /** Human-readable file size, e.g. "2.4 MB". */
@@ -62,18 +64,25 @@ export function NewSubjectForm() {
       });
 
       if (!subjectResponse.ok) {
-        const body = (await subjectResponse.json()) as { error?: string };
-        throw new Error(body.error ?? "Unable to create subject");
+        throw new Error(
+          await readErrorMessage(subjectResponse, "Unable to create subject"),
+        );
       }
 
-      const { subject } = (await subjectResponse.json()) as {
-        subject: { id: string };
-      };
+      const created = (await subjectResponse.json().catch(() => null)) as {
+        subject?: { id: string };
+      } | null;
+      const subjectId = created?.subject?.id;
+      if (!subjectId) {
+        throw new Error(
+          "The subject was created but the server sent an unexpected response. Refresh the page to check.",
+        );
+      }
 
       setStatus("Uploading PDFs and extracting text...");
 
       const uploadData = new FormData();
-      uploadData.set("subjectId", subject.id);
+      uploadData.set("subjectId", subjectId);
       let uploadedFileCount = 0;
 
       for (const field of fileFields) {
@@ -94,8 +103,9 @@ export function NewSubjectForm() {
       });
 
       if (!uploadResponse.ok) {
-        const body = (await uploadResponse.json()) as { error?: string };
-        throw new Error(body.error ?? "Unable to upload documents");
+        throw new Error(
+          await readErrorMessage(uploadResponse, "Unable to upload documents"),
+        );
       }
 
       setStatus("Subject profile ready.");
@@ -169,11 +179,13 @@ export function NewSubjectForm() {
         ))}
       </div>
 
-      {(status || error) && (
+      {error ? (
+        <FormError>{error}</FormError>
+      ) : status ? (
         <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
-          {error ?? status}
+          {status}
         </p>
-      )}
+      ) : null}
 
       <GlowButton type="submit" size="lg" className="mt-1 w-full" disabled={pending}>
         {pending ? "Building profile..." : "Create subject"}

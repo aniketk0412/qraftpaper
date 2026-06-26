@@ -1,9 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Check, Loader2, Sparkles } from "lucide-react";
+import { AlertTriangle, Check, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { easeOut } from "@/lib/motion";
+import { FormError } from "@/components/ui/form-error";
 import { cn } from "@/lib/utils";
 
 /**
@@ -79,11 +80,18 @@ export function GenerationProgress({
             className="w-full max-w-md overflow-hidden rounded-2xl glass-strong p-6 shadow-2xl"
           >
             <div className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent">
+              <span
+                className={cn(
+                  "grid h-9 w-9 place-items-center rounded-lg",
+                  errorMessage
+                    ? "bg-danger/15 text-danger"
+                    : "bg-accent text-on-accent",
+                )}
+              >
                 {errorMessage ? (
-                  <Sparkles className="h-4 w-4 text-on-accent opacity-50" />
+                  <AlertTriangle className="h-4 w-4" />
                 ) : (
-                  <Loader2 className="h-4 w-4 animate-spin text-on-accent" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 )}
               </span>
               <div className="leading-tight">
@@ -157,11 +165,7 @@ export function GenerationProgress({
               />
             </div>
 
-            {errorMessage && (
-              <p className="mt-4 rounded-xl border border-line bg-tint/[0.02] px-3.5 py-2.5 text-[0.78rem] leading-relaxed text-fg-muted">
-                {errorMessage}
-              </p>
-            )}
+            {errorMessage && <FormError className="mt-4">{errorMessage}</FormError>}
           </motion.div>
         </motion.div>
       )}

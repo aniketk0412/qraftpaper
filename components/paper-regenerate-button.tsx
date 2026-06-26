@@ -39,7 +39,7 @@ export function PaperRegenerateButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subjectId, config }),
       });
-      const body = (await response.json()) as {
+      const body = (await response.json().catch(() => ({}))) as {
         paper?: { id: string };
         error?: string;
       };

@@ -4,6 +4,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 import { GlowButton } from "@/components/ui/glow-button";
+import { FormError } from "@/components/ui/form-error";
 import type { BillingTier } from "@/lib/billing/lemonsqueezy";
 
 export function CheckoutButton({
@@ -26,7 +27,7 @@ export function CheckoutButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tier }),
       });
-      const payload = (await response.json()) as {
+      const payload = (await response.json().catch(() => ({}))) as {
         checkoutUrl?: string;
         error?: string;
       };
@@ -58,11 +59,7 @@ export function CheckoutButton({
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : children}
         {!loading && <ArrowRight className="h-4 w-4" />}
       </GlowButton>
-      {error && (
-        <p className="rounded-xl border border-line bg-tint/[0.03] px-3 py-2 text-[0.76rem] leading-relaxed text-fg-muted">
-          {error}
-        </p>
-      )}
+      {error && <FormError className="text-[0.76rem]">{error}</FormError>}
     </div>
   );
 }

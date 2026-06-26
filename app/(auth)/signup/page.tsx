@@ -5,6 +5,7 @@ import { ArrowRight, Building2, Mail, User } from "lucide-react";
 import { auth } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
 import { PasswordField } from "@/components/auth/password-field";
+import { FormError } from "@/components/ui/form-error";
 import { EducationPicker } from "@/components/auth/education-picker";
 import { Turnstile } from "@/components/auth/turnstile";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -85,11 +86,7 @@ export default async function SignupPage({
           showStrength
         />
 
-        {errorMessage && (
-          <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
-            {errorMessage}
-          </p>
-        )}
+        {errorMessage && <FormError>{errorMessage}</FormError>}
 
         <Turnstile />
 

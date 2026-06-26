@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { FormError } from "@/components/ui/form-error";
+
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
@@ -82,7 +84,7 @@ export function BlueprintsManager({
       }),
     });
 
-    const body = (await response.json()) as {
+    const body = (await response.json().catch(() => ({}))) as {
       paper?: { id: string };
       error?: string;
     };
@@ -469,7 +471,7 @@ function CreateBlueprintForm({
         Add section
       </button>
 
-      {error && <p className="mt-3 text-[0.78rem] text-fg-subtle">{error}</p>}
+      {error && <FormError className="mt-3">{error}</FormError>}
 
       <div className="mt-4 flex gap-2">
         <GlowButton type="button" size="sm" onClick={save}>

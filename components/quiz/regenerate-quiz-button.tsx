@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Loader2, Sparkles } from "lucide-react";
+import { AlertTriangle, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 export function RegenerateQuizButton({
@@ -35,7 +35,7 @@ export function RegenerateQuizButton({
       }),
     });
 
-    const body = (await response.json()) as {
+    const body = (await response.json().catch(() => ({}))) as {
       quiz?: { id: string };
       error?: string;
     };
@@ -65,7 +65,12 @@ export function RegenerateQuizButton({
         )}
         {pending ? "Regenerating…" : "Regenerate this quiz"}
       </button>
-      {error && <p className="px-1 text-[0.74rem] text-fg-subtle">{error}</p>}
+      {error && (
+        <p className="flex items-center gap-1 px-1 text-[0.74rem] font-medium text-danger">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+          {error}
+        </p>
+      )}
     </div>
   );
 }

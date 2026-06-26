@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { PasswordField } from "@/components/auth/password-field";
+import { FormError } from "@/components/ui/form-error";
 import { GlowButton } from "@/components/ui/glow-button";
 import { resetPasswordAction } from "../actions";
 
@@ -48,11 +49,7 @@ export default async function ResetPasswordPage({
           showStrength
         />
 
-        {errorMessage && (
-          <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
-            {errorMessage}
-          </p>
-        )}
+        {errorMessage && <FormError>{errorMessage}</FormError>}
 
         <GlowButton type="submit" size="lg" className="mt-1 w-full">
           Update password

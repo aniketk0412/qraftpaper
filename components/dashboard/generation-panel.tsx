@@ -10,6 +10,7 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { GenerationProgress } from "@/components/dashboard/generation-progress";
+import { FormError } from "@/components/ui/form-error";
 import type { DashboardSubject } from "@/lib/subjects";
 
 export function GenerationPanel({
@@ -30,12 +31,14 @@ export function GenerationPanel({
   );
   const [subjectId, setSubjectId] = useState(readySubjects[0]?.id ?? "");
   const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<"paper" | "quiz" | null>(null);
 
   async function generatePaper() {
     if (!subjectId) return;
     setPending("paper");
     setStatus("Generating paper...");
+    setError(null);
 
     const subject = readySubjects.find((item) => item.id === subjectId);
     const response = await fetch("/api/generate/paper", {
@@ -74,14 +77,15 @@ export function GenerationPanel({
       }),
     });
 
-    const body = (await response.json()) as {
+    const body = (await response.json().catch(() => ({}))) as {
       paper?: { id: string };
       error?: string;
     };
 
     if (!response.ok || !body.paper) {
       setPending(null);
-      setStatus(body.error ?? "Unable to generate paper");
+      setStatus(null);
+      setError(body.error ?? "Unable to generate paper");
       return;
     }
 
@@ -92,6 +96,7 @@ export function GenerationPanel({
     if (!subjectId) return;
     setPending("quiz");
     setStatus("Generating quiz...");
+    setError(null);
 
     const response = await fetch("/api/generate/quiz", {
       method: "POST",
@@ -106,14 +111,15 @@ export function GenerationPanel({
       }),
     });
 
-    const body = (await response.json()) as {
+    const body = (await response.json().catch(() => ({}))) as {
       quiz?: { id: string };
       error?: string;
     };
 
     if (!response.ok || !body.quiz) {
       setPending(null);
-      setStatus(body.error ?? "Unable to generate quiz");
+      setStatus(null);
+      setError(body.error ?? "Unable to generate quiz");
       return;
     }
 
@@ -209,7 +215,10 @@ export function GenerationPanel({
         </div>
       </div>
 
-      {status && <p className="mt-3 text-[0.78rem] text-fg-subtle">{status}</p>}
+      {status && (
+        <p className="mt-3 text-[0.78rem] text-fg-subtle">{status}</p>
+      )}
+      {error && <FormError className="mt-3">{error}</FormError>}
     </GlassCard>
     </>
   );
