@@ -27,6 +27,27 @@ const MIN_EXTRACTED_CHARS = 200; // below this it isn't real study material
 const MAX_EXTRACTED_CHARS = 60_000; // cap tokens sent to the profile builder
 
 export async function POST(request: Request) {
+  // Any uncaught error (a DB hiccup, the rate-limit re-throw below, a pdf-parse
+  // or OCR edge case) must still return JSON — otherwise the client's
+  // response.json() throws "Unexpected end of JSON input" and the real cause is
+  // lost. Wrap the whole handler so a failure is always a clean JSON 500 AND
+  // gets logged with a full stack trace for diagnosis.
+  try {
+    return await handleUpload(request);
+  } catch (error) {
+    captureException(error, { scope: "documents:upload:uncaught" });
+    console.error("[documents:upload] uncaught error", error);
+    return NextResponse.json(
+      {
+        error:
+          "Something went wrong while processing your upload. Please try again.",
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleUpload(request: Request) {
   const session = await auth();
 
   if (!session?.user?.id) {
