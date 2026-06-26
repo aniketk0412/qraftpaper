@@ -302,10 +302,8 @@ export default async function BillingPage({
           {/*  HERO                                                         */}
           {/* ============================================================ */}
           <section className="relative">
-            <div className="pointer-events-none absolute inset-x-0 -top-20 mx-auto h-72 w-[80%] max-w-3xl rounded-full bg-violet/15 blur-[120px]" />
-
-            <div className="relative text-center">
-              <p className="inline-flex items-center gap-2 rounded-full border border-violet/30 bg-violet/10 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.2em] text-violet-bright">
+            <div className="text-center">
+              <p className="inline-flex items-center gap-2 rounded-[2px] border border-violet/30 bg-violet/10 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.2em] text-violet-bright">
                 <Sparkles className="h-3 w-3" />
                 {isSubscribed ? "Your subscription" : "Solo plan · for one student"}
               </p>
@@ -323,10 +321,8 @@ export default async function BillingPage({
               )}
 
               {showSocialProof && !isSubscribed && (
-                <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-line bg-tint/[0.03] px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-muted">
-                  <span className="relative grid h-2 w-2 place-items-center rounded-full bg-accent">
-                    <span className="absolute inset-0 animate-ping rounded-full bg-accent/60" />
-                  </span>
+                <p className="mt-6 inline-flex items-center gap-2 rounded-[2px] border border-line bg-card-hi px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-muted">
+                  <span className="h-1.5 w-1.5 bg-accent" />
                   {totalStudents}+ students practising on QraftPaper
                 </p>
               )}
@@ -364,11 +360,8 @@ export default async function BillingPage({
           >
             {!isSubscribed && <TrialPlanCard purchasable={trialPurchasable} />}
             {/* ---- Solo plan card ----------------------------------- */}
-            <div className="relative overflow-hidden rounded-3xl glass-strong p-8 ring-1 ring-violet/35 sm:p-10">
-              <div className="pointer-events-none absolute -top-28 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-violet/20 blur-[80px]" />
-              <span className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-violet/40 to-transparent" />
-
-              <div className="relative flex items-start justify-between gap-3">
+            <div className="relative flex flex-col rounded-3xl border-2 border-accent bg-panel p-8 sm:p-10">
+              <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-violet-bright">
                     Solo plan · For one student
@@ -378,12 +371,12 @@ export default async function BillingPage({
                   </h2>
                 </div>
                 {isSubscribed ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/15 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-accent">
+                  <span className="inline-flex items-center gap-1.5 rounded-[2px] border border-accent/40 bg-accent/15 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-accent">
                     <CheckCircle2 className="h-3 w-3" />
                     Active
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/15 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-gold">
+                  <span className="inline-flex items-center gap-1.5 rounded-[2px] border border-gold/40 bg-gold/15 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-gold">
                     <Zap className="h-3 w-3" />
                     Most picked
                   </span>
@@ -396,7 +389,7 @@ export default async function BillingPage({
                 </span>
                 <span className="mb-2 text-base text-fg-subtle">{tier.period}</span>
                 {!isSubscribed && (
-                  <span className="mb-3 ml-3 inline-flex items-center gap-1 rounded-full border border-accent/35 bg-accent/12 px-2 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-accent">
+                  <span className="mb-3 ml-3 inline-flex items-center gap-1 rounded-[2px] border border-accent/35 bg-accent/12 px-2 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-accent">
                     ≈ ₹579 in India
                   </span>
                 )}
@@ -490,10 +483,9 @@ export default async function BillingPage({
               {BENEFITS.map((b) => (
                 <div
                   key={b.title}
-                  className="group relative overflow-hidden rounded-2xl border border-line bg-tint/[0.02] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-violet/35 hover:bg-tint/[0.04]"
+                  className="group rounded-2xl border border-line bg-card-hi/50 p-5 transition-colors duration-150 hover:border-line-strong hover:bg-card-hi"
                 >
-                  <span className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-violet/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-violet/10 text-violet-bright ring-1 ring-violet/25">
+                  <span className="grid h-10 w-10 place-items-center rounded-[2px] border border-violet/30 bg-violet/[0.07] text-violet-bright">
                     <b.icon className="h-[18px] w-[18px]" />
                   </span>
                   <p className="mt-4 text-[0.95rem] font-medium">{b.title}</p>
@@ -578,8 +570,7 @@ export default async function BillingPage({
           {/*  FINAL CTA                                                    */}
           {/* ============================================================ */}
           {!isSubscribed && (
-            <section className="relative mt-16 mb-4 overflow-hidden rounded-3xl glass-strong p-8 text-center ring-1 ring-violet/30 sm:p-12">
-              <span className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-violet/40 to-transparent" />
+            <section className="mt-16 mb-4 rounded-3xl border-2 border-accent bg-panel p-8 text-center sm:p-12">
               <h3 className="mx-auto max-w-2xl text-balance text-2xl font-semibold tracking-tight text-gradient sm:text-3xl">
                 Stop bookmarking PYQs. Start writing them.
               </h3>
@@ -613,10 +604,8 @@ export default async function BillingPage({
 function TrialPlanCard({ purchasable }: { purchasable: boolean }) {
   const pass = PLANS.trial;
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-gold/35 bg-gold/[0.06] p-8 sm:p-10">
-      <span className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-gold/45 to-transparent" />
-
-      <div className="relative flex items-start justify-between gap-3">
+    <div className="relative flex h-full flex-col rounded-3xl border border-gold/40 bg-gold/[0.06] p-8 sm:p-10">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-gold">
             {pass.name} · one-time
@@ -625,7 +614,7 @@ function TrialPlanCard({ purchasable }: { purchasable: boolean }) {
             Try it on your real exam
           </h2>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gold/40 bg-gold/15 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-gold">
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-[2px] border border-gold/40 bg-gold/15 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-gold">
           <Sparkles className="h-3 w-3" />
           {pass.badge ?? "Try first"}
         </span>
@@ -651,7 +640,7 @@ function TrialPlanCard({ purchasable }: { purchasable: boolean }) {
           <CheckoutButton tier="trial">Start the $1 pass</CheckoutButton>
         ) : (
           <span
-            className="inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-full border border-line bg-tint/[0.04] px-4 py-2.5 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-fg-subtle"
+            className="inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-[3px] border border-line bg-card-hi px-4 py-2.5 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-fg-subtle"
             title="The $1 pass goes live once one-time checkout is configured in Lemon Squeezy."
           >
             <Clock className="h-3.5 w-3.5" />
