@@ -17,9 +17,10 @@ export function Eyebrow({
         className,
       )}
     >
-      {!dotless && (
-        <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_10px_2px_rgba(45,139,139,0.6)]" />
-      )}
+      {/* Crisp accent rule — same editorial mark as the hero eyebrow. Was a
+          glowing dot (with a stale teal halo); a flat pen-rule reads as
+          deliberate typographic punctuation, not a UI light. */}
+      {!dotless && <span className="h-px w-6 bg-accent" />}
       {children}
     </span>
   );

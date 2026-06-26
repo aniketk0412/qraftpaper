@@ -11,63 +11,73 @@
    *  like bg-accent/15, reads from these tokens). Dark-mode overrides
    *  live in the html[data-theme="dark"] block lower down. Components
    *  reference these tokens — never raw hex.
+   *
+   *  AESTHETIC: "Editorial Print." Warm paper canvas, deliberate
+   *  near-black ink, a single sharp fountain-pen INDIGO accent, and a
+   *  teacher's-red EXAM-MARKER for urgency/streaks/earned moments.
+   *  Structure comes from thin ruled lines (.plate-grid), never from
+   *  drop-shadowed rounded cards. Token *names* are kept stable from
+   *  the previous palette so the re-skin needed no component edits —
+   *  e.g. the `violet-*` family now holds indigo, `gold-*` holds red.
    * ================================================================ */
-  /* Surfaces — warm "ivory paper" light theme (was the cool Ocean Depths grey).
-     Warm off-whites read richer/editorial and pair well with the teal + navy
-     accents; navy ink on ivory still clears WCAG AA comfortably. Canvas is a
-     touch deeper than the cards so cards still lift off the page. */
-  --color-ink: #14202e;
-  --color-canvas: #ece5d8;
-  --color-panel: #f7f3ea;
-  --color-card: #f7f3ea;
-  --color-card-hi: #fbf8f1;
 
-  /* Lines — deep navy at low opacity */
-  --color-line: rgba(26, 35, 50, 0.12);
-  --color-line-strong: rgba(26, 35, 50, 0.22);
+  /* Surfaces — warm "ivory paper." Canvas is the base sheet; panel is the
+     one genuinely-raised surface (sticky nav). Card == canvas on purpose:
+     cards no longer lift off the page, ruled borders do the structural work. */
+  --color-ink: #1a1714;
+  --color-canvas: #f4f2ec;
+  --color-panel: #fbfaf6;
+  --color-card: #f4f2ec;
+  --color-card-hi: #fbfaf6;
 
-  /* Text — deep navy ink on cream */
-  --color-fg: #1a2332;
-  --color-fg-muted: #4a5f6f;
-  --color-fg-subtle: #566779;
+  /* Lines — the new "cards." Hairline plate rules in ink at low opacity. */
+  --color-line: rgba(26, 23, 20, 0.16);
+  --color-line-strong: rgba(26, 23, 20, 0.34);
+  --color-rule: #1a1714; /* full-ink frame line, e.g. a blueprint border */
 
-  /* Two-hue accent system (token names kept stable from the earlier palette).
+  /* Text — deliberate warm near-black ink; muted is a warm ink-gray, not a
+     soft cool gray. fg-subtle is faint meta (large text only). */
+  --color-fg: #1a1714;
+  --color-fg-muted: #57514a;
+  --color-fg-subtle: #6e675d;
+
+  /* Two-family accent system (token NAMES kept stable so existing
+   * text-violet / bg-gold call sites re-skin automatically).
    *
-   *   violet-*  = the cool/teal family. Used for navigation, links, primary
-   *               surfaces — "calm progress." -bright is the text-grade teal
-   *               (WCAG AA ~4.9:1 on cream canvas).
+   *   violet-*  = the INDIGO family. Navigation, links, primary surfaces,
+   *               structure — the "fountain pen ink" of the brand.
+   *               -bright is the text-grade indigo (high contrast on paper).
    *
-   *   gold-*    = the warm/amber family. Reserved for streaks, milestones,
-   *               exam-soon urgency and earned-badge moments. Splitting it
-   *               back out from teal gives the app the "fire" colour every
-   *               habit product needs — Duolingo's gold, Strava's orange.
-   *               --color-gold doubles as both text colour and bg-tint base,
-   *               so it sits at amber-700 (~4.2:1 on cream — passes AA for
-   *               large text, which is where 100% of gold copy actually
-   *               appears: streak counters, milestone headlines, urgency
-   *               chips). The -deep variant goes amber-800 for hover/active. */
-  --color-violet: #36a0a0;
-  --color-violet-bright: #1f7d7d;
-  --color-violet-deep: #1f6b6b;
-  --color-gold: #b45309;
-  --color-gold-deep: #92400e;
+   *   gold-*    = the EXAM-MARKER family (teacher's red pen). Reserved for
+   *               streaks, milestones, exam-soon urgency and earned badges —
+   *               the sparse "ink correction on a returned paper." Kept under
+   *               the gold-* name so every existing streak/badge surface
+   *               turns red with no markup change; rename to mark-* happens
+   *               opportunistically during the section passes. */
+  --color-violet: #3a47a0;
+  --color-violet-bright: #27348a;
+  --color-violet-deep: #1c2769;
+  --color-gold: #b23a2e;
+  --color-gold-deep: #8f2c22;
+  /* Canonical name going forward (same value as gold-* above). */
+  --color-mark: #b23a2e;
+  --color-mark-deep: #8f2c22;
 
-  /* Signature accent — teal, deepened to meet WCAG AA on white/cards */
-  --color-accent: #1f7d7d;
-  --color-accent-soft: #5fb3b3;
-  /* Text colour for content sitting ON the solid accent (theme-aware). */
-  --color-on-accent: #ffffff;
-  /* Hover/active shade for solid accent buttons — was a hardcoded #247373
-     scattered across buttons; now one token so it follows the accent. */
-  --color-accent-hover: #247373;
+  /* Signature accent — fountain-pen indigo. */
+  --color-accent: #27348a;
+  --color-accent-soft: #6b76c6;
+  /* Text colour for content sitting ON the solid accent (theme-aware) —
+     warm paper rather than pure white, so it reads softer. */
+  --color-on-accent: #f4f2ec;
+  --color-accent-hover: #1c2769;
 
-  /* Tint — deep navy, used for subtle overlays/highlights on light surfaces */
-  --color-tint: #1a2332;
+  /* Tint — ink, used for subtle overlays/highlights on light surfaces. */
+  --color-tint: #1a1714;
 
   /* "Paper" palette — the printed-document look of the sample paper sheet.
      Intentionally NOT theme-aware (a paper preview should always read as
-     paper), but centralised here so the document aesthetic changes from one
-     place. Utilities: bg-paper, text-paper-ink, border-paper-line, … */
+     paper), and already on-aesthetic for the editorial direction, so left
+     as-is. Utilities: bg-paper, text-paper-ink, border-paper-line, … */
   --color-paper: #f7f6f2;
   --color-paper-ink: #1b1b20;
   --color-paper-strong: #52524e;
@@ -77,19 +87,40 @@
   --color-paper-line: #dcdbd4;
   --color-paper-tint: #ecebe4;
 
-  /* Single global typeface — Plus Jakarta Sans everywhere. The `font-mono`
-     utility is kept because eyebrow labels rely on it for uppercase +
-     letter-spacing, but it now points at the SAME family, so the whole UI
-     shares one font. To swap the site font, change just the next/font import
-     in app/layout.tsx (it feeds --font-app). */
+  /* TYPE — three deliberate roles.
+   *   serif = Source Serif 4, an academic book-serif for HEADINGS ("printed
+   *           media" feel). Fed by --font-editorial (next/font in layout.tsx).
+   *   sans  = Plus Jakarta Sans, BODY copy. Fed by --font-app.
+   *   mono  = IBM Plex Mono, DATA/LABELS ("70 marks", "Unit I", "3 hours") and
+   *           uppercase eyebrows. Fed by --font-data. NOTE: this now points at
+   *           a real monospace, so every existing font-mono eyebrow across the
+   *           site becomes mechanical print — intended. */
+  --font-serif: var(--font-editorial), "Iowan Old Style", Georgia,
+    "Times New Roman", serif;
   --font-sans: var(--font-app), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-app), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-data), ui-monospace, "SFMono-Regular", Menlo,
+    monospace;
 
-  /* Radii */
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
+  /* Wide tracking for uppercase mono labels. */
+  --tracking-label: 0.18em;
 
-  /* Animation */
+  /* Radii — sharpened editorial corners. The whole scale collapses to a few
+     near-square values so every rounded-lg / -xl / -2xl / -3xl across the site
+     de-pillows from one place, without touching a single component. (rounded-
+     full pills are intentionally left alone — squared per-component where they
+     should read as crisp stamps.) */
+  --radius-lg: 0.125rem;
+  --radius-xl: 0.125rem;
+  --radius-2xl: 0.1875rem;
+  --radius-3xl: 0.25rem;
+
+  /* Physical micro-interaction — a hard offset (zero blur). Buttons sit on
+     this and "press into the page" via active:translate, no fade. 2px reads
+     as a refined letterpress plate rather than a brutalist drop. */
+  --shadow-press: 2px 2px 0 0 var(--color-ink);
+
+  /* Animation (marquee kept; the float/pulse-glow/shimmer glows are retired
+     during the hero pass — left defined so nothing goes half-styled now). */
   --animate-marquee: marquee 38s linear infinite;
   --animate-marquee-slow: marquee 60s linear infinite;
   --animate-shimmer: shimmer 2.4s ease-in-out infinite;
@@ -119,68 +150,89 @@
 
 :root {
   color-scheme: light;
-  /* Surface treatments that can't live in @theme (gradients, shadows) */
-  --glass-a: rgba(247, 243, 234, 0.98);
-  --glass-b: rgba(242, 237, 227, 0.98);
-  --glass-strong-a: rgba(247, 243, 234, 1);
-  --glass-strong-b: rgba(240, 234, 223, 1);
-  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 10px 30px -24px rgba(20, 32, 46, 0.45);
-  --glass-shadow-strong: inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    0 18px 44px -28px rgba(20, 32, 46, 0.55);
-  --heading-grad: linear-gradient(115deg, #1a2332 0%, #1f7d7d 58%, #1f6b6b 100%);
-  --violet-grad: linear-gradient(100deg, #1f7d7d 0%, #1a2332 60%, #1a2332 110%);
-  --sb-track: #e9e3d8;
-  --sb-thumb: #cdc6b7;
-  --sb-thumb-hover: #1f7d7d;
-  --sel-bg: rgba(31, 125, 125, 0.26);
-  --sel-fg: #14202e;
+  /* Editorial panels are flat — surface treatments collapse to paper + a
+     hairline, no translucent gradient, no soft drop shadow. (glass / glass-
+     strong utilities below read these.) */
+  --glass-a: var(--color-panel);
+  --glass-b: var(--color-panel);
+  --glass-strong-a: var(--color-panel);
+  --glass-strong-b: var(--color-panel);
+  --glass-shadow: none;
+  --glass-shadow-strong: none;
+  /* No gradients in the editorial system. These are kept (some components set
+     them directly via style) but collapsed to flat ink / indigo so anything
+     that still references them renders as a solid, never a gradient. */
+  --heading-grad: var(--color-fg);
+  --violet-grad: var(--color-accent);
+  /* Blueprint backdrop grid — dual weight, theme-aware. Fine hairline in ink,
+     major line in brand indigo. Consumed by SiteBackground. */
+  --bg-grid-fine: rgba(26, 23, 20, 0.04);
+  --bg-grid-major: rgba(39, 52, 138, 0.07);
+  --bg-vignette: rgba(26, 23, 20, 0.05);
+  --sb-track: #ece7dc;
+  --sb-thumb: #cfc8b8;
+  --sb-thumb-hover: #27348a;
+  --sel-bg: rgba(39, 52, 138, 0.18);
+  --sel-fg: #1a1714;
 }
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  /* Deep-ocean dark variant of Ocean Depths */
-  --color-ink: #04080b;
-  --color-canvas: #0e1620;
-  --color-panel: #131f2b;
-  --color-card: #131f2b;
-  --color-card-hi: #1b2a39;
-  --color-line: rgba(255, 255, 255, 0.1);
-  --color-line-strong: rgba(255, 255, 255, 0.18);
-  --color-fg: #eef3f5;
-  --color-fg-muted: #9db0bb;
-  --color-fg-subtle: #6e8390;
-  --color-violet: #46b3b3;
-  --color-violet-bright: #5fc4c4;
-  --color-violet-deep: #2d8b8b;
-  /* Dark-mode gold sits at amber-400/500 so streak/badge surfaces glow
-   * against the deep-navy canvas (~10:1 on #0e1620). Same warm hue as
-   * the light mode, brightened for the dark surround. */
-  --color-gold: #f59e0b;
-  --color-gold-deep: #d97706;
-  --color-accent: #46b3b3;
-  --color-accent-soft: #8ad8d8;
-  --color-on-accent: #07131b;
-  --color-tint: #ffffff;
-  --glass-a: rgba(24, 32, 40, 0.99);
-  --glass-b: rgba(14, 22, 32, 0.99);
-  --glass-strong-a: rgba(30, 40, 50, 1);
-  --glass-strong-b: rgba(15, 24, 34, 1);
-  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035),
-    0 18px 50px -28px rgba(0, 0, 0, 0.75);
-  --glass-shadow-strong: inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 24px 70px -34px rgba(0, 0, 0, 0.85);
-  --heading-grad: linear-gradient(115deg, #ffffff 0%, #bfe6e6 60%, #5fc4c4 100%);
-  --violet-grad: linear-gradient(100deg, #ffffff 0%, #cfeaea 70%, #5fc4c4 110%);
-  --sb-track: #0b1219;
-  --sb-thumb: #2a3a47;
-  --sb-thumb-hover: #46b3b3;
-  --sel-bg: rgba(70, 179, 179, 0.32);
-  --sel-fg: #eef3f5;
+  /* Blueprint reverse — ink paper, indigo drawn in light. */
+  --color-ink: #0b0d14;
+  --color-canvas: #14161f;
+  --color-panel: #1b1e2a;
+  --color-card: #14161f;
+  --color-card-hi: #20242f;
+  --color-line: rgba(235, 235, 245, 0.12);
+  --color-line-strong: rgba(235, 235, 245, 0.22);
+  --color-rule: #ECEAE3;
+  --color-fg: #eceae3;
+  --color-fg-muted: #a8a296;
+  --color-fg-subtle: #7c766b;
+  --color-violet: #7e8ae0;
+  --color-violet-bright: #98a2ec;
+  --color-violet-deep: #5c68c0;
+  /* Exam-marker red brightened so it still reads as "red ink" on the dark
+     blueprint canvas. */
+  --color-gold: #e0584a;
+  --color-gold-deep: #c2473b;
+  --color-mark: #e0584a;
+  --color-mark-deep: #c2473b;
+  --color-accent: #8a95e8;
+  --color-accent-soft: #aeb6f0;
+  --color-on-accent: #0b0d14;
+  --color-accent-hover: #98a2ec;
+  --color-tint: #eceae3;
+  --glass-a: var(--color-panel);
+  --glass-b: var(--color-panel);
+  --glass-strong-a: var(--color-panel);
+  --glass-strong-b: var(--color-panel);
+  --glass-shadow: none;
+  --glass-shadow-strong: none;
+  --heading-grad: var(--color-fg);
+  --violet-grad: var(--color-accent);
+  --bg-grid-fine: rgba(235, 235, 245, 0.045);
+  --bg-grid-major: rgba(138, 149, 232, 0.1);
+  --bg-vignette: rgba(0, 0, 0, 0.35);
+  --sb-track: #0d0f17;
+  --sb-thumb: #2c3142;
+  --sb-thumb-hover: #8a95e8;
+  --sel-bg: rgba(138, 149, 232, 0.3);
+  --sel-fg: #eceae3;
 }
 
-* {
-  border-color: var(--color-line);
+/* Default border colour for every element (mirrors the look projects had
+   before Tailwind v4 switched the default to currentColor). MUST live in
+   @layer base — unlayered it would outrank the utilities layer and silently
+   suppress every border-* colour utility (border-ink, border-violet, …). With
+   it in base, an explicit border utility correctly wins. */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-line);
+  }
 }
 
 /* Guarantee a visible keyboard-focus indicator on every interactive element. */
@@ -203,15 +255,25 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Editorial headings — Source Serif 4, set as the DEFAULT (element selector,
+   specificity 0,0,1) so any component that explicitly wants sans/weight via a
+   Tailwind class (specificity 0,1,0) still wins. Tight tracking for a printed,
+   set-in-type feel. */
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
 ::selection {
   background: var(--sel-bg);
   color: var(--sel-fg);
 }
 
 /* Native <select> dropdown options. The OS-drawn popup ignores the control's
-   translucent background and falls back to the white system surface, so the
-   inherited light `text-fg` would be invisible on it in dark mode. Pin options
-   to themed tokens so the list is readable in both themes. */
+   background and falls back to the white system surface, so the inherited
+   light `text-fg` would be invisible on it in dark mode. Pin options to themed
+   tokens so the list is readable in both themes. */
 option {
   background-color: var(--color-panel);
   color: var(--color-fg);
@@ -237,56 +299,81 @@ option:disabled {
   background: var(--sb-thumb-hover);
 }
 
+/* ---- Editorial structural primitives ---- */
+
+/* "Structure over cards" — a blueprint plate drawn purely from ruled borders.
+   Wrap a grid/flex container in .plate-grid and every direct child gets a
+   right + bottom hairline, while the container supplies top + left, so the
+   cells read as printing-plate cells with no boxes, radius, or shadow. */
+.plate-grid {
+  border-top: 1px solid var(--color-line);
+  border-left: 1px solid var(--color-line);
+}
+.plate-grid > * {
+  border-right: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+/* Physical-press button — crisp offset, instant, no fade. Pair with a square
+   border + ink. In markup the equivalent is:
+   active:translate-x-[3px] active:translate-y-[3px] active:shadow-none */
+.btn-plate {
+  border: 1px solid var(--color-ink);
+  background: var(--color-panel);
+  box-shadow: var(--shadow-press);
+  transition: none;
+}
+.btn-plate:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
 /* ---- Reusable surface treatments ---- */
 
+/* Editorial "glass" is no longer glassy — flat paper panel + hairline rule,
+   no gradient, no drop shadow. Kept under the same utility names so the ~50
+   existing call sites become clean bordered panels with zero markup change. */
 @utility glass {
-  background: linear-gradient(180deg, var(--glass-a), var(--glass-b));
+  background: var(--color-panel);
   border: 1px solid var(--color-line);
-  box-shadow: var(--glass-shadow);
+  box-shadow: none;
 }
 
 @utility glass-strong {
-  background: linear-gradient(
-    180deg,
-    var(--glass-strong-a),
-    var(--glass-strong-b)
-  );
+  background: var(--color-panel);
   border: 1px solid var(--color-line-strong);
-  box-shadow: var(--glass-shadow-strong);
+  box-shadow: none;
 }
 
-/* background-clip:text paints only inside the element's box. With the tight
- * heading leading we use everywhere, the box is cut off at the baseline, so
- * the descenders of y/g/p/j fall outside it and render transparent. Extend
- * the paint box down with padding-bottom, then cancel it with an equal
- * negative margin-bottom so descenders are covered with ZERO layout shift
- * at any of the ~30 call sites. (Was previously patched ad-hoc per word in
- * the hero; this fixes the whole class of bug in one place.) */
+/* No gradients in the editorial system. These utilities used to paint a
+   clipped gradient into the text; they now render flat ink / indigo so every
+   existing call site (~30) becomes solid editorial type with no markup change
+   and no descender-clipping hack needed. */
 @utility text-gradient {
-  background: var(--heading-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  padding-bottom: 0.2em;
-  margin-bottom: -0.2em;
+  color: var(--color-fg);
 }
 
 @utility text-violet-gradient {
-  background: var(--violet-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  padding-bottom: 0.2em;
-  margin-bottom: -0.2em;
+  color: var(--color-accent);
+}
+
+/* Mechanical data/label type — IBM Plex Mono, uppercase, wide tracking. For
+   "70 marks", "Unit I", "3 hours", eyebrows, table headers. */
+@utility label {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-fg-muted);
 }
 
 /* Big-numeric display type. Used wherever a single number is the whole
- * message: the $7 price on the billing card, the streak counter, the score
- * on a finished quiz. Pulls four levers at once that are tedious to repeat
- * inline — fluid sizing via clamp() so it works at all viewport widths,
- * tight tracking so the digits don't drift apart, tabular-nums so adjacent
- * digits hold a uniform column (no jiggle when a "1" replaces a "9"), and
- * an explicit semibold weight regardless of inherited weight context. */
+ * message: the price on the billing card, the streak counter, the score on a
+ * finished quiz. Pulls four levers at once — fluid sizing via clamp() so it
+ * works at all viewport widths, tight tracking so the digits don't drift
+ * apart, tabular-nums so adjacent digits hold a uniform column (no jiggle when
+ * a "1" replaces a "9"), and an explicit semibold weight. */
 @utility text-display {
   font-size: clamp(3rem, 6vw, 4.5rem);
   font-weight: 600;
@@ -305,7 +392,7 @@ option:disabled {
   font-variant-numeric: tabular-nums;
 }
 
-/* Subtle film-grain noise overlay */
+/* Subtle film-grain noise overlay (paper grain — on-aesthetic, kept). */
 @utility bg-noise {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }

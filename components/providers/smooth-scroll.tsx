@@ -16,7 +16,8 @@ function LenisBridge() {
 /**
  * Lenis smooth-scroll fights native trackpad inertia on macOS and conflicts
  * with `prefers-reduced-motion`. Skip it entirely for those users — the page
- * stays fully usable, just with native scrolling. Same pattern as CursorGlow.
+ * stays fully usable, just with native scrolling. We gate on the same
+ * reduced-motion / capability checks the other progressive effects use.
  */
 function useSmoothScrollEnabled(): boolean {
   const [enabled, setEnabled] = useState(true);

@@ -5,15 +5,22 @@ import { cn } from "@/lib/utils";
 type Variant = "primary" | "secondary" | "ghost";
 type Size = "sm" | "md" | "lg";
 
+// Editorial "letterpress plate" button. No glow, no hover-lift, no fade — a
+// crisp ink-bordered plate sitting on a hard 2px offset shadow that collapses
+// when pressed (active:translate into the shadow's space). Colour transitions
+// are kept short for hover legibility; the press itself is instant. This is
+// the shared button across the whole site, so the editorial press language is
+// applied everywhere from one place.
 const base =
-  "group/btn relative inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-tight transition-all duration-300 will-change-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet/70 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:pointer-events-none disabled:opacity-50";
+  "group/btn relative inline-flex items-center justify-center gap-2 rounded-[3px] font-medium tracking-tight transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:pointer-events-none disabled:opacity-50";
+
+const press =
+  "shadow-[var(--shadow-press)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none";
 
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-accent text-on-accent shadow-[0_10px_30px_-12px_rgba(45,139,139,0.55)] hover:-translate-y-0.5 hover:bg-accent-hover hover:shadow-[0_16px_44px_-14px_rgba(45,139,139,0.6)]",
-  secondary:
-    "glass-strong text-fg hover:-translate-y-0.5 hover:bg-tint/[0.08]",
-  ghost: "text-fg-muted hover:text-fg",
+  primary: `border border-ink bg-accent text-on-accent hover:bg-accent-hover ${press}`,
+  secondary: `border border-ink bg-panel text-fg hover:bg-card-hi ${press}`,
+  ghost: "text-fg-muted underline-offset-4 hover:text-fg hover:underline",
 };
 
 const sizes: Record<Size, string> = {

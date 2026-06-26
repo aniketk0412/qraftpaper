@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Source_Serif_4, IBM_Plex_Mono } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -7,20 +7,37 @@ import "./globals.css";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { SiteBackground } from "@/components/effects/site-background";
-import { CursorGlow } from "@/components/effects/cursor-glow";
 import { UpdatePrompt } from "@/components/update-prompt";
 import { RouteProgress } from "@/components/route-progress";
 import { AdSense } from "@/components/adsense";
 import { siteConfig, siteUrl } from "@/lib/site";
 
-// Single global typeface, self-hosted via next/font — Plus Jakarta Sans for a
-// modern, characterful SaaS feel. Used everywhere; the `font-mono` utility
-// points at this same family in globals.css so the whole UI shares one font
-// (just varied weight/tracking where needed). To swap the site font, change
-// this one import + variable.
+// Editorial Print type system, all self-hosted via next/font (no runtime CDN
+// fetch). Three deliberate roles, each exposed as a CSS variable that the
+// @theme tokens in globals.css read:
+//   --font-app       Plus Jakarta Sans → body copy (font-sans)
+//   --font-editorial Source Serif 4    → headings   (font-serif), set as the
+//                                        default h1–h4 family in globals.css
+//   --font-data      IBM Plex Mono     → data/labels (font-mono): "70 marks",
+//                                        "Unit I", uppercase eyebrows
+// To swap any role, change just its import + variable here.
 const sans = Plus_Jakarta_Sans({
   variable: "--font-app",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const serif = Source_Serif_4({
+  variable: "--font-editorial",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// IBM Plex Mono is not a variable font, so next/font requires explicit weights.
+const mono = IBM_Plex_Mono({
+  variable: "--font-data",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -100,7 +117,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${sans.variable} antialiased`}
+      className={`${sans.variable} ${serif.variable} ${mono.variable} antialiased`}
     >
       <body className="min-h-screen bg-canvas text-fg">
         {/* Preconnect to the third-party hosts our app talks to on first
@@ -118,7 +135,6 @@ export default function RootLayout({
         <PostHogProvider>
           <MotionConfig reducedMotion="user">
             <SiteBackground />
-            <CursorGlow />
             <SmoothScroll>
               <div className="relative z-10">{children}</div>
             </SmoothScroll>

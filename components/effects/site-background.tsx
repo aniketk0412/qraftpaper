@@ -1,25 +1,39 @@
 export function SiteBackground() {
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div
+      aria-hidden
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+    >
       <div className="absolute inset-0 bg-canvas" />
-      {/* a single restrained violet halo at the very top — no page-wide wash */}
-      <div className="absolute -top-[26rem] left-1/2 h-[40rem] w-[60rem] -translate-x-1/2 rounded-full bg-violet/[0.07] blur-[160px]" />
+      {/* Dual-weight blueprint grid — fine 28px ink hairlines layered with
+          heavier 140px major lines in brand indigo, the way an architect's
+          plate or a ledger reads. Theme-aware via the --bg-grid-* tokens, and
+          masked to a soft ellipse at the top so it's a texture that fades into
+          the page, not a flat full-bleed graph-paper tile. */}
       <div
-        className="absolute inset-0 opacity-[0.5]"
+        className="absolute inset-0"
         style={{
-          backgroundImage:
-            "linear-gradient(to right, rgba(20,32,46,0.018) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,32,46,0.018) 1px, transparent 1px)",
-          backgroundSize: "72px 72px",
+          backgroundImage: [
+            "linear-gradient(to right, var(--bg-grid-fine) 1px, transparent 1px)",
+            "linear-gradient(to bottom, var(--bg-grid-fine) 1px, transparent 1px)",
+            "linear-gradient(to right, var(--bg-grid-major) 1px, transparent 1px)",
+            "linear-gradient(to bottom, var(--bg-grid-major) 1px, transparent 1px)",
+          ].join(","),
+          backgroundSize: "28px 28px, 28px 28px, 140px 140px, 140px 140px",
           maskImage:
-            "radial-gradient(ellipse 75% 55% at 50% 0%, #000 30%, transparent 100%)",
+            "radial-gradient(ellipse 85% 60% at 50% 0%, #000 35%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 85% 60% at 50% 0%, #000 35%, transparent 100%)",
         }}
       />
-      <div className="bg-noise absolute inset-0 opacity-[0.035] mix-blend-overlay" />
+      {/* Paper grain. */}
+      <div className="bg-noise absolute inset-0 opacity-[0.04] mix-blend-overlay" />
+      {/* Faint vignette so the corners settle into the sheet. */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 95% 75% at 50% 35%, transparent 55%, rgba(20,32,46,0.06) 100%)",
+            "radial-gradient(ellipse 95% 75% at 50% 30%, transparent 60%, var(--bg-vignette) 100%)",
         }}
       />
     </div>
