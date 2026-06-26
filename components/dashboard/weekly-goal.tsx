@@ -32,8 +32,7 @@ export function WeeklyGoalCard({ weekly }: { weekly: WeeklyActivity }) {
   const pct = Math.min(100, Math.round((weekly.done / weekly.target) * 100));
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-line bg-tint/[0.02] p-5">
-      <span className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
+    <div className="relative overflow-hidden rounded-2xl border border-line bg-card-hi/50 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 font-mono text-[0.66rem] uppercase tracking-[0.18em] text-fg-subtle">

@@ -144,15 +144,13 @@ export function GenerationProgress({
               })}
             </div>
 
-            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-tint/5">
+            <div className="mt-5 h-1.5 overflow-hidden bg-line-strong/50">
               <motion.div
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.6, ease: easeOut }}
                 className={cn(
-                  "h-full rounded-full",
-                  errorMessage
-                    ? "bg-tint/20"
-                    : "bg-gradient-to-r from-violet to-violet-bright",
+                  "h-full",
+                  errorMessage ? "bg-fg-subtle" : "bg-accent",
                 )}
               />
             </div>

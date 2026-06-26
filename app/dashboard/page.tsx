@@ -307,94 +307,113 @@ export default async function DashboardPage() {
         <DrillMistakesCard serverCount={dueReviewCount} />
       )}
       <Reveal>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-violet-bright">
-              {streak.current > 0 && (
-                <Flame className="h-3.5 w-3.5 text-gold" />
-              )}
-              {welcome.eyebrow}
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gradient">
-              {welcome.title}
-            </h1>
-            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-fg-muted">
-              {welcome.sub}
-            </p>
+        <div className="relative overflow-hidden border border-line bg-canvas">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, var(--bg-grid-fine) 1px, transparent 1px)," +
+                "linear-gradient(to bottom, var(--bg-grid-fine) 1px, transparent 1px)",
+              backgroundSize: "22px 22px",
+              maskImage:
+                "linear-gradient(135deg, #000 0%, transparent 78%)",
+              WebkitMaskImage:
+                "linear-gradient(135deg, #000 0%, transparent 78%)",
+            }}
+          />
+          <div className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-end sm:justify-between sm:p-8">
+            <div>
+              <p className="flex items-center gap-2.5 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-fg-subtle">
+                <span className="h-px w-6 bg-accent" />
+                {streak.current > 0 && <Flame className="h-3.5 w-3.5 text-gold" />}
+                {welcome.eyebrow}
+              </p>
+              <h1 className="mt-3 max-w-2xl text-[1.9rem] font-semibold leading-[1.08] tracking-tight sm:text-4xl">
+                {welcome.title}
+              </h1>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-fg-muted">
+                {welcome.sub}
+              </p>
+            </div>
+            <GlowButton href="/dashboard/subjects/new" size="md">
+              <Sparkles className="h-4 w-4" />
+              New subject
+            </GlowButton>
           </div>
-          <GlowButton href="/dashboard/subjects/new" size="md">
-            <Sparkles className="h-4 w-4" />
-            New subject
-          </GlowButton>
         </div>
       </Reveal>
 
-      <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {stats.map((s, i) => {
-          // Tiles light up in their tone when the underlying state is "live":
-          // an active streak (gold) or a non-empty review queue (violet). This
-          // is what stops the strip from reading like a static CRM readout —
-          // the dashboard visibly reacts to whether you're winning and whether
-          // there's something to do right now.
-          const lit = s.highlight;
-          const card = (
-            <GlassCard
-              hover
-              className={cn(
-                "h-full p-5 transition-shadow",
-                lit === "gold" && "ring-1 ring-gold/30",
-                lit === "violet" && "ring-1 ring-violet/35",
-              )}
-            >
-              {/* KPI layout: icon anchors the top-left, the value is the hero
-                  pinned top-right. The two balance across the card's full
-                  width so a wide tile reads as a deliberate metric, not a
-                  sparse box with text hugging one corner. */}
-              <div className="flex items-start justify-between gap-3">
-                <IconTile icon={s.icon} tone={lit ?? "neutral"} size="sm" />
+      {/* Metrics as a continuous draftsman titleblock: flat cells divided by
+          shared hairline rules, each a zero-padded mono numeral over a
+          tracking-widest field label. The numeral inks red on a live streak,
+          indigo on a non-empty review queue — the only colour the strip ever
+          carries. */}
+      <Reveal className="mt-6">
+        <div className="plate-grid grid grid-cols-2 lg:grid-cols-4">
+          {stats.map((s, i) => {
+            const lit = s.highlight;
+            const numTone =
+              lit === "gold"
+                ? "text-gold"
+                : lit === "violet"
+                  ? "text-violet-bright"
+                  : "text-fg";
+            const value = String(Number(s.value) || 0).padStart(2, "0");
+            const content = (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-fg-subtle">
+                    {String(i + 1).padStart(2, "0")} / 04
+                  </span>
+                  {s.href ? (
+                    <ArrowRight className="h-3.5 w-3.5 text-fg-subtle transition-transform duration-150 group-hover:translate-x-0.5" />
+                  ) : (
+                    <s.icon
+                      className={cn(
+                        "h-3.5 w-3.5",
+                        lit ? numTone : "text-fg-subtle",
+                      )}
+                    />
+                  )}
+                </div>
                 <p
                   className={cn(
-                    // tabular-nums keeps the value's width identical as it
-                    // rolls 9 → 10 → 100, so the four-up row never reflows.
-                    "text-[2.4rem] font-semibold leading-none tracking-[-0.035em] tabular-nums",
-                    lit === "gold" && "text-gold",
-                    lit === "violet" && "text-violet-bright",
+                    "mt-7 font-mono text-[2.7rem] font-semibold leading-none tabular-nums",
+                    numTone,
                   )}
                 >
-                  {s.value}
+                  {value}
                 </p>
-              </div>
-              <div className="mt-5 flex items-center justify-between gap-2">
-                <p className="text-[0.84rem] font-medium text-fg-muted">
+                <p className="mt-3 font-mono text-[0.62rem] uppercase tracking-[0.2em] text-fg-muted">
                   {s.label}
                 </p>
-                {/* Navigable tiles get an arrow that nudges right on hover, so
-                    the strip reads as a set of shortcuts. */}
-                {s.href && (
-                  <ArrowRight className="h-3.5 w-3.5 shrink-0 text-fg-subtle transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-fg-muted" />
+                <p className="mt-1 text-[0.72rem] leading-snug text-fg-subtle">
+                  {s.note}
+                </p>
+              </>
+            );
+            const cell =
+              "group flex h-full flex-col p-5 transition-colors duration-150 hover:bg-card-hi";
+            return s.href ? (
+              <Link
+                key={s.label}
+                href={s.href}
+                className={cn(
+                  cell,
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent",
                 )}
+              >
+                {content}
+              </Link>
+            ) : (
+              <div key={s.label} className={cell}>
+                {content}
               </div>
-              <p className="mt-1.5 font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
-                {s.note}
-              </p>
-            </GlassCard>
-          );
-          return (
-            <Reveal key={s.label} delay={i * 0.06}>
-              {s.href ? (
-                <Link
-                  href={s.href}
-                  className="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet/40"
-                >
-                  {card}
-                </Link>
-              ) : (
-                card
-              )}
-            </Reveal>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      </Reveal>
 
       {subjects.length === 0 ? (
         // Brand-new account — one warm onboarding card (clear "create subject"
@@ -570,7 +589,7 @@ function SamplePaperTeaser({ paper }: { paper: QuestionPaper }) {
               </p>
             </div>
           </div>
-          <span className="flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-gold">
+          <span className="flex items-center gap-1.5 rounded-[2px] border border-gold/30 bg-gold/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-gold">
             <Lock className="h-3 w-3" />
             Sample
           </span>

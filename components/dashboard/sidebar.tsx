@@ -95,7 +95,7 @@ function UsageCard({
     <div className="relative overflow-hidden rounded-2xl glass-strong p-4">
       <div className="flex items-center justify-between">
         <IconTile icon={Sparkles} size="sm" tone="violet" />
-        <span className="rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 font-mono text-[0.56rem] uppercase tracking-wider text-gold">
+        <span className="rounded-[2px] border border-gold/30 bg-gold/10 px-2 py-0.5 font-mono text-[0.56rem] uppercase tracking-wider text-gold">
           {planName}
         </span>
       </div>
@@ -111,11 +111,11 @@ function UsageCard({
       </p>
 
       {u.cap !== null && (
-        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-tint/[0.06]">
+        <div className="mt-3 h-1.5 w-full overflow-hidden bg-line-strong/50">
           <div
             className={cn(
-              "h-full rounded-full transition-all duration-500",
-              warn ? "bg-gold" : "bg-gradient-to-r from-violet to-accent",
+              "h-full transition-all duration-500",
+              warn ? "bg-gold" : "bg-accent",
             )}
             style={{ width: `${Math.max(u.pct, u.used > 0 ? 6 : 0)}%` }}
           />
@@ -236,7 +236,7 @@ function GettingStartedCard({ hasSubjects }: { hasSubjects: boolean }) {
               >
                 {step.label}
                 {step.free && !step.done && (
-                  <span className="ml-1.5 rounded-full bg-accent/15 px-1.5 py-0.5 align-middle font-mono text-[0.52rem] uppercase tracking-wider text-accent">
+                  <span className="ml-1.5 rounded-[2px] bg-accent/15 px-1.5 py-0.5 align-middle font-mono text-[0.52rem] uppercase tracking-wider text-accent">
                     Free
                   </span>
                 )}
@@ -247,9 +247,9 @@ function GettingStartedCard({ hasSubjects }: { hasSubjects: boolean }) {
       </ol>
 
       {/* Progress bar — same data as the n/3 badge, read at a glance. */}
-      <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-tint/[0.06]">
+      <div className="mt-3 h-1 w-full overflow-hidden bg-line-strong/50">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-violet to-gold transition-all duration-500"
+          className="h-full bg-accent transition-all duration-500"
           style={{ width: `${(doneCount / steps.length) * 100}%` }}
         />
       </div>

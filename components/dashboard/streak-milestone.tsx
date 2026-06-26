@@ -94,13 +94,11 @@ export function StreakMilestone({ milestone }: StreakMilestoneProps) {
           transition={{ duration: 0.32, ease: easeOut }}
           className={cn(
             "relative mb-6 overflow-hidden rounded-2xl",
-            "border border-gold/35 bg-gradient-to-r from-gold/15 via-tint/[0.02] to-violet/10 p-5",
-            "ring-1 ring-gold/20",
+            // Flat exam-marker-red plate — the streak reward reads in red ink,
+            // framed by a 2px rule. No gradient wash, no blur glow discs.
+            "border-2 border-gold/50 bg-gold/[0.06] p-5",
           )}
         >
-          <div className="pointer-events-none absolute -top-12 left-12 h-32 w-32 rounded-full bg-gold/25 blur-2xl" />
-          <div className="pointer-events-none absolute -top-12 right-12 h-32 w-32 rounded-full bg-violet/20 blur-2xl" />
-
           {/* Confetti burst — runs once on mount (per milestone). Honours
               prefers-reduced-motion via its own internal hook, so we can
               render it unconditionally here. */}
