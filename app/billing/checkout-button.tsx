@@ -9,9 +9,11 @@ import type { BillingTier } from "@/lib/billing/lemonsqueezy";
 export function CheckoutButton({
   tier,
   children,
+  variant = "ink",
 }: {
   tier: BillingTier;
   children: React.ReactNode;
+  variant?: "primary" | "ink";
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,7 @@ export function CheckoutButton({
     <div className="flex flex-col gap-2">
       <GlowButton
         type="button"
+        variant={variant}
         size="md"
         className="w-full"
         disabled={loading}

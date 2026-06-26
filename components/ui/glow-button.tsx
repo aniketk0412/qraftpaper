@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "secondary" | "ghost";
+type Variant = "primary" | "secondary" | "ghost" | "ink";
 type Size = "sm" | "md" | "lg";
 
 // Editorial "letterpress plate" button. No glow, no hover-lift, no fade — a
@@ -21,6 +21,10 @@ const variants: Record<Variant, string> = {
   primary: `border border-ink bg-accent text-on-accent hover:bg-accent-hover ${press}`,
   secondary: `border border-ink bg-panel text-fg hover:bg-card-hi ${press}`,
   ghost: "text-fg-muted underline-offset-4 hover:text-fg hover:underline",
+  // Authoritative "execute" plate for in-app workspace actions — an inverted
+  // high-contrast block (matte near-black in light, paper-white in dark) with
+  // the same hard offset press. Theme-safe: bg-fg/text-canvas invert together.
+  ink: `border border-ink bg-fg text-canvas ${press}`,
 };
 
 const sizes: Record<Size, string> = {
