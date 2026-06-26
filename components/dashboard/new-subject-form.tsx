@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 import { GlowButton } from "@/components/ui/glow-button";
 import { FormError } from "@/components/ui/form-error";
 import { readErrorMessage } from "@/lib/fetch-error";
+import { checkUploadFiles } from "@/lib/subject-upload";
 import { cn } from "@/lib/utils";
 
 /** Human-readable file size, e.g. "2.4 MB". */
@@ -47,14 +48,36 @@ export function NewSubjectForm() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setPending(true);
-    setStatus("Creating subject...");
-    setError(undefined);
 
     const form = event.currentTarget;
     const formData = new FormData(form);
     const name = String(formData.get("name") ?? "").trim();
     const code = String(formData.get("code") ?? "").trim();
+
+    // Collect the chosen files (keeping each one's field name for the upload)
+    // and validate BEFORE creating anything — an empty or oversized selection
+    // must not leave behind an orphan "Needs docs" subject.
+    const chosen = fileFields
+      .map((field) => ({ field: field.name, file: formData.get(field.name) }))
+      .filter(
+        (entry): entry is { field: string; file: File } =>
+          entry.file instanceof File && entry.file.size > 0,
+      );
+
+    const fileIssue = checkUploadFiles(chosen.map((entry) => entry.file));
+    if (fileIssue) {
+      setError(fileIssue);
+      setStatus(undefined);
+      return;
+    }
+
+    setPending(true);
+    setStatus("Creating subject...");
+    setError(undefined);
+
+    // Once true, the subject row exists — so an upload failure below can say
+    // "saved as Needs docs" instead of implying nothing happened.
+    let subjectCreated = false;
 
     try {
       const subjectResponse = await fetch("/api/subjects", {
@@ -78,23 +101,14 @@ export function NewSubjectForm() {
           "The subject was created but the server sent an unexpected response. Refresh the page to check.",
         );
       }
+      subjectCreated = true;
 
       setStatus("Uploading PDFs and extracting text...");
 
       const uploadData = new FormData();
       uploadData.set("subjectId", subjectId);
-      let uploadedFileCount = 0;
-
-      for (const field of fileFields) {
-        const value = formData.get(field.name);
-        if (value instanceof File && value.size > 0) {
-          uploadData.set(field.name, value);
-          uploadedFileCount += 1;
-        }
-      }
-
-      if (uploadedFileCount === 0) {
-        throw new Error("Upload at least one text-based PDF for this subject.");
+      for (const { field, file } of chosen) {
+        uploadData.set(field, file);
       }
 
       const uploadResponse = await fetch("/api/documents/upload", {
@@ -112,10 +126,14 @@ export function NewSubjectForm() {
       router.push("/dashboard");
       router.refresh();
     } catch (caughtError) {
-      setError(
+      const message =
         caughtError instanceof Error
           ? caughtError.message
-          : "Unable to create subject",
+          : "Unable to create subject";
+      setError(
+        subjectCreated
+          ? `Your subject was saved, but its documents couldn't be processed: ${message} It's on your dashboard as "Needs docs" — open it to upload again.`
+          : message,
       );
       setStatus(undefined);
     } finally {
