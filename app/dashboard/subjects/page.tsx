@@ -127,14 +127,26 @@ export default async function SubjectsPage() {
                   />
                 </div>
                 <div className="mt-4 flex items-center gap-2">
-                  <GlowButton
-                    href="/dashboard"
-                    variant="secondary"
-                    size="sm"
-                    className="flex-1"
-                  >
-                    Generate
-                  </GlowButton>
+                  {subject.hasProfile ? (
+                    <GlowButton
+                      href="/dashboard"
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                    >
+                      Generate
+                    </GlowButton>
+                  ) : (
+                    <GlowButton
+                      href={`/dashboard/subjects/${subject.id}`}
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                    >
+                      <UploadCloud className="h-3.5 w-3.5" />
+                      Add documents
+                    </GlowButton>
+                  )}
                   <DeleteButton
                     endpoint={`/api/subjects/${subject.id}`}
                     label="subject"
