@@ -175,14 +175,27 @@ export function GenerationPanel({
               value={subjectId}
               onChange={setSubjectId}
               placeholder="Choose a subject"
-              emptyLabel="No profiled subjects"
+              emptyLabel={
+                subjects.length > 0 ? "No subjects ready yet" : "No subjects yet"
+              }
               emptyHint={
-                <Link
-                  href="/dashboard/subjects/new"
-                  className="text-accent transition-colors hover:text-accent-soft"
-                >
-                  Create a subject to get started
-                </Link>
+                // If they already have subjects, the blocker is missing
+                // documents — point at the subject, not "create another one".
+                subjects.length > 0 ? (
+                  <Link
+                    href="/dashboard/subjects"
+                    className="text-accent transition-colors hover:text-accent-soft"
+                  >
+                    Add documents to a subject to start generating
+                  </Link>
+                ) : (
+                  <Link
+                    href="/dashboard/subjects/new"
+                    className="text-accent transition-colors hover:text-accent-soft"
+                  >
+                    Create a subject to get started
+                  </Link>
+                )
               }
               options={readySubjects.map((subject) => ({
                 value: subject.id,
