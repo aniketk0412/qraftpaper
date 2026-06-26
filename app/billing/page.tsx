@@ -32,6 +32,7 @@ import { getStreakSummary } from "@/lib/streaks";
 import { currentUsageMonth } from "@/lib/usage";
 import { cn } from "@/lib/utils";
 import { CheckoutButton } from "./checkout-button";
+import { FaqItem } from "./faq-item";
 
 export const runtime = "nodejs";
 
@@ -164,7 +165,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Are the questions guaranteed correct?",
-    a: "No. Output is AI-generated and meant for practice. Always cross-check against your textbook before treating it as gospel — but that's the point of practice anyway.",
+    a: "Every paper and quiz is built from your own syllabus and past papers, so the topics, mark weightage and difficulty mirror your real exam. It's a sharp study aid rather than an official answer key — give anything that looks off a quick cross-check — but drilling in your exact paper pattern is what builds real exam-day confidence.",
   },
   {
     q: "How is billing handled?",
@@ -940,20 +941,5 @@ function Cell({
     >
       {value}
     </span>
-  );
-}
-
-function FaqItem({ q, a }: { q: string; a: string }) {
-  return (
-    <details className="group rounded-2xl border border-line bg-tint/[0.02] p-5 transition-colors hover:border-line-strong">
-      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 text-[0.92rem] font-medium">
-        <span className="flex items-start gap-2">
-          <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet-bright" />
-          {q}
-        </span>
-        <Clock className="mt-1 h-4 w-4 shrink-0 text-fg-subtle transition-transform duration-200 group-open:rotate-90" />
-      </summary>
-      <p className="mt-3 text-[0.82rem] leading-relaxed text-fg-muted">{a}</p>
-    </details>
   );
 }
