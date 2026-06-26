@@ -12,6 +12,7 @@ import { identifyUser, trackEvent } from "@/lib/analytics";
 import { issueVerificationEmail, hashVerificationToken } from "@/lib/verification";
 import { getDb } from "@/lib/db";
 import { isValidGrade } from "@/lib/education";
+import { isDisposableEmail, isValidEmailFormat } from "@/lib/email-policy";
 import {
   auditLogs,
   emailVerificationTokens,
@@ -257,6 +258,18 @@ export async function signupAction(formData: FormData) {
 
   if (!name || !email || !institution || password.length < 8) {
     redirect("/signup?error=invalid-fields");
+  }
+
+  // The browser's type="email" only validates client-side and is bypassable by
+  // a direct POST, so re-check the format on the server. Then reject known
+  // disposable / temporary-inbox domains — they're junk accounts that hurt
+  // deliverability (bounces to dead domains damage sender reputation) and, once
+  // a trial ships, would be a throwaway-account abuse vector.
+  if (!isValidEmailFormat(email)) {
+    redirect("/signup?error=invalid-email");
+  }
+  if (isDisposableEmail(email)) {
+    redirect("/signup?error=disposable-email");
   }
 
   // The level/grade is locked after signup (changeable once per ~6 months), so

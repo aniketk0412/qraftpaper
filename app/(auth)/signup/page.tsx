@@ -20,6 +20,9 @@ const errorMessages: Record<string, string> = {
   "email-exists": "That email is already registered. Sign in instead.",
   "invalid-fields":
     "Enter all details and use a password with at least 8 characters.",
+  "invalid-email": "Enter a valid email address.",
+  "disposable-email":
+    "Please use a permanent email — temporary or disposable inboxes aren't allowed.",
   "invalid-grade": "Please pick your level and class/department.",
   "too-many": "Too many sign-ups from your network recently. Please try again later.",
   captcha: "Please complete the verification and try again.",
