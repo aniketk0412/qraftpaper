@@ -1,4 +1,5 @@
-import { CheckCircle2, Target } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { Panel } from "@/components/dashboard/panel";
 import { cn } from "@/lib/utils";
 import type { WeeklyActivity } from "@/lib/streaks";
 
@@ -32,46 +33,37 @@ export function WeeklyGoalCard({ weekly }: { weekly: WeeklyActivity }) {
   const pct = Math.min(100, Math.round((weekly.done / weekly.target) * 100));
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-line bg-card-hi/50 p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="flex items-center gap-1.5 font-mono text-[0.66rem] uppercase tracking-[0.18em] text-fg-subtle">
-            <Target className="h-3 w-3" />
-            Weekly goal
-          </p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
-            {weekly.done}
-            <span className="ml-1 text-base font-medium text-fg-subtle">
-              / {weekly.target} days
-            </span>
-          </p>
-        </div>
-        {weekly.hit && (
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/35 bg-accent/15 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-accent">
+    <Panel
+      label="Weekly goal"
+      right={
+        weekly.hit ? (
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-[2px] border border-accent/35 bg-accent/15 px-2 py-0.5 font-mono text-[0.56rem] uppercase tracking-[0.16em] text-accent">
             <CheckCircle2 className="h-3 w-3" />
             Hit
           </span>
-        )}
-      </div>
+        ) : undefined
+      }
+    >
+      <p className="text-2xl font-semibold tracking-tight tabular-nums">
+        {weekly.done}
+        <span className="ml-1 text-base font-medium text-fg-subtle">
+          / {weekly.target} days
+        </span>
+      </p>
 
-      {/* 7 dots, oldest first → today is the last. Practised days light up
-          accent; today specifically gets a ring even when unpractised so the
-          eye lands on it. */}
+      {/* 7 grid cells, oldest first → today is the last. Practised days ink
+          in solid; today gets an accent rule even when empty so the eye lands
+          on it — ticked boxes on a chart rather than glowing dots. */}
       <div className="mt-5 flex items-end justify-between gap-1.5">
         {weekly.days.map((on, i) => {
           const isToday = i === weekly.days.length - 1;
           return (
-            <div
-              key={i}
-              className="flex flex-1 flex-col items-center gap-1.5"
-            >
+            <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
               <span
                 className={cn(
-                  "h-6 w-6 rounded-full transition-colors",
-                  on
-                    ? "bg-accent text-on-accent ring-1 ring-accent/50"
-                    : "bg-tint/[0.04] ring-1 ring-line",
-                  isToday && !on && "ring-2 ring-violet/45",
+                  "h-6 w-6 rounded-[2px] border transition-colors",
+                  on ? "border-accent bg-accent" : "border-line bg-canvas",
+                  isToday && !on && "border-violet-bright",
                 )}
                 aria-label={
                   on
@@ -92,13 +84,11 @@ export function WeeklyGoalCard({ weekly }: { weekly: WeeklyActivity }) {
         })}
       </div>
 
-      {/* Linear progress bar reinforces the dots — gives users two ways to
-          read the same data, useful at glance. */}
       <div className="mt-5">
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-tint/[0.06]">
+        <div className="h-1.5 w-full overflow-hidden bg-line-strong/50">
           <div
             className={cn(
-              "h-full rounded-full transition-all duration-500",
+              "h-full transition-all duration-500",
               weekly.hit ? "bg-accent" : "bg-violet-bright",
             )}
             style={{ width: `${pct}%` }}
@@ -112,6 +102,6 @@ export function WeeklyGoalCard({ weekly }: { weekly: WeeklyActivity }) {
               : `${weekly.target - weekly.done} more day${weekly.target - weekly.done === 1 ? "" : "s"} to hit your weekly goal.`}
         </p>
       </div>
-    </div>
+    </Panel>
   );
 }

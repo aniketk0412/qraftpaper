@@ -7,11 +7,10 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
-  Trophy,
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { GlassCard } from "@/components/ui/glass-card";
+import { Panel } from "@/components/dashboard/panel";
 import {
   achievementSummary,
   nextAchievement,
@@ -44,18 +43,15 @@ export function AchievementsShelf({
   const next = nextAchievement(achievements);
 
   return (
-    <GlassCard className="p-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <Trophy className="h-4 w-4 text-gold" />
-          <p className="text-sm font-medium">Achievements</p>
-        </div>
+    <Panel
+      label="Achievements"
+      right={
         <span className="font-mono text-[0.72rem] tabular-nums text-fg-muted">
           {earned}/{total}
         </span>
-      </div>
-
-      <div className="mt-4 grid grid-cols-4 gap-2">
+      }
+    >
+      <div className="grid grid-cols-4 gap-2">
         {achievements.map((a) => {
           const Icon = ICONS[a.key] ?? Award;
           return (
@@ -70,10 +66,10 @@ export function AchievementsShelf({
                 a.earned ? "Unlocked" : `${a.current} of ${a.goal}`
               }`}
               className={cn(
-                "grid aspect-square place-items-center rounded-xl ring-1 transition-colors",
+                "grid aspect-square place-items-center rounded-[2px] border transition-colors",
                 a.earned
-                  ? "bg-gold/15 text-gold ring-gold/35"
-                  : "bg-tint/[0.02] text-fg-subtle ring-line",
+                  ? "border-gold/40 bg-gold/10 text-gold"
+                  : "border-line bg-card-hi text-fg-subtle",
               )}
             >
               <Icon className="h-[18px] w-[18px]" />
@@ -92,6 +88,6 @@ export function AchievementsShelf({
           Every badge unlocked. Legend.
         </p>
       )}
-    </GlassCard>
+    </Panel>
   );
 }

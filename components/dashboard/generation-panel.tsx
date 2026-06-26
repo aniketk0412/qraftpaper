@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { FilePlus2, ListChecks } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
-import { IconTile } from "@/components/ui/icon-tile";
 import { SelectMenu } from "@/components/ui/select-menu";
+import { Panel } from "@/components/dashboard/panel";
 import { GenerationProgress } from "@/components/dashboard/generation-progress";
 import type { DashboardSubject } from "@/lib/subjects";
 
@@ -127,24 +126,17 @@ export function GenerationPanel({
         kind={pending ?? "paper"}
         open={pending !== null}
       />
-    <GlassCard className="p-5">
+    <Panel label="Generate">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-violet-bright">
-            Generate
-          </p>
-          <h2 className="mt-1 text-lg font-semibold tracking-tight">
+          <h2 className="text-lg font-semibold tracking-tight">
             Create from a subject profile
           </h2>
           <p className="mt-1 text-sm text-fg-muted">
             Choose a profiled subject, then generate a paper or MCQ quiz.
           </p>
-          {/* Budget hint — transparent about what generating costs against
-              the monthly allowance. 0 = unpaid (rendered as the subscribe
-              nudge). Capped users see "X / Y this month" with the remaining
-              count gold-tinted once there are 3 or fewer left. */}
           {generationsCap !== null && generationsCap > 0 && (
-            <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-line bg-tint/[0.02] px-3 py-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-muted">
+            <p className="mt-3 inline-flex items-center gap-2 rounded-[2px] border border-line bg-card-hi px-3 py-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-fg-muted">
               <span
                 className={
                   generationsCap - generationsUsed <= 3
@@ -161,7 +153,7 @@ export function GenerationPanel({
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex flex-col gap-1.5 sm:w-60">
-            <span className="text-[0.72rem] font-medium text-fg-muted">
+            <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fg-subtle">
               Subject
             </span>
             <SelectMenu
@@ -193,7 +185,7 @@ export function GenerationPanel({
               disabled={!subjectId || pending !== null}
               onClick={generateQuiz}
             >
-              <IconTile icon={ListChecks} size="sm" tone="neutral" />
+              <ListChecks className="h-4 w-4" />
               {pending === "quiz" ? "Generating..." : "Quiz"}
             </GlowButton>
             <GlowButton
@@ -210,7 +202,7 @@ export function GenerationPanel({
       </div>
 
       {status && <p className="mt-3 text-[0.78rem] text-fg-subtle">{status}</p>}
-    </GlassCard>
+    </Panel>
     </>
   );
 }

@@ -14,9 +14,9 @@ import { FirstRunEmptyState } from "@/components/dashboard/empty-state";
 import { GenerationPanel } from "@/components/dashboard/generation-panel";
 import { QuizLaunch } from "@/components/dashboard/quiz-launch";
 import { SubjectsSection } from "@/components/dashboard/subjects-section";
-import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
+import { Panel } from "@/components/dashboard/panel";
 import { Reveal } from "@/components/ui/reveal";
 import { examplePaperForLevel } from "@/lib/demo-data";
 import type { QuestionPaper } from "@/lib/types";
@@ -466,27 +466,23 @@ export default async function DashboardPage() {
               <NextUpCard subjects={subjects} />
               {recentPapers.length > 0 && (
                 <Reveal delay={0.05}>
-                  <GlassCard className="flex flex-col p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <FileText className="h-4 w-4 text-violet-bright" />
-                        <div className="leading-tight">
-                          <p className="text-sm font-medium">Latest paper</p>
-                          <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
-                            {recentPapers[0].content?.subjectCode ?? "Paper"} ·{" "}
-                            {recentPapers[0].content?.totalMarks ?? 0} marks
-                          </p>
-                        </div>
-                      </div>
+                  <Panel
+                    label="Latest paper"
+                    right={
                       <Link
                         href="/dashboard/papers"
-                        className="flex items-center gap-1 text-[0.74rem] text-violet-bright transition-colors hover:text-violet"
+                        className="flex items-center gap-1 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-violet-bright transition-colors hover:text-violet"
                       >
                         View all
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
-                    </div>
-                    <h3 className="mt-4 text-lg font-semibold tracking-tight">
+                    }
+                  >
+                    <p className="font-mono text-[0.62rem] uppercase tracking-wider text-fg-subtle">
+                      {recentPapers[0].content?.subjectCode ?? "Paper"} ·{" "}
+                      {recentPapers[0].content?.totalMarks ?? 0} marks
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold tracking-tight">
                       {recentPapers[0].title}
                     </h3>
                     <p className="mt-1 text-[0.82rem] text-fg-muted">
@@ -502,31 +498,31 @@ export default async function DashboardPage() {
                         <ArrowRight className="h-4 w-4" />
                       </GlowButton>
                     </div>
-                  </GlassCard>
+                  </Panel>
                 </Reveal>
               )}
               <Reveal delay={0.1}>
-                <GlassCard className="p-5">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-semibold tracking-tight">
-                      Recent activity
-                    </h2>
-                    {recentPapers.length > 0 && (
+                <Panel
+                  label="Recent activity"
+                  bodyClassName="p-2"
+                  right={
+                    recentPapers.length > 0 ? (
                       <Link
                         href="/dashboard/papers"
-                        className="flex items-center gap-1 text-[0.74rem] text-violet-bright transition-colors hover:text-violet"
+                        className="flex items-center gap-1 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-violet-bright transition-colors hover:text-violet"
                       >
                         View all
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
-                    )}
-                  </div>
-                  <div className="mt-4 flex flex-col gap-1">
+                    ) : undefined
+                  }
+                >
+                  <div className="flex flex-col">
                     {activity.map((a) => (
                       <Link
                         key={a.id}
                         href={a.href}
-                        className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-tint/[0.03]"
+                        className="flex items-center gap-3 rounded-[2px] px-3 py-3 transition-colors hover:bg-card-hi"
                       >
                         <IconTile icon={FileText} tone="neutral" size="sm" />
                         <div className="min-w-0 flex-1">
@@ -545,7 +541,7 @@ export default async function DashboardPage() {
                       </p>
                     )}
                   </div>
-                </GlassCard>
+                </Panel>
               </Reveal>
             </div>
           </div>

@@ -1,13 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRight, Feather, Flame, Gauge, ListChecks } from "lucide-react";
+import { ArrowRight, Feather, Flame, Gauge } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
-import { IconTile } from "@/components/ui/icon-tile";
 import { SelectMenu } from "@/components/ui/select-menu";
+import { Panel } from "@/components/dashboard/panel";
 import { GenerationProgress } from "@/components/dashboard/generation-progress";
 import type { DashboardSubject } from "@/lib/subjects";
 import type { Difficulty } from "@/lib/types";
@@ -107,16 +106,8 @@ export function QuizLaunch({ subjects }: { subjects: DashboardSubject[] }) {
         kind="quiz"
         open={pending}
       />
-    <GlassCard className="p-5 sm:p-6">
-      <div className="flex items-center gap-2.5">
-        <IconTile icon={ListChecks} size="sm" tone="neutral" />
-        <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-violet-bright">
-          Practice
-        </p>
-      </div>
-      <h2 className="mt-3 text-lg font-semibold tracking-tight">
-        Start a quiz
-      </h2>
+    <Panel label="Practice">
+      <h2 className="text-lg font-semibold tracking-tight">Start a quiz</h2>
       <p className="mt-1 max-w-xl text-sm text-fg-muted">
         Pick an intensity, pick a subject, and get a fresh MCQ set built from
         your own material — graded the moment you finish.
@@ -132,18 +123,18 @@ export function QuizLaunch({ subjects }: { subjects: DashboardSubject[] }) {
               onClick={() => setModeId(m.id)}
               aria-pressed={active}
               className={cn(
-                "flex flex-col gap-2 rounded-2xl border p-3.5 text-left transition-all duration-200",
+                "flex flex-col gap-2 rounded-[2px] border p-3.5 text-left transition-colors duration-150",
                 active
-                  ? "border-accent/40 bg-accent/[0.08] ring-1 ring-accent/30"
-                  : "border-line bg-tint/[0.02] hover:border-line-strong hover:bg-tint/[0.04]",
+                  ? "border-accent bg-accent/[0.08]"
+                  : "border-line bg-card-hi/50 hover:border-line-strong hover:bg-card-hi",
               )}
             >
               <span
                 className={cn(
-                  "grid h-9 w-9 place-items-center rounded-xl ring-1 transition-colors",
+                  "grid h-9 w-9 place-items-center rounded-[2px] border transition-colors",
                   active
-                    ? "bg-accent/15 text-accent ring-accent/30"
-                    : "bg-tint/[0.04] text-fg-muted ring-line",
+                    ? "border-accent/40 bg-accent/15 text-accent"
+                    : "border-line bg-canvas text-fg-muted",
                 )}
               >
                 <m.icon className="h-[18px] w-[18px]" />
@@ -164,7 +155,7 @@ export function QuizLaunch({ subjects }: { subjects: DashboardSubject[] }) {
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex flex-1 flex-col gap-1.5">
-          <span className="text-[0.72rem] font-medium text-fg-muted">
+          <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-fg-subtle">
             Subject
           </span>
           <SelectMenu
@@ -192,7 +183,7 @@ export function QuizLaunch({ subjects }: { subjects: DashboardSubject[] }) {
       </div>
 
       {status && <p className="mt-3 text-[0.78rem] text-fg-subtle">{status}</p>}
-    </GlassCard>
+    </Panel>
     </>
   );
 }
