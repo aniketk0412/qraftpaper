@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { trackEvent } from "@/lib/analytics";
 import { captureException } from "@/lib/observability";
+import { AI_UNAVAILABLE_MESSAGE, isAiServiceUnavailable } from "@/lib/ai/errors";
 import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { generationJobs, papers, subjects } from "@/lib/db/schema";
@@ -187,6 +188,9 @@ export async function POST(request: Request) {
     }
 
     captureException(error, { scope: "generate:paper", userId: session.user.id });
+    if (isAiServiceUnavailable(error)) {
+      return NextResponse.json({ error: AI_UNAVAILABLE_MESSAGE }, { status: 503 });
+    }
     return NextResponse.json(
       { error: "Paper generation failed. Please try again." },
       { status: 502 },

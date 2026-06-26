@@ -11,6 +11,7 @@ import {
   subjects,
 } from "@/lib/db/schema";
 import { buildSubjectProfile, extractPdfText } from "@/lib/ai/extract";
+import { AI_UNAVAILABLE_MESSAGE, isAiServiceUnavailable } from "@/lib/ai/errors";
 import {
   assertWithinRateLimit,
   RateLimitError,
@@ -240,6 +241,12 @@ async function handleUpload(request: Request) {
     }
 
     captureException(error, { scope: "documents:upload", userId: session.user.id });
+
+    // An out-of-credits / rate-limited / down AI provider isn't the user's
+    // documents' fault — don't tell them to "upload different source material".
+    if (isAiServiceUnavailable(error)) {
+      return NextResponse.json({ error: AI_UNAVAILABLE_MESSAGE }, { status: 503 });
+    }
     return NextResponse.json(
       {
         error:
