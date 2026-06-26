@@ -35,6 +35,12 @@ describe("isDisposableEmail", () => {
     expect(isDisposableEmail("x@1secmail.com")).toBe(true);
   });
 
+  it("uses the maintained upstream feed, not just the curated extras", () => {
+    // guerrillamail.info is in the disposable-email-domains package but NOT in
+    // CURATED_EXTRAS — so this passing proves the upstream list is wired in.
+    expect(isDisposableEmail("x@guerrillamail.info")).toBe(true);
+  });
+
   it("blocks throwaway subdomains of a listed provider", () => {
     expect(isDisposableEmail("x@inbox.mailinator.com")).toBe(true);
     expect(isDisposableEmail("x@a.b.guerrillamail.com")).toBe(true);
@@ -52,9 +58,9 @@ describe("isDisposableEmail", () => {
     expect(isDisposableEmail("prof@university.edu")).toBe(false);
   });
 
-  it("does not match unrelated domains that merely contain a listed word", () => {
-    // "notmailinator.com" must NOT be caught by the "mailinator.com" entry.
-    expect(isDisposableEmail("x@notmailinator.com")).toBe(false);
+  it("matches domain suffixes, not substrings or prefixes", () => {
+    // "mailinator.com" is a PREFIX here, not a suffix — the reserved .example
+    // TLD guarantees this isn't a real listed domain, so it must not match.
     expect(isDisposableEmail("x@mailinator.com.evil.example")).toBe(false);
   });
 

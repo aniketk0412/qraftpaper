@@ -1,13 +1,14 @@
+import disposableList from "disposable-email-domains";
+
 /**
  * Email hygiene for signup: a pragmatic format check plus a disposable /
- * temporary-inbox blocklist. Two cheap, dependency-free layers that keep junk
- * and throwaway-inbox accounts out without calling an external service.
+ * temporary-inbox blocklist. Two cheap layers that keep junk and throwaway
+ * accounts out without calling an external service at request time.
  *
- * The blocklist is a curated in-repo set — to extend it, just add a domain.
- * It catches the overwhelming majority of casual temp-mail use. For exhaustive
- * coverage you could later layer in a maintained upstream list (e.g. the
- * `disposable-email-domains` package or a fetched feed), but that's a much
- * larger list to vet and ship — this curated set is the high-value 80/20.
+ * The blocklist is the maintained `disposable-email-domains` feed (100k+
+ * domains) merged with a small curated supplement (add anything you spot
+ * abusing signup before it lands upstream). To refresh the upstream list,
+ * `npm update disposable-email-domains`.
  */
 
 // Pragmatic, not full RFC 5322 — requires local@domain.tld with no spaces and
@@ -27,74 +28,34 @@ function emailDomain(email: string): string {
   return at === -1 ? "" : email.slice(at + 1).trim().toLowerCase();
 }
 
-// Known disposable / temporary-inbox providers. Lowercase, no leading dot.
-// Subdomains are handled by isDisposableEmail (so "x.mailinator.com" matches).
-const DISPOSABLE_DOMAINS = new Set<string>([
-  // Mailinator + friends
+// Hand-curated supplement to the upstream feed — guarantees coverage of the
+// best-known providers and is where to add a domain you catch abusing signup
+// before it appears upstream. Lowercase, no leading dot.
+const CURATED_EXTRAS = [
   "mailinator.com",
-  "mailinator.net",
-  "mailinator2.com",
-  "reallymymail.com",
-  // Guerrilla Mail
   "guerrillamail.com",
-  "guerrillamail.net",
-  "guerrillamail.org",
-  "guerrillamail.info",
-  "guerrillamail.biz",
-  "guerrillamailblock.com",
   "sharklasers.com",
-  "grr.la",
-  "spam.me",
-  "spam4.me",
-  // 10/20 minute mail
   "10minutemail.com",
-  "10minutemail.net",
-  "20minutemail.com",
-  "10minutemail.co.uk",
-  // Temp-Mail family
   "temp-mail.org",
   "tempmail.com",
-  "tempmail.net",
-  "tempmailo.com",
-  "tempmail.plus",
-  "tempr.email",
-  "tmail.io",
-  "tmpmail.org",
-  "tmpmail.net",
-  "tmpeml.com",
-  "moakt.com",
-  "mohmal.com",
-  // YOPmail
   "yopmail.com",
-  "yopmail.net",
-  "yopmail.fr",
-  // Other common throwaways
-  "throwawaymail.com",
-  "throwam.com",
   "getnada.com",
-  "nada.email",
   "maildrop.cc",
-  "mailnesia.com",
-  "mintemail.com",
+  "throwawaymail.com",
   "trashmail.com",
-  "trashmail.de",
-  "trbvm.com",
   "dispostable.com",
   "fakeinbox.com",
-  "spamgourmet.com",
-  "emailondeck.com",
-  "mailcatch.com",
-  "discard.email",
-  "33mail.com",
-  "anonbox.net",
-  "inboxkitten.com",
-  "mailpoof.com",
-  "burnermail.io",
+  "moakt.com",
   "1secmail.com",
-  "1secmail.org",
-  "1secmail.net",
-  "cock.li",
-  "0815.ru",
+  "burnermail.io",
+];
+
+// Authoritative blocklist: the maintained upstream feed + curated extras.
+// Built once at module load; lookups stay O(domain labels) via the suffix walk
+// in isDisposableEmail, not O(set size).
+const DISPOSABLE_DOMAINS = new Set<string>([
+  ...disposableList,
+  ...CURATED_EXTRAS,
 ]);
 
 /**
