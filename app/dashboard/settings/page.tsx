@@ -1,10 +1,8 @@
 import { redirect } from "next/navigation";
 import { desc, eq, sql } from "drizzle-orm";
-import { Building2, CheckCircle2, CreditCard, GraduationCap, Lock, LogOut, Mail, Receipt, User } from "lucide-react";
+import { CheckCircle2, CreditCard, GraduationCap, Lock, LogOut, Receipt } from "lucide-react";
 import { auth, signOut } from "@/auth";
-import { AuthField } from "@/components/auth/auth-field";
 import { EducationPicker } from "@/components/auth/education-picker";
-import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { Reveal } from "@/components/ui/reveal";
 import { BackLink } from "@/components/dashboard/back-link";
@@ -24,6 +22,7 @@ import {
 } from "@/lib/education";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 import {
   deleteAccountAction,
   updateEducationAction,
@@ -31,6 +30,17 @@ import {
 } from "./actions";
 
 export const runtime = "nodejs";
+
+function stampDate(d: Date | null): string {
+  if (!d) return "—";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+    .format(d)
+    .replace(/\//g, ".");
+}
 
 export default async function SettingsPage({
   searchParams,
@@ -58,11 +68,6 @@ export default async function SettingsPage({
     .where(eq(users.id, session.user.id))
     .limit(1);
 
-  // The user's subscription record (system of record for state), and the raw
-  // billing-event ledger for it (proof of what Lemon Squeezy told us). The
-  // event query filters by the subscription's Lemon Squeezy id via a jsonb
-  // path; wrapped in try/catch so a query hiccup never takes down the whole
-  // settings page — billing history is informational, not load-bearing.
   const [subscription] = await getDb()
     .select()
     .from(subscriptions)
@@ -94,16 +99,8 @@ export default async function SettingsPage({
   const hasActivePlan = planId !== "unpaid";
   const renewsAt = subscription?.renewsAt ?? null;
   const endsAt = subscription?.endsAt ?? null;
-  const dateFmt = (d: Date | null) =>
-    d
-      ? new Intl.DateTimeFormat("en", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }).format(d)
-      : null;
+  const cancelled = subscription?.status === "cancelled";
 
-  // Education level/grade + the 6-month change lock.
   const gradeLabel = describeGrade(
     profile?.educationLevel,
     profile?.educationGrade,
@@ -113,267 +110,312 @@ export default async function SettingsPage({
   const nextChangeDate =
     !canEditGrade && gradeUpdatedAt ? nextGradeChangeAt(gradeUpdatedAt) : null;
 
+  const billingStatus = hasActivePlan
+    ? cancelled && endsAt
+      ? `ACCESS UNTIL ${stampDate(endsAt)}`
+      : renewsAt
+        ? `RENEWS ${stampDate(renewsAt)}`
+        : "ACTIVE"
+    : "UNSUBSCRIBED";
+
   return (
     <div className="mx-auto max-w-3xl">
-      <BackLink />
+      <BackLink label="Back to workspace" />
+
+      {/* Registration-document header. */}
       <Reveal>
-        <div>
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-violet-bright">
-            Settings
+        <div className="border-b border-line pb-6">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.24em] text-fg-subtle">
+            Account · Registration record
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gradient">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
             Account settings
           </h1>
-          <p className="mt-1.5 text-sm text-fg-muted">
-            Manage your profile, plan and account.
+          <p className="mt-2 text-sm text-fg-muted">
+            Manage your profile, level, plan and account — laid out as a single
+            administrative record.
           </p>
         </div>
       </Reveal>
 
-      <Reveal>
-        <GlassCard className="mt-8 p-7">
-          <h2 className="text-lg font-semibold tracking-tight">Profile</h2>
-          <p className="mt-1 text-[0.84rem] text-fg-muted">
-            This name and institution show on your dashboard and shared quizzes.
-          </p>
-
-          {saved === "profile" && (
-            <p className="mt-4 flex items-center gap-2 rounded-xl border border-tint/15 bg-tint/[0.04] px-4 py-3 text-[0.82rem] text-fg">
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-              Profile updated.
-            </p>
-          )}
-          {error === "missing-fields" && (
-            <p className="mt-4 rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.82rem] text-fg-muted">
-              Name and institution are both required.
-            </p>
-          )}
-
-          <form action={updateProfileAction} className="mt-5 flex flex-col gap-4">
-            <AuthField
-              id="name"
-              name="name"
-              label="Full name"
-              icon={User}
-              defaultValue={profile?.name ?? ""}
-              placeholder="Dr. Anita Rao"
-              required
-            />
-            <AuthField
-              id="institution"
-              name="institution"
-              label="Institution"
-              icon={Building2}
-              defaultValue={profile?.institution ?? ""}
-              placeholder="Meridian University"
-              required
-            />
-            <AuthField
-              id="email"
-              label="Work email"
-              icon={Mail}
-              defaultValue={profile?.email ?? ""}
-              disabled
-            />
-            <GlowButton type="submit" size="md" className="mt-1 self-start">
+      {/* SECTION 01 — PROFILE */}
+      <Section index="01" title="Profile" note="Shown on your dashboard and shared quizzes.">
+        {saved === "profile" && <SavedNote>Profile updated.</SavedNote>}
+        {error === "missing-fields" && (
+          <ErrorNote>Name and institution are both required.</ErrorNote>
+        )}
+        <form action={updateProfileAction}>
+          <LedgerField
+            refLabel="Full name"
+            name="name"
+            defaultValue={profile?.name ?? ""}
+            placeholder="Dr. Anita Rao"
+            required
+          />
+          <LedgerField
+            refLabel="Institution"
+            name="institution"
+            defaultValue={profile?.institution ?? ""}
+            placeholder="Meridian University"
+            required
+          />
+          <LedgerReadonly
+            refLabel="Work email"
+            value={profile?.email ?? "—"}
+            note="Account identity · fixed"
+          />
+          <div className="pt-6">
+            <GlowButton type="submit" variant="ink" size="md">
               Save changes
             </GlowButton>
+          </div>
+        </form>
+      </Section>
+
+      {/* SECTION 02 — ACADEMIC LEVEL */}
+      <Section
+        index="02"
+        title="Academic level"
+        note="Tailors your dashboard sample and recommendations. Changeable once every 6 months."
+      >
+        <div className="mb-4 flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-violet-bright">
+          <GraduationCap className="h-3.5 w-3.5" />
+          {gradeLabel ?? "Not set"}
+        </div>
+
+        {saved === "grade" && <SavedNote>Level updated.</SavedNote>}
+        {error === "invalid-grade" && (
+          <ErrorNote>Pick a valid level and class/department.</ErrorNote>
+        )}
+        {error === "grade-locked" && (
+          <ErrorNote tone="gold">
+            You changed your level recently. You can change it again
+            {nextChangeDate ? ` on ${stampDate(nextChangeDate)}` : " later"}.
+          </ErrorNote>
+        )}
+
+        {canEditGrade ? (
+          <form action={updateEducationAction} className="flex flex-col gap-4">
+            <div className="flex items-start gap-2.5 border border-gold/30 bg-gold/[0.06] px-4 py-3">
+              <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+              <p className="text-[0.82rem] leading-relaxed text-fg">
+                Heads up — once you save, your level is{" "}
+                <span className="font-medium">locked for 6 months</span>. Pick
+                the one you&apos;ll actually be studying.
+              </p>
+            </div>
+            <EducationPicker
+              defaultLevel={(profile?.educationLevel ?? "") as EducationLevel | ""}
+              defaultGrade={profile?.educationGrade ?? ""}
+              hideNote
+            />
+            <ConfirmSaveButton
+              message="Your level can only be changed once every 6 months. Save this choice now?"
+              className="self-start"
+            >
+              Save level
+            </ConfirmSaveButton>
           </form>
-        </GlassCard>
-      </Reveal>
-
-      <Reveal>
-        <GlassCard className="mt-3 p-7">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h2 className="text-lg font-semibold tracking-tight">Your level</h2>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-violet/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-violet-bright ring-1 ring-violet/25">
-              <GraduationCap className="h-3 w-3" />
-              {gradeLabel ?? "Not set"}
-            </span>
+        ) : (
+          <div className="flex items-start gap-2.5 border border-line bg-card-hi/50 px-4 py-3.5">
+            <Lock className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" />
+            <p className="text-[0.82rem] leading-relaxed text-fg-muted">
+              Your level is locked until{" "}
+              <span className="font-medium text-fg">
+                {stampDate(nextChangeDate)}
+              </span>
+              . This keeps papers and samples consistent with what you study.
+            </p>
           </div>
-          <p className="mt-1 text-[0.84rem] text-fg-muted">
-            Your dashboard sample and recommendations are tailored to this. It&apos;s
-            locked to your account — changeable only once every 6 months.
+        )}
+      </Section>
+
+      {/* SECTION 03 — PLAN & BILLING */}
+      <Section index="03" title="Plan & billing">
+        <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-fg-muted">
+          [ PLAN: {planName} {"//"} {billingStatus} ]
+        </p>
+        <div className="mt-4">
+          <GlowButton
+            href="/billing"
+            variant={hasActivePlan ? "secondary" : "ink"}
+            size="md"
+          >
+            <CreditCard className="h-4 w-4" />
+            {hasActivePlan ? "Manage billing" : "Subscribe"}
+          </GlowButton>
+        </div>
+
+        <div className="mt-7 border-t border-line pt-6">
+          <p className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-fg-subtle">
+            <Receipt className="h-3.5 w-3.5" />
+            Billing history
           </p>
+          <div className="mt-4">
+            <BillingHistory items={history} />
+          </div>
+        </div>
+      </Section>
 
-          {saved === "grade" && (
-            <p className="mt-4 flex items-center gap-2 rounded-xl border border-tint/15 bg-tint/[0.04] px-4 py-3 text-[0.82rem] text-fg">
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-              Level updated.
-            </p>
-          )}
-          {error === "invalid-grade" && (
-            <p className="mt-4 rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.82rem] text-fg-muted">
-              Pick a valid level and class/department.
-            </p>
-          )}
-          {error === "grade-locked" && (
-            <p className="mt-4 rounded-xl border border-gold/30 bg-gold/[0.08] px-4 py-3 text-[0.82rem] text-fg">
-              You changed your level recently. You can change it again
-              {nextChangeDate ? ` on ${dateFmt(nextChangeDate)}` : " later"}.
-            </p>
-          )}
-
-          {canEditGrade ? (
-            <form
-              action={updateEducationAction}
-              className="mt-5 flex flex-col gap-4"
-            >
-              <div className="flex items-start gap-2.5 rounded-xl border border-gold/30 bg-gold/[0.08] px-4 py-3">
-                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                <p className="text-[0.82rem] leading-relaxed text-fg">
-                  Heads up — once you save, your level is{" "}
-                  <span className="font-medium">locked for 6 months</span>. Your
-                  dashboard samples and recommendations are tailored to it, so
-                  pick the one you&apos;ll actually be studying.
-                </p>
-              </div>
-              <EducationPicker
-                defaultLevel={(profile?.educationLevel ?? "") as EducationLevel | ""}
-                defaultGrade={profile?.educationGrade ?? ""}
-                hideNote
-              />
-              <ConfirmSaveButton
-                message="Your level can only be changed once every 6 months. Save this choice now?"
-                className="self-start"
-              >
-                Save level
-              </ConfirmSaveButton>
-            </form>
-          ) : (
-            <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-line bg-tint/[0.02] px-4 py-3.5">
-              <Lock className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" />
-              <p className="text-[0.82rem] leading-relaxed text-fg-muted">
-                Your level is locked until{" "}
-                <span className="font-medium text-fg">
-                  {dateFmt(nextChangeDate)}
-                </span>
-                . This keeps papers and samples consistent with what you study.
-              </p>
-            </div>
-          )}
-        </GlassCard>
-      </Reveal>
-
-      <Reveal>
-        <GlassCard
-          className={cn(
-            "relative mt-3 overflow-hidden p-7",
-            hasActivePlan && "ring-1 ring-accent/30",
-          )}
-        >
-          {hasActivePlan && (
-            <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-accent/15 blur-3xl" />
-          )}
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-lg font-semibold tracking-tight">
-                  Plan &amp; billing
-                </h2>
-                {/* The headline answer: active or not, with a live pulse dot
-                    when it's active so it reads as "on" at a glance. */}
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.16em] ring-1",
-                    hasActivePlan
-                      ? "bg-accent/15 text-accent ring-accent/35"
-                      : "bg-tint/[0.04] text-fg-subtle ring-line",
-                  )}
-                >
-                  {hasActivePlan ? (
-                    <span className="relative grid h-1.5 w-1.5 place-items-center">
-                      <span className="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-full bg-accent/60" />
-                      <span className="inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
-                    </span>
-                  ) : null}
-                  {hasActivePlan ? "Active" : "No active plan"}
-                </span>
-              </div>
-              <p className="mt-2 text-[0.86rem] text-fg-muted">
-                {hasActivePlan ? (
-                  <>
-                    You&apos;re on the{" "}
-                    <span className="font-medium text-fg">{planName}</span>{" "}
-                    plan
-                    {subscription?.status === "cancelled" && endsAt
-                      ? ` — cancelled, access until ${dateFmt(endsAt)}`
-                      : renewsAt
-                        ? ` — renews ${dateFmt(renewsAt)}`
-                        : "."}
-                  </>
-                ) : (
-                  "You don't have an active subscription. Subscribe to unlock generation."
-                )}
-              </p>
-            </div>
-            <GlowButton
-              href="/billing"
-              variant={hasActivePlan ? "secondary" : "primary"}
-              size="md"
-              className="shrink-0"
-            >
-              <CreditCard className="h-4 w-4" />
-              {hasActivePlan ? "Manage billing" : "Subscribe"}
+      {/* SECTION 04 — ACCOUNT */}
+      <Section index="04" title="Account">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[0.84rem] text-fg-muted">Sign out of this device.</p>
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/" });
+            }}
+          >
+            <GlowButton type="submit" variant="secondary" size="md">
+              <LogOut className="h-4 w-4" />
+              Sign out
             </GlowButton>
-          </div>
+          </form>
+        </div>
 
-          {/* Billing history — the receipt/event ledger. */}
-          <div className="relative mt-7 border-t border-line pt-6">
-            <p className="flex items-center gap-2 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-fg-subtle">
-              <Receipt className="h-3.5 w-3.5" />
-              Billing history
-            </p>
-            <div className="mt-4">
-              <BillingHistory items={history} />
-            </div>
+        <div className="mt-7 border-t border-gold/25 pt-6">
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-gold">
+            [ Danger zone // irreversible ]
+          </p>
+          <p className="mt-2 max-w-xl text-[0.84rem] leading-relaxed text-fg-muted">
+            Permanently delete your account and everything in it. We do not keep
+            a copy — there is no undo.
+          </p>
+          <div className="mt-4">
+            <DeleteAccountDialog
+              action={deleteAccountAction}
+              showConfirmError={error === "delete-confirm"}
+            />
           </div>
-        </GlassCard>
-      </Reveal>
-
-      {/* Account actions — sign-out and the destructive delete live in one
-          card. Delete is fenced into its own "Danger zone" sub-section and
-          gated behind a themed confirmation modal so a stray click can never
-          wipe a paying user's account. */}
-      <Reveal>
-        <GlassCard className="mt-3 p-7">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight">Account</h2>
-              <p className="mt-1 text-[0.84rem] text-fg-muted">
-                Sign out of this device.
-              </p>
-            </div>
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
-            >
-              <GlowButton type="submit" variant="secondary" size="md">
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </GlowButton>
-            </form>
-          </div>
-
-          <div className="mt-7 border-t border-gold/20 pt-6">
-            <h3 className="text-base font-semibold tracking-tight text-gold">
-              Danger zone
-            </h3>
-            <p className="mt-1 max-w-xl text-[0.84rem] leading-relaxed text-fg-muted">
-              Permanently delete your account and everything in it. We do not
-              keep a copy — there is no undo.
-            </p>
-            <div className="mt-4">
-              <DeleteAccountDialog
-                action={deleteAccountAction}
-                showConfirmError={error === "delete-confirm"}
-              />
-            </div>
-          </div>
-        </GlassCard>
-      </Reveal>
+        </div>
+      </Section>
     </div>
+  );
+}
+
+/**
+ * A flat administrative section — no card, just a mono index header and content
+ * laid on the page, closed by a continuous hairline divider.
+ */
+function Section({
+  index,
+  title,
+  note,
+  children,
+}: {
+  index: string;
+  title: string;
+  note?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Reveal>
+      <section className="border-b border-line py-8">
+        <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-fg-subtle">
+          [ Section {index} {"//"} {title} ]
+        </p>
+        {note && (
+          <p className="mt-1.5 max-w-xl text-[0.84rem] leading-relaxed text-fg-muted">
+            {note}
+          </p>
+        )}
+        <div className="mt-6">{children}</div>
+      </section>
+    </Reveal>
+  );
+}
+
+/**
+ * Two-column ledger field: a mono [ REF // LABEL ] on the left, a minimalist
+ * underline-only input on the right. No pill, no embedded icon.
+ */
+function LedgerField({
+  refLabel,
+  name,
+  defaultValue,
+  placeholder,
+  required = false,
+}: {
+  refLabel: string;
+  name: string;
+  defaultValue: string;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-1.5 border-b border-line py-5 sm:grid-cols-[13rem_1fr] sm:items-center sm:gap-6">
+      <label
+        htmlFor={name}
+        className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-fg-subtle"
+      >
+        [ REF {"//"} {refLabel} ]
+      </label>
+      <input
+        id={name}
+        name={name}
+        type="text"
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        required={required}
+        className="w-full rounded-none border-b border-line-strong bg-transparent px-0 py-2 text-[0.95rem] text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-fg"
+      />
+    </div>
+  );
+}
+
+function LedgerReadonly({
+  refLabel,
+  value,
+  note,
+}: {
+  refLabel: string;
+  value: string;
+  note?: string;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-1.5 border-b border-line py-5 sm:grid-cols-[13rem_1fr] sm:items-center sm:gap-6">
+      <span className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-fg-subtle">
+        [ REF {"//"} {refLabel} ]
+      </span>
+      <div className="border-b border-line py-2">
+        <p className="text-[0.95rem] text-fg-muted">{value}</p>
+        {note && (
+          <p className="mt-0.5 font-mono text-[0.54rem] uppercase tracking-[0.16em] text-fg-subtle">
+            {note}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SavedNote({ children }: { children: ReactNode }) {
+  return (
+    <p className="mb-5 flex items-center gap-2 border border-accent/30 bg-accent/[0.06] px-4 py-2.5 text-[0.82rem] text-fg">
+      <CheckCircle2 className="h-4 w-4 shrink-0 text-accent" />
+      {children}
+    </p>
+  );
+}
+
+function ErrorNote({
+  children,
+  tone = "neutral",
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "gold";
+}) {
+  return (
+    <p
+      className={cn(
+        "mb-5 border px-4 py-2.5 text-[0.82rem]",
+        tone === "gold"
+          ? "border-gold/30 bg-gold/[0.06] text-fg"
+          : "border-line bg-card-hi/50 text-fg-muted",
+      )}
+    >
+      {children}
+    </p>
   );
 }
