@@ -50,9 +50,11 @@ export function Hero({ signedIn = false }: { signedIn?: boolean }) {
               Practice on papers that feel like{" "}
               <span className="relative whitespace-nowrap text-accent">
                 the real exam
+                {/* Crisp pen-rule underline — solid indigo, no rounding, no
+                    fade. Reads as a deliberate editorial mark, not a glow. */}
                 <span
                   aria-hidden
-                  className="absolute inset-x-0 -bottom-1.5 h-[0.12em] rounded-full bg-accent/35"
+                  className="absolute inset-x-0 -bottom-1 h-[3px] bg-accent"
                 />
               </span>
               .
@@ -85,7 +87,7 @@ export function Hero({ signedIn = false }: { signedIn?: boolean }) {
                 Plain facts, divider-separated, reading like a spec line. */}
             <motion.ul
               variants={fadeUp}
-              className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-5 text-[0.82rem] text-fg-muted"
+              className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-5 font-mono text-[0.72rem] uppercase tracking-[0.14em] text-fg-muted"
             >
               {capabilities.map((item, i) => (
                 <li key={item} className="flex items-center gap-5">

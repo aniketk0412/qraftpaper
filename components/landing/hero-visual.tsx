@@ -52,6 +52,36 @@ const stages = [
   "Finalising paper",
 ];
 
+// Small flat-plate caption chip used for the two annotations pinned to the
+// preview. Editorial: solid panel, hairline rule, no float, no drop shadow.
+function FloatChip({
+  icon: Icon,
+  title,
+  meta,
+  className,
+}: {
+  icon: typeof ShieldCheck;
+  title: string;
+  meta: string;
+  className: string;
+}) {
+  return (
+    <div className={`absolute z-20 hidden sm:block ${className}`}>
+      <div className="flex items-center gap-2 border border-line-strong bg-panel px-3 py-2">
+        <span className="grid h-7 w-7 place-items-center border border-line bg-canvas text-fg">
+          <Icon className="h-4 w-4" />
+        </span>
+        <div className="leading-tight">
+          <p className="text-[0.72rem] font-medium">{title}</p>
+          <p className="font-mono text-[0.6rem] uppercase tracking-wider text-fg-subtle">
+            {meta}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function HeroVisual() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { margin: "-10% 0px" });
@@ -69,62 +99,28 @@ export function HeroVisual() {
 
   return (
     <div ref={ref} className="relative">
-      <div className="absolute -inset-10 -z-10 rounded-full bg-violet/12 blur-[100px]" />
+      {/* Static annotation plates — no bobbing. */}
+      <FloatChip
+        icon={ShieldCheck}
+        title="Difficulty balanced"
+        meta="Bloom's verified"
+        className="-right-3 top-10"
+      />
+      <FloatChip
+        icon={Gauge}
+        title="Weightage matched"
+        meta="Match report ready"
+        className="-left-5 bottom-16"
+      />
 
-      <motion.div
-        // Only run the bobbing animation while the hero is on screen — keeps
-        // the rest of the page at 60fps when this is scrolled out of view.
-        animate={inView ? { y: [0, -12, 0] } : { y: 0 }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -right-3 top-10 z-20 hidden sm:block"
-      >
-        <div className="flex items-center gap-2 rounded-xl glass-strong px-3 py-2 shadow-xl">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-tint/[0.06] text-fg ring-1 ring-line">
-            <ShieldCheck className="h-4 w-4" />
-          </span>
-          <div className="leading-tight">
-            <p className="text-[0.72rem] font-medium">Difficulty balanced</p>
-            <p className="font-mono text-[0.6rem] uppercase tracking-wider text-fg-subtle">
-              {"Bloom's verified"}
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        animate={inView ? { y: [0, 13, 0] } : { y: 0 }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-        className="absolute -left-5 bottom-16 z-20 hidden sm:block"
-      >
-        <div className="flex items-center gap-2 rounded-xl glass-strong px-3 py-2 shadow-xl">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-tint/[0.06] text-fg ring-1 ring-line">
-            <Gauge className="h-4 w-4" />
-          </span>
-          <div className="leading-tight">
-            <p className="text-[0.72rem] font-medium">Weightage matched</p>
-            <p className="font-mono text-[0.6rem] uppercase tracking-wider text-fg-subtle">
-              Match report ready
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      <div className="relative overflow-hidden rounded-2xl glass-strong p-1.5 shadow-2xl">
-        {/* Only render the heavy scan-line gradient sweep when the hero is in
-            view — it repaints a 96px tall layer at 60fps and is the single
-            biggest cause of jank on lower-end devices when scrolling. */}
-        {inView && (
-          <motion.div
-            animate={{ y: ["-8%", "108%"] }}
-            transition={{ duration: 3.4, repeat: Infinity, ease: "linear" }}
-            className="pointer-events-none absolute inset-x-0 z-10 h-24 bg-gradient-to-b from-transparent via-violet/12 to-transparent"
-          />
-        )}
-
-        <div className="rounded-[0.85rem] bg-canvas p-5">
+      {/* The credibility anchor — a generated paper as a framed printing plate:
+          a thin ruled border around a paper sheet, no glass, no glow, no soft
+          drop shadow. The offset shadow gives it a single crisp lift. */}
+      <div className="relative border border-ink bg-panel p-1.5 shadow-[var(--shadow-press)]">
+        <div className="bg-canvas p-5">
           <div className="flex items-center justify-between border-b border-line pb-4">
             <div className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent">
+              <span className="grid h-9 w-9 place-items-center bg-accent">
                 <FileCheck2 className="h-[18px] w-[18px] text-on-accent" />
               </span>
               <div className="leading-tight">
@@ -134,8 +130,8 @@ export function HeroVisual() {
                 </p>
               </div>
             </div>
-            <span className="flex items-center gap-1.5 rounded-full border border-violet/30 bg-violet/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-violet-bright">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-bright" />
+            <span className="flex items-center gap-1.5 border border-violet/30 bg-violet/10 px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-wider text-violet-bright">
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-bright" />
               Generating
             </span>
           </div>
@@ -151,13 +147,13 @@ export function HeroVisual() {
                     opacity: state === "pending" ? 0.32 : 1,
                   }}
                   transition={{ duration: 0.4 }}
-                  className="flex gap-3 rounded-xl border border-line bg-tint/[0.015] p-3"
+                  className="flex gap-3 border border-line bg-card-hi p-3"
                 >
                   <span
-                    className={`grid h-7 w-7 shrink-0 place-items-center rounded-md font-mono text-[0.62rem] ${
+                    className={`grid h-7 w-7 shrink-0 place-items-center font-mono text-[0.62rem] ${
                       state === "done"
                         ? "bg-violet/20 text-violet-bright"
-                        : "bg-tint/5 text-fg-subtle"
+                        : "bg-canvas text-fg-subtle"
                     }`}
                   >
                     {state === "done" ? (
@@ -174,18 +170,14 @@ export function HeroVisual() {
                     ) : (
                       <div className="flex flex-col gap-1.5 py-0.5">
                         <div
-                          className={`h-2 rounded-full ${
-                            state === "active"
-                              ? "animate-shimmer bg-violet/40"
-                              : "bg-tint/8"
+                          className={`h-2 ${
+                            state === "active" ? "bg-violet/40" : "bg-line-strong"
                           }`}
                           style={{ width: "92%" }}
                         />
                         <div
-                          className={`h-2 rounded-full ${
-                            state === "active"
-                              ? "animate-shimmer bg-violet/40"
-                              : "bg-tint/8"
+                          className={`h-2 ${
+                            state === "active" ? "bg-violet/40" : "bg-line-strong"
                           }`}
                           style={{ width: "64%" }}
                         />
@@ -193,7 +185,7 @@ export function HeroVisual() {
                     )}
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
-                    <span className="rounded-md bg-tint/5 px-1.5 py-0.5 font-mono text-[0.58rem] text-fg-muted">
+                    <span className="bg-canvas px-1.5 py-0.5 font-mono text-[0.58rem] text-fg-muted">
                       {row.marks} m
                     </span>
                     <span className="font-mono text-[0.55rem] uppercase tracking-wider text-fg-subtle">
@@ -212,11 +204,11 @@ export function HeroVisual() {
               </span>
               <span className="text-violet-bright">{pct}%</span>
             </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-tint/5">
+            <div className="mt-2 h-1.5 overflow-hidden bg-line-strong/60">
               <motion.div
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.8, ease: easeOut }}
-                className="h-full rounded-full bg-gradient-to-r from-violet to-violet-bright"
+                className="h-full bg-accent"
               />
             </div>
           </div>

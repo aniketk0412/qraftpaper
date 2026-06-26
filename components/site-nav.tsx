@@ -374,11 +374,11 @@ function Panel({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl glass-strong p-2 shadow-2xl",
+        "relative overflow-hidden glass-strong p-2 shadow-[0_18px_44px_-28px_rgba(26,23,20,0.5)]",
         className,
       )}
     >
-      <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-tint/25 to-transparent" />
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-line-strong" />
       {children}
     </div>
   );
