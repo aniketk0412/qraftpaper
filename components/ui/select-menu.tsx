@@ -66,10 +66,10 @@ export function SelectMenu({
         aria-controls={listId}
         aria-label={ariaLabel}
         className={cn(
-          "flex h-11 w-full items-center justify-between gap-2 rounded-xl border bg-canvas px-3.5 text-sm transition-all duration-200",
+          "flex h-11 w-full items-center justify-between gap-2 rounded-none border bg-transparent px-3.5 text-sm transition-colors",
           open
-            ? "border-violet/50 ring-2 ring-violet/20"
-            : "border-line hover:border-line-strong",
+            ? "border-accent"
+            : "border-line-strong hover:border-fg",
         )}
       >
         <span className={cn("truncate", selected ? "text-fg" : "text-fg-subtle")}>
@@ -93,7 +93,7 @@ export function SelectMenu({
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.16, ease: easeOut }}
             data-lenis-prevent
-            className="absolute left-0 right-0 top-full z-50 mt-2 max-h-64 overflow-y-auto overscroll-contain rounded-xl border border-line-strong bg-card-hi/80 p-1.5 shadow-2xl backdrop-blur-2xl"
+            className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-64 overflow-y-auto overscroll-contain rounded-none border border-line-strong bg-panel p-1 shadow-[0_10px_28px_-14px_rgba(26,23,20,0.45)]"
           >
             {isEmpty ? (
               <div className="px-3 py-4 text-center">
@@ -120,10 +120,10 @@ export function SelectMenu({
                       setOpen(false);
                     }}
                     className={cn(
-                      "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[0.84rem] transition-colors",
+                      "flex w-full items-center gap-2.5 rounded-none px-2.5 py-2 text-left text-[0.84rem] transition-colors",
                       active
-                        ? "bg-tint/[0.06] text-fg"
-                        : "text-fg-muted hover:bg-tint/[0.04] hover:text-fg",
+                        ? "bg-accent/10 text-fg"
+                        : "text-fg-muted hover:bg-card-hi hover:text-fg",
                     )}
                   >
                     <span className="min-w-0 flex-1">

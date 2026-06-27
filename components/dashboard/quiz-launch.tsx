@@ -113,7 +113,11 @@ export function QuizLaunch({ subjects }: { subjects: DashboardSubject[] }) {
         your own material — graded the moment you finish.
       </p>
 
-      <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
+      {/* One unified intensity matrix — a single bordered panel divided by
+          crisp internal rules (divide-y stacked on mobile, divide-x as 3
+          columns on desktop). The selected cell inverts to flat ink-indigo
+          rather than lifting on a shadow. */}
+      <div className="mt-5 grid grid-cols-1 divide-y divide-line border border-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {MODES.map((m) => {
           const active = m.id === modeId;
           return (
@@ -123,29 +127,35 @@ export function QuizLaunch({ subjects }: { subjects: DashboardSubject[] }) {
               onClick={() => setModeId(m.id)}
               aria-pressed={active}
               className={cn(
-                "flex flex-col gap-2 rounded-[2px] border p-3.5 text-left transition-colors duration-150",
+                "flex flex-col gap-2 p-3.5 text-left transition-colors",
                 active
-                  ? "border-accent bg-accent/[0.08]"
-                  : "border-line bg-card-hi/50 hover:border-line-strong hover:bg-card-hi",
+                  ? "bg-accent text-on-accent"
+                  : "bg-transparent hover:bg-card-hi",
               )}
             >
-              <span
+              <m.icon
                 className={cn(
-                  "grid h-9 w-9 place-items-center rounded-[2px] border transition-colors",
-                  active
-                    ? "border-accent/40 bg-accent/15 text-accent"
-                    : "border-line bg-canvas text-fg-muted",
+                  "h-[18px] w-[18px]",
+                  active ? "text-on-accent" : "text-fg-muted",
                 )}
-              >
-                <m.icon className="h-[18px] w-[18px]" />
-              </span>
-              <span className="flex items-center gap-2">
+              />
+              <span className="flex flex-col">
                 <span className="text-[0.92rem] font-semibold">{m.label}</span>
-                <span className="font-mono text-[0.6rem] uppercase tracking-wider text-fg-subtle">
+                <span
+                  className={cn(
+                    "mt-0.5 font-mono text-[0.58rem] uppercase tracking-wider",
+                    active ? "text-on-accent/75" : "text-fg-subtle",
+                  )}
+                >
                   {m.questionCount} Q · {m.durationMins} min
                 </span>
               </span>
-              <span className="text-[0.76rem] leading-snug text-fg-muted">
+              <span
+                className={cn(
+                  "text-[0.74rem] leading-snug",
+                  active ? "text-on-accent/85" : "text-fg-muted",
+                )}
+              >
                 {m.tagline}
               </span>
             </button>

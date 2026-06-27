@@ -51,7 +51,11 @@ export function AchievementsShelf({
         </span>
       }
     >
-      <div className="grid grid-cols-4 gap-2">
+      {/* Flat line-drawn badge matrix — the 8 slots are bare icons nested in a
+          ruled plate-grid table, no rounded blocks or grey circles. Earned
+          badges ink in (exam-marker), locked ones sit as faint thin-line
+          vectors. */}
+      <div className="plate-grid grid grid-cols-4">
         {achievements.map((a) => {
           const Icon = ICONS[a.key] ?? Award;
           return (
@@ -66,13 +70,11 @@ export function AchievementsShelf({
                 a.earned ? "Unlocked" : `${a.current} of ${a.goal}`
               }`}
               className={cn(
-                "grid aspect-square place-items-center rounded-[2px] border transition-colors",
-                a.earned
-                  ? "border-gold/40 bg-gold/10 text-gold"
-                  : "border-line bg-card-hi text-fg-subtle",
+                "grid aspect-square place-items-center transition-colors",
+                a.earned ? "text-gold" : "text-fg-subtle/50",
               )}
             >
-              <Icon className="h-[18px] w-[18px]" />
+              <Icon className="h-[18px] w-[18px]" strokeWidth={a.earned ? 2 : 1.5} />
             </div>
           );
         })}
