@@ -12,6 +12,7 @@ import {
 import { sql } from "drizzle-orm";
 
 import type { QuestionPaper, Quiz, SubjectProfile } from "@/lib/types";
+import type { BlueprintConfig } from "@/lib/blueprints";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -166,6 +167,34 @@ export const subjects = pgTable("subjects", {
     sql`lower(${table.code})`,
   ),
 ]);
+
+/**
+ * Reusable exam blueprints — the structure half of a generation (marks,
+ * duration, sections, difficulty mix). Promoted out of browser localStorage so
+ * a user's custom blueprints follow their account across devices. The built-in
+ * STARTER_BLUEPRINTS stay in code (lib/blueprints.ts); only user-authored
+ * blueprints live here. The whole structure is one JSON document, mirroring
+ * papers.content. FK to users with ON DELETE CASCADE so a deleted account takes
+ * its blueprints with it (consistent with subjects/papers/quizzes).
+ */
+export const blueprints = pgTable(
+  "blueprints",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    config: jsonb("config").$type<BlueprintConfig>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    // The only read: "this user's custom blueprints, newest first".
+    index("blueprints_user_created_idx").on(table.userId, table.createdAt),
+  ],
+);
 
 /**
  * One row per user per UTC day they did something meaningful (generated a
