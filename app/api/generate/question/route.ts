@@ -9,10 +9,10 @@ import { generationJobs, papers, subjects } from "@/lib/db/schema";
 import { loadEffectivePlan } from "@/lib/billing/trial";
 import { normalizeUuid } from "@/lib/ids";
 import {
-  assertCanGenerate,
   assertWithinRateLimit,
-  incrementGenerationUsage,
   RateLimitError,
+  refundGeneration,
+  reserveGeneration,
   UsageLimitError,
 } from "@/lib/usage";
 
@@ -87,7 +87,9 @@ export async function POST(request: Request) {
   try {
     // No email-verification gate — see /api/generate/paper for rationale.
     await assertWithinRateLimit(session.user.id);
-    await assertCanGenerate(session.user.id, plan);
+    // Reserve LAST so a failed rate-limit check never consumes the allowance;
+    // refunded below if regeneration fails.
+    await reserveGeneration(session.user.id, plan);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return NextResponse.json({ error: error.message }, { status: 429 });
@@ -136,14 +138,13 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
+    await refundGeneration(session.user.id);
     captureException(error, { scope: "generate:question", userId: session.user.id });
     return NextResponse.json(
       { error: "Question regeneration failed. Please try again." },
       { status: 502 },
     );
   }
-
-  await incrementGenerationUsage(session.user.id);
 
   if (job) {
     await getDb()

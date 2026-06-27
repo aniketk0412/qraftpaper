@@ -18,11 +18,11 @@ import { getDb } from "@/lib/db";
 import { generationJobs, quizzes, subjects } from "@/lib/db/schema";
 import { loadEffectivePlan } from "@/lib/billing/trial";
 import {
-  assertCanGenerate,
   assertSubjectQuizLimit,
   assertWithinRateLimit,
-  incrementGenerationUsage,
   RateLimitError,
+  refundGeneration,
+  reserveGeneration,
   UsageLimitError,
 } from "@/lib/usage";
 import { recordStudyActivity } from "@/lib/streaks";
@@ -96,8 +96,10 @@ export async function POST(request: Request) {
   try {
     // No email-verification gate — see /api/generate/paper for rationale.
     await assertWithinRateLimit(session.user.id);
-    await assertCanGenerate(session.user.id, plan);
     await assertSubjectQuizLimit(session.user.id, subjectId, plan);
+    // Reserve LAST — only once the non-consuming guards pass — and refund on
+    // any failure below so a failed generation never burns the allowance.
+    await reserveGeneration(session.user.id, plan);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return NextResponse.json({ error: error.message }, { status: 429 });
@@ -181,6 +183,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
+    await refundGeneration(session.user.id);
     captureException(error, { scope: "generate:quiz", userId: session.user.id });
     if (isAiServiceUnavailable(error)) {
       return NextResponse.json({ error: AI_UNAVAILABLE_MESSAGE }, { status: 503 });
@@ -218,6 +221,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
+    await refundGeneration(session.user.id);
     return NextResponse.json(
       { error: "Quiz generation returned invalid content. Please try again." },
       { status: 502 },
@@ -235,7 +239,6 @@ export async function POST(request: Request) {
     })
     .returning();
 
-  await incrementGenerationUsage(session.user.id);
   await recordStudyActivity(session.user.id);
 
   if (job && created) {
