@@ -286,10 +286,13 @@ function NavGroup({
             key={item.label}
             href={item.href}
             className={cn(
-              "group flex items-center gap-3 rounded-xl px-3 py-2.5 font-mono text-xs uppercase tracking-wider transition-all duration-200",
+              // Razor-sharp flat block: square corners, a transparent border
+              // baseline (so the active accent boundary never shifts the row),
+              // mono uppercase label. No rounded capsule, no ring.
+              "group flex items-center gap-3 rounded-none border border-transparent px-3 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider transition-colors",
               active
-                ? "bg-accent/15 text-fg ring-1 ring-accent/30"
-                : "text-fg-muted hover:bg-tint/[0.04] hover:text-fg",
+                ? "border-accent/40 bg-accent/12 text-fg"
+                : "text-fg-muted hover:bg-card-hi hover:text-fg",
             )}
           >
             <item.icon

@@ -67,8 +67,11 @@ export function UserMenu({ user }: { user: DashboardUser }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "grid h-10 w-10 place-items-center rounded-[2px] border bg-card-hi font-mono text-[0.78rem] font-semibold tracking-wide text-fg transition-colors",
-          open ? "border-accent/50" : "border-line hover:border-line-strong",
+          // Editor's initials stamp: square frame, thin ink boundary, bold
+          // mono initials. Height pinned to h-10 to align with the other
+          // topbar controls (the spec's px-2/py-1 alone would sit undersized).
+          "inline-flex h-10 items-center justify-center rounded-none border bg-panel px-2.5 font-mono text-xs font-bold text-fg transition-colors",
+          open ? "border-accent" : "border-line-strong hover:border-fg",
         )}
         aria-label="Account menu"
         aria-haspopup="menu"
@@ -92,10 +95,10 @@ export function UserMenu({ user }: { user: DashboardUser }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.2, ease: easeOut }}
-            className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-line-strong bg-card-hi/80 shadow-2xl backdrop-blur-2xl"
+            className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-none border border-line-strong bg-panel shadow-[0_12px_32px_-16px_rgba(26,23,20,0.5)]"
           >
             <div className="flex items-center gap-3 border-b border-line px-4 py-3.5">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[2px] border border-line bg-card-hi font-mono text-xs font-medium text-fg">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-none border border-line-strong bg-panel font-mono text-xs font-bold text-fg">
                 {user.initials}
               </span>
               <div className="min-w-0">
@@ -114,7 +117,7 @@ export function UserMenu({ user }: { user: DashboardUser }) {
                   key={item.label}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-[0.84rem] text-fg-muted transition-colors hover:bg-tint/[0.04] hover:text-fg"
+                  className="flex items-center gap-3 rounded-none px-2.5 py-2.5 text-[0.84rem] text-fg-muted transition-colors hover:bg-card-hi hover:text-fg"
                 >
                   <item.icon className="h-[18px] w-[18px] text-fg-subtle" />
                   {item.label}
@@ -129,7 +132,7 @@ export function UserMenu({ user }: { user: DashboardUser }) {
                   setOpen(false);
                   void signOut({ redirectTo: "/" });
                 }}
-                className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-[0.84rem] text-fg-muted transition-colors hover:bg-tint/[0.04] hover:text-fg"
+                className="flex w-full items-center gap-3 rounded-none px-2.5 py-2.5 text-[0.84rem] text-fg-muted transition-colors hover:bg-card-hi hover:text-fg"
               >
                 <LogOut className="h-[18px] w-[18px] text-fg-subtle" />
                 Sign out
