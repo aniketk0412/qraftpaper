@@ -217,7 +217,7 @@ export default async function SettingsPage({
             </ConfirmSaveButton>
           </form>
         ) : (
-          <div className="flex items-start gap-2.5 border border-line bg-card-hi/50 px-4 py-3.5">
+          <div className="flex items-start gap-2.5 rounded-none border border-line bg-card-hi px-4 py-3.5">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 text-fg-subtle" />
             <p className="text-[0.82rem] leading-relaxed text-fg-muted">
               Your level is locked until{" "}

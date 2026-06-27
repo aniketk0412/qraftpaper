@@ -70,10 +70,8 @@ function formatWhen(date: Date | null): string {
 export function BillingHistory({ items }: { items: BillingHistoryItem[] }) {
   if (items.length === 0) {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-line bg-tint/[0.02] px-4 py-5">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-tint/[0.04] text-fg-subtle ring-1 ring-line">
-          <Receipt className="h-4 w-4" />
-        </span>
+      <div className="flex items-center gap-3 rounded-none border border-dashed border-line-strong bg-transparent px-4 py-5">
+        <Receipt className="h-4 w-4 shrink-0 text-fg-subtle" />
         <p className="text-[0.84rem] text-fg-muted">
           No billing events yet. Once you subscribe, every payment, renewal and
           change shows up here.
