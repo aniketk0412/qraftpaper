@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, sql, type InferSelectModel } from "drizzle-orm";
 import { updateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -6,6 +6,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { trackEvent } from "@/lib/analytics";
 import { getDb } from "@/lib/db";
+import { isUniqueViolation } from "@/lib/db/errors";
 import { subjects } from "@/lib/db/schema";
 import { loadEffectivePlan } from "@/lib/billing/trial";
 import { listUserSubjects, subjectsTagFor } from "@/lib/subjects";
@@ -78,15 +79,27 @@ export async function POST(request: Request) {
 
   if (duplicate) return conflict("A subject with this code already exists");
 
-  const [subject] = await getDb()
-    .insert(subjects)
-    .values({
-      name,
-      code,
-      userId: session.user.id,
-    })
-    .returning();
+  let rows: InferSelectModel<typeof subjects>[];
+  try {
+    rows = await getDb()
+      .insert(subjects)
+      .values({
+        name,
+        code,
+        userId: session.user.id,
+      })
+      .returning();
+  } catch (error) {
+    // A concurrent create with the same code can slip past the check above and
+    // trip the (user_id, lower(code)) unique index. Return a clean 409 for that
+    // race instead of letting it surface as a 500.
+    if (isUniqueViolation(error)) {
+      return conflict("A subject with this code already exists");
+    }
+    throw error;
+  }
 
+  const [subject] = rows;
   if (!subject) return serverError("Unable to create subject");
 
   const [ownedSubject] = await getDb()

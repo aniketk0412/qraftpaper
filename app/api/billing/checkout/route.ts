@@ -8,6 +8,7 @@ import {
 } from "@/lib/billing/lemonsqueezy";
 import { isTrialEligible } from "@/lib/billing/trial";
 import { captureException } from "@/lib/observability";
+import { isEmailVerified } from "@/lib/verification";
 
 export const runtime = "nodejs";
 
@@ -25,6 +26,20 @@ export async function POST(request: Request) {
           "Billing is not configured yet. Add the Lemon Squeezy env vars to enable checkout.",
       },
       { status: 503 },
+    );
+  }
+
+  // Require a confirmed email before any money changes hands — stops disposable/
+  // unverified signups from buying the $1 pass and makes the trial harder to
+  // farm. Read fresh from the DB (not the JWT) so a just-verified user isn't
+  // wrongly blocked.
+  if (!(await isEmailVerified(session.user.id))) {
+    return NextResponse.json(
+      {
+        error:
+          "Please verify your email first — check your inbox for the link, then try again.",
+      },
+      { status: 403 },
     );
   }
 

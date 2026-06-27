@@ -22,7 +22,7 @@ export default async function ForgotPasswordPage({
   const didSend = (Array.isArray(sent) ? sent[0] : sent) === "1";
 
   return (
-    <div>
+    <div className="animate-rise">
       <h1 className="text-2xl font-semibold tracking-tight text-gradient">
         Reset password
       </h1>

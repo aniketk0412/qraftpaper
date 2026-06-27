@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Trash2 } from "lucide-react";
+import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,13 @@ export function DeleteButton({
           Cancel
         </button>
         {error && (
-          <span className="text-[0.74rem] text-fg-muted">{error}</span>
+          <span
+            role="alert"
+            className="inline-flex items-center gap-1 text-[0.74rem] font-medium text-danger"
+          >
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            {error}
+          </span>
         )}
       </span>
     );

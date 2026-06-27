@@ -38,46 +38,69 @@ async function countRows(query: Promise<{ n: number }[]>): Promise<number> {
   return row?.n ?? 0;
 }
 
-/** Monthly generation allowance for the user's plan (the real cost cap). */
-export async function assertCanGenerate(userId: string, plan: string) {
+/**
+ * Atomically claim one generation against the plan's monthly allowance (the
+ * real cost cap). Unlike a read-then-check, the cap is enforced inside a single
+ * conditional upsert, so two concurrent requests can never both slip past the
+ * limit — at most `cap` generations are ever claimed in a month. Throws
+ * UsageLimitError when the allowance is already spent.
+ *
+ * Pair with refundGeneration() to release the slot if the generation ultimately
+ * fails, so a failed attempt doesn't permanently burn the user's allowance.
+ * Call this LAST among the pre-generation gates: the other guards (rate limit,
+ * per-subject caps) don't consume anything, so a reservation must only happen
+ * once every cheaper check has passed.
+ */
+export async function reserveGeneration(userId: string, plan: string) {
   const cap = planLimits(plan).generationsPerMonth;
 
   if (cap === null) {
-    return;
+    return; // unlimited plan — nothing to meter
+  }
+
+  if (cap === 0) {
+    throw new UsageLimitError(
+      "Subscribe to a paid plan before generating papers or quizzes.",
+    );
   }
 
   const month = currentUsageMonth();
-  const [row] = await getDb()
-    .select({ generations: usage.generations })
-    .from(usage)
-    .where(and(eq(usage.userId, userId), eq(usage.month, month)))
-    .limit(1);
 
-  if ((row?.generations ?? 0) >= cap) {
-    if (cap === 0) {
-      throw new UsageLimitError(
-        "Subscribe to a paid plan before generating papers or quizzes.",
-      );
-    }
+  // INSERT the month's first generation (1 <= cap, since cap >= 1 here), or on
+  // conflict bump the counter ONLY while it's still under the cap. When the row
+  // is already at the cap the conditional UPDATE matches nothing and RETURNING
+  // yields no row — that's the "allowance spent" signal, decided atomically by
+  // Postgres instead of by a racy read-then-write.
+  const claimed = await getDb()
+    .insert(usage)
+    .values({ userId, month, generations: 1 })
+    .onConflictDoUpdate({
+      target: [usage.userId, usage.month],
+      set: { generations: sql`${usage.generations} + 1` },
+      setWhere: sql`${usage.generations} < ${cap}`,
+    })
+    .returning({ generations: usage.generations });
 
+  if (claimed.length === 0) {
     throw new UsageLimitError(
       `You've used all ${cap} generations included in your plan this month.`,
     );
   }
 }
 
-export async function incrementGenerationUsage(userId: string) {
+/**
+ * Release a generation slot claimed by reserveGeneration() when the attempt
+ * ultimately failed, so a failed generation never permanently spends the user's
+ * allowance. Floored at zero so a stray double-refund can't drive the counter
+ * negative.
+ */
+export async function refundGeneration(userId: string) {
   const month = currentUsageMonth();
 
   await getDb()
-    .insert(usage)
-    .values({ userId, month, generations: 1 })
-    .onConflictDoUpdate({
-      target: [usage.userId, usage.month],
-      set: {
-        generations: sql`${usage.generations} + 1`,
-      },
-    });
+    .update(usage)
+    .set({ generations: sql`GREATEST(${usage.generations} - 1, 0)` })
+    .where(and(eq(usage.userId, userId), eq(usage.month, month)));
 }
 
 /**

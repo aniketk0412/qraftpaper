@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { auth } from "@/auth";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
+import { GridBackdrop } from "@/components/landing/grid-backdrop";
 
 export async function LegalPage({
   eyebrow,
@@ -18,7 +19,8 @@ export async function LegalPage({
   // "Sign in / Sign up" when a logged-in user lands on /about /privacy /terms.
   const session = await auth();
   return (
-    <>
+    <div className="relative">
+      <GridBackdrop />
       <SiteNav signedIn={Boolean(session?.user)} />
       <main className="mx-auto max-w-3xl px-5 pb-24 pt-32 sm:px-8">
         <p className="font-mono text-[0.7rem] uppercase tracking-[0.24em] text-violet-bright">
@@ -35,7 +37,7 @@ export async function LegalPage({
         <div className="legal-prose mt-10 flex flex-col gap-8">{children}</div>
       </main>
       <SiteFooter />
-    </>
+    </div>
   );
 }
 

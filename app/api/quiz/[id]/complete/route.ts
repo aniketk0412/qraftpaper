@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -5,8 +6,10 @@ import { auth } from "@/auth";
 import { trackEvent } from "@/lib/analytics";
 import { captureException } from "@/lib/observability";
 import { getDb } from "@/lib/db";
-import { quizAttempts } from "@/lib/db/schema";
+import { quizAttempts, quizzes } from "@/lib/db/schema";
 import { isUuid } from "@/lib/ids";
+import { isRateLimited } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/request-ip";
 import { recordStudyActivity } from "@/lib/streaks";
 import { notFound, parseJson } from "@/lib/api-responses";
 
@@ -59,9 +62,32 @@ export async function POST(
   const { id } = await params;
   if (!isUuid(id)) return notFound("Quiz not found");
 
+  // Lightweight per-IP guard so a script can't hammer this PUBLIC endpoint with
+  // fabricated attempts. Tuned generously — a shared study-group / campus IP can
+  // legitimately submit many real attempts in a minute — so the existence check
+  // below is the real integrity gate; this just sheds obvious spam. A null IP
+  // (e.g. local dev with no proxy headers) skips the limit.
+  const ip = getClientIp(request);
+  if (ip && isRateLimited(`quiz-complete:${ip}`, 60, 60_000)) {
+    return NextResponse.json(
+      { error: "Too many submissions. Please slow down and try again." },
+      { status: 429 },
+    );
+  }
+
   const parsed = await parseJson(request, completeQuizSchema);
   if (!parsed.ok) return parsed.response;
   const { score, total, durationSeconds = null } = parsed.data;
+
+  // Only record attempts for a quiz that actually exists. quiz_attempts.quizId
+  // has no FK (attempts are intentionally kept even after a quiz is deleted),
+  // so without this check a caller could insert orphan rows for any UUID.
+  const [quiz] = await getDb()
+    .select({ id: quizzes.id })
+    .from(quizzes)
+    .where(eq(quizzes.id, id))
+    .limit(1);
+  if (!quiz) return notFound("Quiz not found");
 
   const session = await auth();
   const takerUserId = session?.user?.id ?? null;

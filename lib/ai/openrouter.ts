@@ -28,6 +28,14 @@ export function getOpenRouterClient() {
   client ??= new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
     apiKey,
+    // Bound how long any single AI call can hang. The SDK defaults to a ~10-min
+    // timeout with 2 retries, so a slow/stuck OCR, profile build or generation
+    // could leave a synchronous upload/generation request hanging for minutes
+    // before failing. 90s per attempt with one retry fails fast and clean while
+    // still riding out a transient blip. Applies to every call through this
+    // client (extraction, OCR, paper + quiz generation).
+    timeout: 90_000,
+    maxRetries: 1,
     defaultHeaders: {
       "HTTP-Referer": siteUrl,
       "X-Title": "QraftPaper",

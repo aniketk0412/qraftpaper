@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Building2, Lock, Mail, User } from "lucide-react";
+import { ArrowRight, Building2, Mail, User } from "lucide-react";
 import { auth } from "@/auth";
 import { AuthField } from "@/components/auth/auth-field";
+import { PasswordField } from "@/components/auth/password-field";
+import { FormError } from "@/components/ui/form-error";
 import { EducationPicker } from "@/components/auth/education-picker";
 import { Turnstile } from "@/components/auth/turnstile";
 import { GlowButton } from "@/components/ui/glow-button";
@@ -19,6 +21,9 @@ const errorMessages: Record<string, string> = {
   "email-exists": "That email is already registered. Sign in instead.",
   "invalid-fields":
     "Enter all details and use a password with at least 8 characters.",
+  "invalid-email": "Enter a valid email address.",
+  "disposable-email":
+    "Please use a permanent email — temporary or disposable inboxes aren't allowed.",
   "invalid-grade": "Please pick your level and class/department.",
   "too-many": "Too many sign-ups from your network recently. Please try again later.",
   captcha: "Please complete the verification and try again.",
@@ -37,7 +42,7 @@ export default async function SignupPage({
   const errorMessage = errorKey ? errorMessages[errorKey] : undefined;
 
   return (
-    <div>
+    <div className="animate-rise">
       <h1 className="text-2xl font-semibold tracking-tight text-gradient">
         Sign up
       </h1>
@@ -72,21 +77,16 @@ export default async function SignupPage({
           placeholder="Parul University"
         />
         <EducationPicker />
-        <AuthField
+        <PasswordField
           id="password"
           name="password"
           label="Create password"
-          type="password"
-          icon={Lock}
           placeholder="********"
           autoComplete="new-password"
+          showStrength
         />
 
-        {errorMessage && (
-          <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
-            {errorMessage}
-          </p>
-        )}
+        {errorMessage && <FormError>{errorMessage}</FormError>}
 
         <Turnstile />
 

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Lock } from "lucide-react";
-import { AuthField } from "@/components/auth/auth-field";
+import { ArrowRight } from "lucide-react";
+import { PasswordField } from "@/components/auth/password-field";
+import { FormError } from "@/components/ui/form-error";
 import { GlowButton } from "@/components/ui/glow-button";
 import { resetPasswordAction } from "../actions";
 
@@ -29,7 +30,7 @@ export default async function ResetPasswordPage({
   const errorMessage = errorKey ? errorMessages[errorKey] : undefined;
 
   return (
-    <div>
+    <div className="animate-rise">
       <h1 className="text-2xl font-semibold tracking-tight text-gradient">
         Choose a new password
       </h1>
@@ -39,21 +40,16 @@ export default async function ResetPasswordPage({
 
       <form action={resetPasswordAction} className="mt-7 flex flex-col gap-4">
         <input type="hidden" name="token" value={tokenValue ?? ""} />
-        <AuthField
+        <PasswordField
           id="password"
           name="password"
           label="New password"
-          type="password"
-          icon={Lock}
           placeholder="********"
           autoComplete="new-password"
+          showStrength
         />
 
-        {errorMessage && (
-          <p className="rounded-xl border border-line bg-tint/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-fg-muted">
-            {errorMessage}
-          </p>
-        )}
+        {errorMessage && <FormError>{errorMessage}</FormError>}
 
         <GlowButton type="submit" size="lg" className="mt-1 w-full">
           Update password

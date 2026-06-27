@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { trackEvent } from "@/lib/analytics";
 import { captureException } from "@/lib/observability";
+import { AI_UNAVAILABLE_MESSAGE, isAiServiceUnavailable } from "@/lib/ai/errors";
 import { isQuestionPaper } from "@/lib/content-validation";
 import { getDb } from "@/lib/db";
 import { generationJobs, papers, subjects } from "@/lib/db/schema";
@@ -20,12 +21,12 @@ import { normalizePaperConfig } from "@/lib/generation-config";
 import { normalizeUuid } from "@/lib/ids";
 import { getClientIp } from "@/lib/request-ip";
 import {
-  assertCanGenerate,
   assertPaperHourlyLimit,
   assertSubjectPaperLimit,
   assertWithinRateLimit,
-  incrementGenerationUsage,
   RateLimitError,
+  refundGeneration,
+  reserveGeneration,
   UsageLimitError,
 } from "@/lib/usage";
 import { recordStudyActivity } from "@/lib/streaks";
@@ -98,8 +99,10 @@ export async function POST(request: Request) {
     // abuse signals in PostHog.
     await assertWithinRateLimit(session.user.id);
     await assertPaperHourlyLimit(session.user.id, clientIp);
-    await assertCanGenerate(session.user.id, plan);
     await assertSubjectPaperLimit(session.user.id, subjectId, plan);
+    // Reserve LAST — only once the non-consuming guards pass — and refund on
+    // any failure below so a failed generation never burns the allowance.
+    await reserveGeneration(session.user.id, plan);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return NextResponse.json({ error: error.message }, { status: 429 });
@@ -186,7 +189,11 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
+    await refundGeneration(session.user.id);
     captureException(error, { scope: "generate:paper", userId: session.user.id });
+    if (isAiServiceUnavailable(error)) {
+      return NextResponse.json({ error: AI_UNAVAILABLE_MESSAGE }, { status: 503 });
+    }
     return NextResponse.json(
       { error: "Paper generation failed. Please try again." },
       { status: 502 },
@@ -229,6 +236,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
+    await refundGeneration(session.user.id);
     return NextResponse.json(
       { error: "Paper generation returned invalid content. Please try again." },
       { status: 502 },
@@ -247,7 +255,6 @@ export async function POST(request: Request) {
     })
     .returning();
 
-  await incrementGenerationUsage(session.user.id);
   await recordStudyActivity(session.user.id);
 
   if (job && created) {

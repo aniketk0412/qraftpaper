@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { GridBackdrop } from "@/components/landing/grid-backdrop";
 import { GlowButton } from "@/components/ui/glow-button";
 
 /**
@@ -25,7 +26,8 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col overflow-hidden">
+      <GridBackdrop />
       <header className="px-5 py-5 sm:px-8">
         <Logo />
       </header>

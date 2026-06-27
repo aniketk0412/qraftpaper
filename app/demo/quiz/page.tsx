@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Sparkles } from "lucide-react";
 
 import { Logo } from "@/components/logo";
+import { GridBackdrop } from "@/components/landing/grid-backdrop";
 import { GlowButton } from "@/components/ui/glow-button";
 import { DemoQuizClient } from "./demo-client";
 
@@ -22,7 +23,8 @@ export const runtime = "nodejs";
  */
 export default function DemoQuizPage() {
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen overflow-hidden">
+      <GridBackdrop />
       <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-5 py-3.5 sm:px-8">
           <Logo />

@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { and, eq, sql } from "drizzle-orm";
-import { BookOpen, Brain, FilePlus2, ListChecks } from "lucide-react";
+import { BookOpen, Brain, FilePlus2, ListChecks, UploadCloud } from "lucide-react";
 
 import { auth } from "@/auth";
 import { BackLink } from "@/components/dashboard/back-link";
 import { ReadinessRing } from "@/components/dashboard/readiness-ring";
+import { SubjectDocumentsUpload } from "@/components/dashboard/subject-documents-upload";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GlowButton } from "@/components/ui/glow-button";
 import { IconTile } from "@/components/ui/icon-tile";
@@ -168,6 +169,27 @@ export default async function SubjectDetailPage({
             </p>
           </section>
         </Reveal>
+      ) : !subject.profile ? (
+        <Reveal delay={0.1}>
+          <section className="mt-8">
+            <div className="flex items-start gap-3">
+              <IconTile icon={UploadCloud} tone="violet" />
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Add your documents
+                </h2>
+                <p className="mt-1 max-w-xl text-[0.84rem] leading-relaxed text-fg-muted">
+                  Upload the syllabus and a past paper so QraftPaper can build
+                  this subject&apos;s profile — then you can generate papers and
+                  quizzes from it.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <SubjectDocumentsUpload subjectId={subject.id} />
+            </div>
+          </section>
+        </Reveal>
       ) : (
         <Reveal delay={0.1}>
           <GlassCard className="mt-8 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
@@ -175,22 +197,16 @@ export default async function SubjectDetailPage({
               <IconTile icon={ListChecks} tone="violet" />
               <div>
                 <h2 className="text-[0.98rem] font-medium tracking-tight">
-                  {subject.profile
-                    ? "No mastery data yet"
-                    : "Build the subject profile first"}
+                  No mastery data yet
                 </h2>
                 <p className="mt-1 max-w-md text-[0.84rem] leading-relaxed text-fg-muted">
-                  {subject.profile
-                    ? "Take a quiz and the units you miss will start filling in your mastery map."
-                    : "Upload the syllabus and a past paper so we can map this subject's units."}
+                  Take a quiz and the units you miss will start filling in your
+                  mastery map.
                 </p>
               </div>
             </div>
-            <GlowButton
-              href={subject.profile ? "/dashboard" : "/dashboard/subjects/new"}
-              size="sm"
-            >
-              {subject.profile ? "Generate a quiz" : "Add documents"}
+            <GlowButton href="/dashboard" size="sm">
+              Generate a quiz
             </GlowButton>
           </GlassCard>
         </Reveal>

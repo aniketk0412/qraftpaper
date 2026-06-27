@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   RateLimitError,
+  reserveGeneration,
   UsageLimitError,
   currentUsageMonth,
 } from "@/lib/usage";
@@ -35,5 +36,15 @@ describe("usage error hierarchy", () => {
     expect(e).toBeInstanceOf(UsageLimitError);
     expect(e).not.toBeInstanceOf(RateLimitError);
     expect(e.name).toBe("UsageLimitError");
+  });
+});
+
+describe("reserveGeneration", () => {
+  it("blocks an unpaid plan (cap 0) before any DB write", async () => {
+    // cap === 0 short-circuits to a UsageLimitError before getDb() is touched,
+    // so this exercises the gate without a database connection.
+    await expect(reserveGeneration("user-1", "unpaid")).rejects.toBeInstanceOf(
+      UsageLimitError,
+    );
   });
 });

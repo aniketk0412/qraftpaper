@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, eq, isNull } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
-import { emailVerificationTokens } from "@/lib/db/schema";
+import { emailVerificationTokens, users } from "@/lib/db/schema";
 import { sendEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/site";
 
@@ -73,5 +73,20 @@ export async function issueVerificationEmail({
 
 export function hashVerificationToken(token: string) {
   return tokenHash(token);
+}
+
+/**
+ * Whether the user has confirmed their email. Read fresh from the DB at gate
+ * points (e.g. checkout) rather than from the session JWT — a user who verifies
+ * *after* logging in would otherwise stay blocked until their token refreshes
+ * (the same reason loadEffectivePlan reads entitlement from the DB).
+ */
+export async function isEmailVerified(userId: string): Promise<boolean> {
+  const [row] = await getDb()
+    .select({ emailVerifiedAt: users.emailVerifiedAt })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return Boolean(row?.emailVerifiedAt);
 }
 

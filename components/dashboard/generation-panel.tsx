@@ -9,6 +9,7 @@ import { GlowButton } from "@/components/ui/glow-button";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { Panel } from "@/components/dashboard/panel";
 import { GenerationProgress } from "@/components/dashboard/generation-progress";
+import { FormError } from "@/components/ui/form-error";
 import type { DashboardSubject } from "@/lib/subjects";
 
 export function GenerationPanel({
@@ -29,12 +30,14 @@ export function GenerationPanel({
   );
   const [subjectId, setSubjectId] = useState(readySubjects[0]?.id ?? "");
   const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<"paper" | "quiz" | null>(null);
 
   async function generatePaper() {
     if (!subjectId) return;
     setPending("paper");
     setStatus("Generating paper...");
+    setError(null);
 
     const subject = readySubjects.find((item) => item.id === subjectId);
     const response = await fetch("/api/generate/paper", {
@@ -73,14 +76,15 @@ export function GenerationPanel({
       }),
     });
 
-    const body = (await response.json()) as {
+    const body = (await response.json().catch(() => ({}))) as {
       paper?: { id: string };
       error?: string;
     };
 
     if (!response.ok || !body.paper) {
       setPending(null);
-      setStatus(body.error ?? "Unable to generate paper");
+      setStatus(null);
+      setError(body.error ?? "Unable to generate paper");
       return;
     }
 
@@ -91,6 +95,7 @@ export function GenerationPanel({
     if (!subjectId) return;
     setPending("quiz");
     setStatus("Generating quiz...");
+    setError(null);
 
     const response = await fetch("/api/generate/quiz", {
       method: "POST",
@@ -105,14 +110,15 @@ export function GenerationPanel({
       }),
     });
 
-    const body = (await response.json()) as {
+    const body = (await response.json().catch(() => ({}))) as {
       quiz?: { id: string };
       error?: string;
     };
 
     if (!response.ok || !body.quiz) {
       setPending(null);
-      setStatus(body.error ?? "Unable to generate quiz");
+      setStatus(null);
+      setError(body.error ?? "Unable to generate quiz");
       return;
     }
 
@@ -161,14 +167,27 @@ export function GenerationPanel({
               value={subjectId}
               onChange={setSubjectId}
               placeholder="Choose a subject"
-              emptyLabel="No profiled subjects"
+              emptyLabel={
+                subjects.length > 0 ? "No subjects ready yet" : "No subjects yet"
+              }
               emptyHint={
-                <Link
-                  href="/dashboard/subjects/new"
-                  className="text-accent transition-colors hover:text-accent-soft"
-                >
-                  Create a subject to get started
-                </Link>
+                // If they already have subjects, the blocker is missing
+                // documents — point at the subject, not "create another one".
+                subjects.length > 0 ? (
+                  <Link
+                    href="/dashboard/subjects"
+                    className="text-accent transition-colors hover:text-accent-soft"
+                  >
+                    Add documents to a subject to start generating
+                  </Link>
+                ) : (
+                  <Link
+                    href="/dashboard/subjects/new"
+                    className="text-accent transition-colors hover:text-accent-soft"
+                  >
+                    Create a subject to get started
+                  </Link>
+                )
               }
               options={readySubjects.map((subject) => ({
                 value: subject.id,
@@ -202,6 +221,7 @@ export function GenerationPanel({
       </div>
 
       {status && <p className="mt-3 text-[0.78rem] text-fg-subtle">{status}</p>}
+      {error && <FormError className="mt-3">{error}</FormError>}
     </Panel>
     </>
   );

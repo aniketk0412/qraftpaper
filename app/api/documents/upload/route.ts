@@ -11,6 +11,7 @@ import {
   subjects,
 } from "@/lib/db/schema";
 import { buildSubjectProfile, extractPdfText } from "@/lib/ai/extract";
+import { AI_UNAVAILABLE_MESSAGE, isAiServiceUnavailable } from "@/lib/ai/errors";
 import {
   assertWithinRateLimit,
   RateLimitError,
@@ -27,6 +28,27 @@ const MIN_EXTRACTED_CHARS = 200; // below this it isn't real study material
 const MAX_EXTRACTED_CHARS = 60_000; // cap tokens sent to the profile builder
 
 export async function POST(request: Request) {
+  // Any uncaught error (a DB hiccup, the rate-limit re-throw below, a pdf-parse
+  // or OCR edge case) must still return JSON — otherwise the client's
+  // response.json() throws "Unexpected end of JSON input" and the real cause is
+  // lost. Wrap the whole handler so a failure is always a clean JSON 500 AND
+  // gets logged with a full stack trace for diagnosis.
+  try {
+    return await handleUpload(request);
+  } catch (error) {
+    captureException(error, { scope: "documents:upload:uncaught" });
+    console.error("[documents:upload] uncaught error", error);
+    return NextResponse.json(
+      {
+        error:
+          "Something went wrong while processing your upload. Please try again.",
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleUpload(request: Request) {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -219,6 +241,12 @@ export async function POST(request: Request) {
     }
 
     captureException(error, { scope: "documents:upload", userId: session.user.id });
+
+    // An out-of-credits / rate-limited / down AI provider isn't the user's
+    // documents' fault — don't tell them to "upload different source material".
+    if (isAiServiceUnavailable(error)) {
+      return NextResponse.json({ error: AI_UNAVAILABLE_MESSAGE }, { status: 503 });
+    }
     return NextResponse.json(
       {
         error:

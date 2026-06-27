@@ -51,7 +51,7 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection heading="AI processing & model training">
-        <p id="data-processing">
+        <p id="data-processing" className="scroll-mt-24">
           To generate content, the relevant text from your subject profile and
           your generation settings are sent to our AI provider to fulfil your
           request. Your papers, syllabi and uploads are{" "}
@@ -95,7 +95,7 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection heading="Security">
-        <p id="security">
+        <p id="security" className="scroll-mt-24">
           All uploads are encrypted in transit and at rest. Passwords are stored
           hashed, never in plain text. Access is limited to the people in your
           workspace, with login-attempt throttling and account lockout against
