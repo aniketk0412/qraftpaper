@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Runs `drizzle-kit migrate` before `next build` for **production deploys
- * only**:
+ * Applies pending Drizzle migrations before `next build`, for **production
+ * deploys only**:
  *  - Vercel production builds (VERCEL_ENV === "production") apply pending
  *    migrations before shipping the new app code.
  *  - Vercel preview builds (preview branches) deliberately skip migration —
@@ -11,18 +11,27 @@
  *  - Local builds with DATABASE_URL DO migrate (matches Vercel prod
  *    behaviour, so you can rehearse the build locally).
  *
+ * We run the migrator programmatically via `drizzle-orm/neon-http` — the SAME
+ * driver `lib/db` uses for queries. `drizzle-kit migrate` defaults to the Neon
+ * *serverless* (WebSocket) driver, which can't open a socket from the build
+ * process ("can only connect … through a websocket") and aborts the deploy.
+ * neon-http migrates over plain HTTP, exactly like the running app's queries.
+ *
  * Migration failures are intentionally fatal — shipping app code against a
  * stale schema is worse than failing the deploy.
  */
 
-import { spawnSync } from "node:child_process";
+import { config } from "dotenv";
+
+config({ path: ".env.local" });
+config();
 
 const vercelEnv = process.env.VERCEL_ENV;
 const isVercel = Boolean(process.env.VERCEL);
 const isCi = Boolean(process.env.CI) && !isVercel;
 
 if (isCi) {
-  console.log("[build] CI run — skipping drizzle-kit migrate.");
+  console.log("[build] CI run — skipping migrate.");
   process.exit(0);
 }
 
@@ -34,17 +43,23 @@ if (isVercel && vercelEnv !== "production") {
 }
 
 if (!process.env.DATABASE_URL) {
-  console.log("[build] DATABASE_URL not set — skipping drizzle-kit migrate.");
+  console.log("[build] DATABASE_URL not set — skipping migrate.");
   process.exit(0);
 }
 
-console.log("[build] Running drizzle-kit migrate…");
-const result = spawnSync("npx", ["drizzle-kit", "migrate"], {
-  stdio: "inherit",
-  shell: true,
-});
+console.log("[build] Applying migrations via neon-http…");
 
-if (result.status !== 0) {
-  console.error("[build] drizzle-kit migrate failed — aborting build");
-  process.exit(result.status ?? 1);
+try {
+  const { neon } = await import("@neondatabase/serverless");
+  const { drizzle } = await import("drizzle-orm/neon-http");
+  const { migrate } = await import("drizzle-orm/neon-http/migrator");
+
+  const db = drizzle(neon(process.env.DATABASE_URL));
+  await migrate(db, { migrationsFolder: "./drizzle" });
+
+  console.log("[build] Migrations applied.");
+} catch (error) {
+  console.error("[build] drizzle migrate failed — aborting build");
+  console.error(error);
+  process.exit(1);
 }
