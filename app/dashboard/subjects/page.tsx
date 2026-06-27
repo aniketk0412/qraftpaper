@@ -1,68 +1,40 @@
-import Link from "next/link";
 import { ArrowRight, FilePlus2, UploadCloud } from "lucide-react";
 
 import { auth } from "@/auth";
 import { GlowButton } from "@/components/ui/glow-button";
 import { Reveal } from "@/components/ui/reveal";
-import { DeleteButton } from "@/components/ui/delete-button";
 import { BackLink } from "@/components/dashboard/back-link";
-import { ExamDatePicker } from "@/components/dashboard/exam-date-picker";
+import { DraftingTable } from "@/components/dashboard/drafting-table";
 import { getDb } from "@/lib/db";
 import { documents, subjects } from "@/lib/db/schema";
 import { listUserSubjects } from "@/lib/subjects";
-import { cn } from "@/lib/utils";
+import { listUserBlueprints } from "@/lib/blueprints-db";
 import { eq, sql } from "drizzle-orm";
-
-// Translate a 0-100 mastery percent into the same colour band used across the
-// app (indigo ≥80, indigo-deep ≥55, exam-marker red below) so the figure
-// carries the same meaning everywhere it appears.
-function masteryClass(pct: number | null): string {
-  if (pct === null) return "text-fg-muted";
-  if (pct >= 80) return "text-accent";
-  if (pct >= 55) return "text-violet-bright";
-  return "text-gold";
-}
-
-function statusFor(subject: {
-  daysToExam: number | null;
-  hasProfile: boolean;
-}): { label: string; urgent: boolean; ready: boolean } {
-  if (subject.daysToExam !== null && subject.daysToExam >= 0) {
-    return {
-      label:
-        subject.daysToExam === 0
-          ? "Exam today"
-          : `${subject.daysToExam}d to exam`,
-      urgent: subject.daysToExam <= 7,
-      ready: false,
-    };
-  }
-  return {
-    label: subject.hasProfile ? "Ready" : "Needs docs",
-    urgent: false,
-    ready: subject.hasProfile,
-  };
-}
 
 export const runtime = "nodejs";
 
 export default async function SubjectsPage() {
   const session = await auth();
   const userId = session?.user?.id;
-  const subjectList = userId ? await listUserSubjects(userId) : [];
-  const documentCounts = userId
-    ? await getDb()
-        .select({
-          subjectId: documents.subjectId,
-          count: sql<number>`count(${documents.id})::int`,
-        })
-        .from(documents)
-        .innerJoin(subjects, eq(subjects.id, documents.subjectId))
-        .where(eq(subjects.userId, userId))
-        .groupBy(documents.subjectId)
-    : [];
-  const counts = new Map(
-    documentCounts.map((row) => [row.subjectId, row.count] as const),
+
+  const [subjectList, documentCounts, customBlueprints] = userId
+    ? await Promise.all([
+        listUserSubjects(userId),
+        getDb()
+          .select({
+            subjectId: documents.subjectId,
+            count: sql<number>`count(${documents.id})::int`,
+          })
+          .from(documents)
+          .innerJoin(subjects, eq(subjects.id, documents.subjectId))
+          .where(eq(subjects.userId, userId))
+          .groupBy(documents.subjectId),
+        listUserBlueprints(userId),
+      ])
+    : [[], [], []];
+
+  const docCounts: Record<string, number> = Object.fromEntries(
+    documentCounts.map((row) => [row.subjectId, row.count]),
   );
 
   const hasSubjects = subjectList.length > 0;
@@ -75,14 +47,14 @@ export default async function SubjectsPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="font-mono text-[0.66rem] uppercase tracking-[0.24em] text-fg-subtle">
-              Source material · Index
+              The Drafting Table · Index
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
               Your source material library
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fg-muted">
-              Each subject stores its syllabus, sample paper and PYQs once, then
-              reuses the compact profile for cheap paper and quiz generation.
+              Each subject stores its syllabus, sample paper and PYQs once. Open
+              a subject to draft a paper from any exam blueprint against it.
             </p>
           </div>
           {/* Top action shows only when the ledger has entries — in the empty
@@ -99,75 +71,14 @@ export default async function SubjectsPage() {
       {hasSubjects ? (
         <Reveal className="mt-9">
           <p className="mb-2 font-mono text-[0.58rem] uppercase tracking-[0.22em] text-fg-subtle">
-            {String(subjectList.length).padStart(2, "0")} entries on file
+            {String(subjectList.length).padStart(2, "0")} entries on file ·
+            click a subject to draft
           </p>
-          {/* Ledger index — a 1-column register framed top and bottom, rows
-              ruled by hairlines. No cards, no badges: a numbered entry sheet. */}
-          <div className="border-y border-line">
-            {subjectList.map((subject, index) => {
-              const docs = counts.get(subject.id) ?? 0;
-              const status = statusFor(subject);
-              const mastery =
-                subject.masteryPct !== null ? `${subject.masteryPct}%` : "—";
-              return (
-                <div
-                  key={subject.id}
-                  className="group grid grid-cols-[2.25rem_1fr] gap-x-3 border-b border-line px-1 py-5 transition-colors last:border-b-0 hover:bg-card-hi sm:grid-cols-[2.75rem_1fr_auto] sm:items-center sm:gap-x-5"
-                >
-                  <span className="pt-0.5 font-mono text-[0.7rem] leading-tight text-fg-subtle sm:pt-0">
-                    [ {String(index + 1).padStart(2, "0")} ]
-                  </span>
-
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-violet-bright">
-                        {subject.code}
-                      </p>
-                      <span
-                        className={cn(
-                          "rounded-[2px] border px-2 py-0.5 font-mono text-[0.54rem] uppercase tracking-[0.16em]",
-                          status.urgent
-                            ? "border-gold/40 bg-gold/10 text-gold"
-                            : status.ready
-                              ? "border-accent/35 bg-accent/10 text-accent"
-                              : "border-line-strong bg-card-hi text-fg-muted",
-                        )}
-                      >
-                        {status.label}
-                      </span>
-                    </div>
-                    <Link
-                      href={`/dashboard/subjects/${subject.id}`}
-                      className="mt-1 block truncate text-lg font-semibold tracking-tight transition-colors hover:text-violet-bright"
-                    >
-                      {subject.name}
-                    </Link>
-                    <p className="mt-1.5 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-fg-subtle">
-                      {String(docs).padStart(2, "0")} docs ·{" "}
-                      {String(subject.papers).padStart(2, "0")} papers · mastery{" "}
-                      <span className={masteryClass(subject.masteryPct)}>
-                        {mastery}
-                      </span>
-                    </p>
-                  </div>
-
-                  <div className="col-span-2 mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 sm:col-span-1 sm:mt-0 sm:justify-end">
-                    <ExamDatePicker
-                      subjectId={subject.id}
-                      currentValue={subject.examDate}
-                    />
-                    <GlowButton href="/dashboard" variant="secondary" size="sm">
-                      Generate
-                    </GlowButton>
-                    <DeleteButton
-                      endpoint={`/api/subjects/${subject.id}`}
-                      label="subject"
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <DraftingTable
+            subjects={subjectList}
+            docCounts={docCounts}
+            customBlueprints={customBlueprints}
+          />
         </Reveal>
       ) : (
         <Reveal className="mt-9">
