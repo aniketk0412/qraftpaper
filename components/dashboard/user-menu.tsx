@@ -67,8 +67,8 @@ export function UserMenu({ user }: { user: DashboardUser }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "grid h-10 w-10 place-items-center rounded-full bg-card-hi font-mono text-[0.78rem] font-semibold tracking-wide text-fg ring-1 transition-colors",
-          open ? "ring-accent/40" : "ring-line hover:ring-line-strong",
+          "grid h-10 w-10 place-items-center rounded-[2px] border bg-card-hi font-mono text-[0.78rem] font-semibold tracking-wide text-fg transition-colors",
+          open ? "border-accent/50" : "border-line hover:border-line-strong",
         )}
         aria-label="Account menu"
         aria-haspopup="menu"
@@ -95,7 +95,7 @@ export function UserMenu({ user }: { user: DashboardUser }) {
             className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-line-strong bg-card-hi/80 shadow-2xl backdrop-blur-2xl"
           >
             <div className="flex items-center gap-3 border-b border-line px-4 py-3.5">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card-hi font-mono text-xs font-medium text-fg ring-1 ring-line">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[2px] border border-line bg-card-hi font-mono text-xs font-medium text-fg">
                 {user.initials}
               </span>
               <div className="min-w-0">

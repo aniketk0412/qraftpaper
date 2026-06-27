@@ -286,7 +286,7 @@ function NavGroup({
             key={item.label}
             href={item.href}
             className={cn(
-              "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
+              "group flex items-center gap-3 rounded-xl px-3 py-2.5 font-mono text-xs uppercase tracking-wider transition-all duration-200",
               active
                 ? "bg-accent/15 text-fg ring-1 ring-accent/30"
                 : "text-fg-muted hover:bg-tint/[0.04] hover:text-fg",
