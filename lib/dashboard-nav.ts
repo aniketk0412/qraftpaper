@@ -1,9 +1,8 @@
 import {
-  BookOpen,
   CreditCard,
+  DraftingCompass,
   FileText,
   LayoutDashboard,
-  Ruler,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -14,11 +13,18 @@ export interface NavItem {
   href: string;
 }
 
+// "The Drafting Table" consolidates the old Subjects + Blueprints tabs into one
+// workspace: subjects are the index, blueprints expand contextually within
+// them. It keeps the canonical /dashboard/subjects route (most inbound links),
+// and /dashboard/blueprints permanently redirects here.
 export const workspaceNav: NavItem[] = [
   { label: "Overview", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Subjects", icon: BookOpen, href: "/dashboard/subjects" },
+  {
+    label: "The Drafting Table",
+    icon: DraftingCompass,
+    href: "/dashboard/subjects",
+  },
   { label: "Question Papers", icon: FileText, href: "/dashboard/papers" },
-  { label: "Blueprints", icon: Ruler, href: "/dashboard/blueprints" },
 ];
 
 export const accountNav: NavItem[] = [

@@ -71,11 +71,11 @@ const actionItems: CommandItem[] = [
     group: "Actions",
   },
   {
-    id: "act-blueprints",
-    label: "Browse blueprints",
-    sub: "Reusable exam templates",
+    id: "act-drafting-table",
+    label: "Open the Drafting Table",
+    sub: "Subjects and exam blueprints",
     icon: Ruler,
-    href: "/dashboard/blueprints",
+    href: "/dashboard/subjects",
     group: "Actions",
   },
 ];

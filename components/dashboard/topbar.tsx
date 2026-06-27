@@ -16,9 +16,8 @@ import type { DashboardSubject } from "@/lib/subjects";
 // page you're on. Defaults to "Overview" for the bare /dashboard.
 function pageTitleFor(pathname: string): string {
   if (pathname.startsWith("/dashboard/subjects/new")) return "New subject";
-  if (pathname.startsWith("/dashboard/subjects")) return "Subjects";
+  if (pathname.startsWith("/dashboard/subjects")) return "The Drafting Table";
   if (pathname.startsWith("/dashboard/papers")) return "Question papers";
-  if (pathname.startsWith("/dashboard/blueprints")) return "Blueprints";
   if (pathname.startsWith("/dashboard/settings")) return "Settings";
   if (pathname.startsWith("/billing")) return "Billing";
   return "Overview";
