@@ -176,6 +176,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.expiresAt = Date.now() + days * 24 * 60 * 60 * 1000;
       }
 
+      // Enforce the remember-me expiry everywhere auth() is consulted — API
+      // routes and server actions included. The proxy's `authorized` check
+      // only covers its matched page routes, and the NextAuth cookie itself
+      // lives for the default 30 days, so without this a "don't keep me
+      // signed in" (1-day) session would still be honoured by every API
+      // endpoint for the full 30. Returning null invalidates the session.
+      if (typeof token.expiresAt === "number" && token.expiresAt < Date.now()) {
+        return null;
+      }
+
       return token;
     },
     session({ session, token }) {

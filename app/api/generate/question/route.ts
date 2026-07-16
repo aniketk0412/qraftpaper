@@ -10,6 +10,7 @@ import { loadEffectivePlan } from "@/lib/billing/trial";
 import { normalizeUuid } from "@/lib/ids";
 import {
   assertWithinRateLimit,
+  currentUsageMonth,
   RateLimitError,
   refundGeneration,
   reserveGeneration,
@@ -84,12 +85,16 @@ export async function POST(request: Request) {
   // 3-Day Pass (trial → unpaid) before the gate.
   const plan = await loadEffectivePlan(session.user.id);
 
+  // One month value per request: reserve and any refund must hit the SAME
+  // usage row even if the generation spans the UTC month rollover.
+  const usageMonth = currentUsageMonth();
+
   try {
     // No email-verification gate — see /api/generate/paper for rationale.
     await assertWithinRateLimit(session.user.id);
     // Reserve LAST so a failed rate-limit check never consumes the allowance;
     // refunded below if regeneration fails.
-    await reserveGeneration(session.user.id, plan);
+    await reserveGeneration(session.user.id, plan, usageMonth);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return NextResponse.json({ error: error.message }, { status: 429 });
@@ -138,7 +143,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
-    await refundGeneration(session.user.id);
+    await refundGeneration(session.user.id, usageMonth);
     captureException(error, { scope: "generate:question", userId: session.user.id });
     return NextResponse.json(
       { error: "Question regeneration failed. Please try again." },

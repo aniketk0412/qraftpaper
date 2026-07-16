@@ -20,6 +20,7 @@ import { loadEffectivePlan } from "@/lib/billing/trial";
 import {
   assertSubjectQuizLimit,
   assertWithinRateLimit,
+  currentUsageMonth,
   RateLimitError,
   refundGeneration,
   reserveGeneration,
@@ -93,13 +94,17 @@ export async function POST(request: Request) {
   // lazily expires a lapsed 3-Day Pass (trial → unpaid) before the gate.
   const plan = await loadEffectivePlan(session.user.id);
 
+  // One month value per request: reserve and any refund must hit the SAME
+  // usage row even if the generation spans the UTC month rollover.
+  const usageMonth = currentUsageMonth();
+
   try {
     // No email-verification gate — see /api/generate/paper for rationale.
     await assertWithinRateLimit(session.user.id);
     await assertSubjectQuizLimit(session.user.id, subjectId, plan);
     // Reserve LAST — only once the non-consuming guards pass — and refund on
     // any failure below so a failed generation never burns the allowance.
-    await reserveGeneration(session.user.id, plan);
+    await reserveGeneration(session.user.id, plan, usageMonth);
   } catch (error) {
     if (error instanceof RateLimitError) {
       return NextResponse.json({ error: error.message }, { status: 429 });
@@ -183,7 +188,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
-    await refundGeneration(session.user.id);
+    await refundGeneration(session.user.id, usageMonth);
     captureException(error, { scope: "generate:quiz", userId: session.user.id });
     if (isAiServiceUnavailable(error)) {
       return NextResponse.json({ error: AI_UNAVAILABLE_MESSAGE }, { status: 503 });
@@ -221,7 +226,7 @@ export async function POST(request: Request) {
         .where(eq(generationJobs.id, job.id));
     }
 
-    await refundGeneration(session.user.id);
+    await refundGeneration(session.user.id, usageMonth);
     return NextResponse.json(
       { error: "Quiz generation returned invalid content. Please try again." },
       { status: 502 },

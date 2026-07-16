@@ -50,8 +50,18 @@ async function countRows(query: Promise<{ n: number }[]>): Promise<number> {
  * Call this LAST among the pre-generation gates: the other guards (rate limit,
  * per-subject caps) don't consume anything, so a reservation must only happen
  * once every cheaper check has passed.
+ *
+ * `month` defaults to the current UTC month but callers that may later refund
+ * should capture it once per request and pass the SAME value to both reserve
+ * and refund — a generation spanning the UTC month rollover would otherwise
+ * refund against the new month's row (matching nothing) and silently leak the
+ * reserved slot from the old month.
  */
-export async function reserveGeneration(userId: string, plan: string) {
+export async function reserveGeneration(
+  userId: string,
+  plan: string,
+  month = currentUsageMonth(),
+) {
   const cap = planLimits(plan).generationsPerMonth;
 
   if (cap === null) {
@@ -63,8 +73,6 @@ export async function reserveGeneration(userId: string, plan: string) {
       "Subscribe to a paid plan before generating papers or quizzes.",
     );
   }
-
-  const month = currentUsageMonth();
 
   // INSERT the month's first generation (1 <= cap, since cap >= 1 here), or on
   // conflict bump the counter ONLY while it's still under the cap. When the row
@@ -92,11 +100,14 @@ export async function reserveGeneration(userId: string, plan: string) {
  * Release a generation slot claimed by reserveGeneration() when the attempt
  * ultimately failed, so a failed generation never permanently spends the user's
  * allowance. Floored at zero so a stray double-refund can't drive the counter
- * negative.
+ * negative. Pass the same `month` the reservation was made against (see
+ * reserveGeneration) so a refund crossing the UTC month rollover still hits
+ * the right row.
  */
-export async function refundGeneration(userId: string) {
-  const month = currentUsageMonth();
-
+export async function refundGeneration(
+  userId: string,
+  month = currentUsageMonth(),
+) {
   await getDb()
     .update(usage)
     .set({ generations: sql`GREATEST(${usage.generations} - 1, 0)` })

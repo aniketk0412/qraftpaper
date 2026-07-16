@@ -79,6 +79,12 @@ export async function PATCH(
     .where(and(eq(papers.id, id), eq(papers.userId, session.user.id)))
     .returning();
 
+  // The ownership SELECT above passed, but the row can vanish between it and
+  // this UPDATE (a delete in another tab / double-submit) — .returning() then
+  // yields no row and `updated.content` would throw an unhandled 500. Report
+  // the not-found it really is.
+  if (!updated) return notFound("Paper not found");
+
   return NextResponse.json({ paper: updated.content, record: updated });
 }
 
